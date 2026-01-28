@@ -79,7 +79,7 @@ export function ReviewsCarousel() {
   };
 
   return (
-    <section className="py-32 bg-gradient-to-b from-white to-[#f8fafb] overflow-hidden" ref={ref}>
+    <section className="py-32 bg-gradient-to-b from-white to-[#f8fafb] overflow-x-hidden" ref={ref}>
       <div className="container mx-auto px-6 max-w-7xl mb-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

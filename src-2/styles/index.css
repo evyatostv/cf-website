@@ -36,3 +36,8 @@ html {
   display: flex;
   align-items: stretch;
 }
+
+.reviews-carousel-wrapper .slick-list {
+  overflow: visible;
+  padding-bottom: 24px;
+}
