@@ -34,7 +34,5 @@ src-2/
 
 - The entry point is `index.html` → `src-2/main.tsx`.
 - App routes are defined in `src-2/app/routes.tsx` (React Router).
-- This is an SPA. When deploying later, configure a fallback to `index.html`
-  so routes like `/pricing` and `/about` don’t 404.
+- GitHub Pages uses hash routing (`/#/pricing`) to avoid 404s on refresh.
 - RTL is enabled globally in the layout.
-
