@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Mail, Phone, MapPin, Send } from "lucide-react";
+import { Mail, Phone, Send } from "lucide-react";
 import { useState } from "react";
 
 export function ContactPage() {
@@ -68,15 +68,6 @@ export function ContactPage() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0d47a1]/10 to-[#00838f]/10 flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-6 h-6 text-[#0d47a1]" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-[#1a2332] mb-1">כתובת</h3>
-                    <p className="text-[#6b7c93]">רחוב רוטשילד 1, תל אביב</p>
-                  </div>
-                </div>
               </div>
             </div>
 

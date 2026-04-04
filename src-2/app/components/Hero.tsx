@@ -1,11 +1,24 @@
 import { motion } from "motion/react";
 import { ShieldCheck, WifiOff } from "lucide-react";
 import { Link } from "react-router";
+import { GooeyText } from "./ui/gooey-text-morphing";
+
+const professions = [
+  "לרופאים פרטיים",
+  "לפסיכולוגים",
+  "לפיזיותרפיסטים",
+  "למרפאים בעיסוק",
+  "לפסיכותרפיסטים",
+  "לקלינאי תקשורת",
+  "לדיאטנים",
+  "למטפלים ברגש",
+  "לרופאי משפחה",
+  "לאורתופדים",
+];
 
 export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-white via-[#f8fafb] to-[#f0f4f7]">
-      {/* Subtle background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 right-1/4 w-96 h-96 bg-[#0d47a1]/5 rounded-full blur-3xl" />
         <div className="absolute bottom-20 left-1/4 w-96 h-96 bg-[#00838f]/5 rounded-full blur-3xl" />
@@ -30,18 +43,27 @@ export function Hero() {
           </motion.div>
 
           {/* Main Headline */}
-          <motion.h1
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="text-6xl md:text-7xl lg:text-8xl font-bold text-[#1a2332] mb-6 leading-[1.1] tracking-tight"
+            className="mb-10 pt-6"
           >
-            מערכת ניהול חולים
-            <br />
-            <span className="bg-gradient-to-r from-[#0d47a1] to-[#00838f] bg-clip-text text-transparent">
-              ללא אינטרנט
-            </span>
-          </motion.h1>
+            <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold text-[#1a2332] leading-[1.1] tracking-tight">
+              מערכת ניהול
+            </h1>
+
+            {/* Morphing profession text */}
+            <div className="relative h-28 md:h-32 lg:h-36 flex items-end justify-center pb-2">
+              <GooeyText
+                texts={professions}
+                morphTime={1.2}
+                cooldownTime={2.5}
+                className="w-full h-full"
+                textClassName="text-6xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-[#0d47a1] to-[#00838f] bg-clip-text text-transparent"
+              />
+            </div>
+          </motion.div>
 
           {/* Subtitle */}
           <motion.p
@@ -50,9 +72,9 @@ export function Hero() {
             transition={{ delay: 0.4, duration: 0.6 }}
             className="text-xl md:text-2xl text-[#6b7c93] mb-12 max-w-3xl mx-auto leading-relaxed"
           >
-            כל הנתונים שלך מאוחסנים אצלך במחשב. אפס סיכון להדלפות.
+            כל הנתונים של המטופלים שלך מאוחסנים בהצפנה בסטנדרט צבאי במחשב שלך.
             <br />
-            אבטחה מוחלטת. פרטיות מובטחת.
+            אפס סיכון להדלפות. פרטיות מובטחת.
           </motion.p>
 
           {/* CTA Buttons */}
@@ -68,7 +90,7 @@ export function Hero() {
                 whileTap={{ scale: 0.98 }}
                 className="group relative px-10 py-5 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-2xl shadow-lg shadow-[#0d47a1]/20 hover:shadow-xl hover:shadow-[#0d47a1]/30 transition-all duration-300 text-lg font-medium"
               >
-                <span className="relative z-10">התחל עכשיו</span>
+                <span className="relative z-10">התחילו עכשיו</span>
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#0a3a85] to-[#006d77] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </motion.button>
             </Link>
@@ -79,7 +101,7 @@ export function Hero() {
                 whileTap={{ scale: 0.98 }}
                 className="px-10 py-5 bg-white text-[#1a2332] rounded-2xl border-2 border-[#e1e6ec] hover:border-[#0d47a1] hover:bg-[#f8fafb] transition-all duration-300 text-lg font-medium shadow-sm"
               >
-                גלה עוד
+                גלו עוד
               </motion.button>
             </a>
           </motion.div>

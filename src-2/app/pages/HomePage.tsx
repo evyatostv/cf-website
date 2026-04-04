@@ -3,7 +3,6 @@ import { SecuritySection } from "@/app/components/SecuritySection";
 import { FeaturesSection } from "@/app/components/FeaturesSection";
 import { DashboardPreview } from "@/app/components/DashboardPreview";
 import { OfflineBenefits } from "@/app/components/OfflineBenefits";
-import { ReviewsCarousel } from "@/app/components/ReviewsCarousel";
 import { CTASection } from "@/app/components/CTASection";
 
 export function HomePage() {
@@ -14,7 +13,6 @@ export function HomePage() {
       <FeaturesSection />
       <DashboardPreview />
       <OfflineBenefits />
-      <ReviewsCarousel />
       <CTASection />
     </>
   );

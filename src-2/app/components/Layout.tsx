@@ -1,9 +1,15 @@
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import { Navigation } from "@/app/components/Navigation";
 import { Footer } from "@/app/components/Footer";
 import { useEffect } from "react";
 
 export function Layout() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
   useEffect(() => {
     // Smooth scroll behavior
     document.documentElement.style.scrollBehavior = "smooth";

@@ -36,7 +36,7 @@ export function CTASection() {
               transition={{ delay: 0.2, duration: 0.6 }}
               className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight"
             >
-              מוכן להתחיל?
+              מוכנים להתחיל?
             </motion.h2>
 
             <motion.p
@@ -45,7 +45,7 @@ export function CTASection() {
               transition={{ delay: 0.3, duration: 0.6 }}
               className="text-xl md:text-2xl text-[#b8d4e6] mb-10 max-w-2xl mx-auto leading-relaxed"
             >
-              הצטרף לאלפי רופאים שבחרו באבטחה ובפרטיות מוחלטת
+              בחרו באבטחה ובפרטיות מוחלטת לקליניקה שלכם
             </motion.p>
 
             {/* Checkmarks */}
@@ -76,7 +76,7 @@ export function CTASection() {
                   whileTap={{ scale: 0.98 }}
                   className="group px-10 py-5 bg-white text-[#0d47a1] rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 text-lg flex items-center gap-2"
                 >
-                  <span>התחל ניסיון חינם</span>
+                  <span>צרו קשר</span>
                   <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-4px] transition-transform" />
                 </motion.button>
               </Link>
@@ -98,7 +98,7 @@ export function CTASection() {
               transition={{ delay: 0.6, duration: 0.6 }}
               className="text-sm text-[#b8d4e6] mt-8"
             >
-              ללא כרטיס אשראי • התקנה מיידית • ביטול בכל עת
+              רישיון לנצח • תשלום חד-פעמי • ללא עלויות חודשיות
             </motion.p>
           </div>
         </motion.div>

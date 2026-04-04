@@ -58,8 +58,8 @@ export function FeaturesSection() {
     },
     {
       icon: Pill,
-      title: "ניהול תרופות",
-      description: "מעקב אחר מרשמים, אינטראקציות בין תרופות ובדיקת אלרגיות.",
+      title: "חוות דעת רפואיות",
+      description: "יצירה וניהול חוות דעת מקצועיות, כולל חתימה דיגיטלית וייצוא ל-PDF.",
     },
     {
       icon: Receipt,
@@ -78,8 +78,8 @@ export function FeaturesSection() {
     },
     {
       icon: Clock,
-      title: "גיבויים אוטומטיים",
-      description: "גיבוי אוטומטי של הנתונים במחשב שלך למניעת אובדן מידע.",
+      title: "גיבוי ושחזור",
+      description: "גיבוי של הנתונים במחשב שלך למניעת אובדן מידע.",
     },
   ];
 
@@ -97,10 +97,10 @@ export function FeaturesSection() {
             <span className="text-sm font-medium text-[#0d47a1]">יכולות המערכת</span>
           </div>
           <h2 className="text-5xl md:text-6xl font-bold text-[#1a2332] mb-6 leading-tight">
-            כל מה שרופא
+            כל מה שצריך
             <br />
             <span className="bg-gradient-to-r from-[#0d47a1] to-[#00838f] bg-clip-text text-transparent">
-              צריך במקום אחד
+              במקום אחד
             </span>
           </h2>
           <p className="text-xl text-[#6b7c93] max-w-2xl mx-auto leading-relaxed">
@@ -123,8 +123,8 @@ export function FeaturesSection() {
         >
           <div className="inline-flex flex-col sm:flex-row items-center gap-4 bg-white rounded-3xl p-8 border border-[#e1e6ec] shadow-lg">
             <div className="text-right">
-              <h3 className="text-2xl font-semibold text-[#1a2332] mb-2">מעוניין לראות יותר?</h3>
-              <p className="text-[#6b7c93]">קבע דמו אישי וגלה את כל היכולות</p>
+              <h3 className="text-2xl font-semibold text-[#1a2332] mb-2">רוצים לראות יותר?</h3>
+              <p className="text-[#6b7c93]">קבעו דמו וגלו את כל היכולות</p>
             </div>
             <motion.button
               whileHover={{ scale: 1.02 }}

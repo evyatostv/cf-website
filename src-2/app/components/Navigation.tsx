@@ -1,10 +1,12 @@
 import { Link, useLocation } from "react-router";
 import { motion } from "motion/react";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/auth-context";
 
 export function Navigation() {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -97,9 +99,32 @@ export function Navigation() {
           </div>
 
           <div className="flex items-center gap-4">
+            {!loading && !user ? (
+              <>
+                <Link
+                  to="/login"
+                  className="px-6 py-2.5 text-[#0d47a1] hover:bg-[#f5f7f9] rounded-xl transition-all font-medium"
+                >
+                  כניסה
+                </Link>
+                <Link
+                  to="/signup"
+                  className="px-6 py-2.5 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-xl hover:shadow-lg hover:shadow-[#0d47a1]/20 transition-all font-medium"
+                >
+                  הרשמה
+                </Link>
+              </>
+            ) : (
+              <Link
+                to="/dashboard"
+                className="px-6 py-2.5 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-xl hover:shadow-lg hover:shadow-[#0d47a1]/20 transition-all font-medium"
+              >
+                {user?.user_metadata?.full_name || user?.email}
+              </Link>
+            )}
             <Link
               to="/contact"
-              className="px-6 py-2.5 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-xl hover:shadow-lg hover:shadow-[#0d47a1]/20 transition-all font-medium"
+              className="px-6 py-2.5 text-[#1a2332] hover:bg-[#f5f7f9] rounded-xl transition-all font-medium"
             >
               צור קשר
             </Link>
