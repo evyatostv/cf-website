@@ -82,13 +82,13 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4"
           >
             <Link to="/contact">
               <motion.button
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                className="group relative px-10 py-5 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-2xl shadow-lg shadow-[#0d47a1]/20 hover:shadow-xl hover:shadow-[#0d47a1]/30 transition-all duration-300 text-lg font-medium"
+                className="group relative w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-2xl shadow-lg shadow-[#0d47a1]/20 hover:shadow-xl hover:shadow-[#0d47a1]/30 transition-all duration-300 text-lg font-medium"
               >
                 <span className="relative z-10">התחילו עכשיו</span>
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#0a3a85] to-[#006d77] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -99,7 +99,7 @@ export function Hero() {
               <motion.button
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                className="px-10 py-5 bg-white text-[#1a2332] rounded-2xl border-2 border-[#e1e6ec] hover:border-[#0d47a1] hover:bg-[#f8fafb] transition-all duration-300 text-lg font-medium shadow-sm"
+                className="w-full sm:w-auto px-10 py-5 bg-white text-[#1a2332] rounded-2xl border-2 border-[#e1e6ec] hover:border-[#0d47a1] hover:bg-[#f8fafb] transition-all duration-300 text-lg font-medium shadow-sm"
               >
                 גלו עוד
               </motion.button>

@@ -163,7 +163,7 @@ export function PricingPage() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="max-w-6xl mx-auto"
         >
-          <div className="bg-white rounded-3xl p-8 border-2 border-[#0d47a1] shadow-xl shadow-[#0d47a1]/10 flex flex-col lg:flex-row gap-8">
+          <div className="bg-white rounded-3xl p-6 md:p-8 border-2 border-[#0d47a1] shadow-xl shadow-[#0d47a1]/10 flex flex-col lg:flex-row gap-8">
             {/* Plan Details - Left Side */}
             <div className="flex-grow">
               <h3 className="text-3xl font-bold text-[#1a2332] mb-2">{premiumPlan.name}</h3>
@@ -215,7 +215,7 @@ export function PricingPage() {
             </div>
 
             {/* Contact Form - Right Side */}
-            <div className="w-full lg:w-1/3 flex-shrink-0 flex flex-col justify-center pl-8">
+            <div className="w-full lg:w-1/3 flex-shrink-0 flex flex-col justify-center lg:pl-8 lg:border-r border-[#e1e6ec]">
               <PremiumContactForm />
             </div>
           </div>

@@ -61,7 +61,7 @@ export function OfflineBenefits() {
       </div>
 
       <div className="container mx-auto px-6 max-w-7xl relative z-10" ref={ref}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Left side - Content */}
           <div>
             <motion.div

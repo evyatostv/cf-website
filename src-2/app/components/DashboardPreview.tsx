@@ -56,7 +56,7 @@ export function DashboardPreview() {
             {/* Dashboard Content */}
             <div className="p-6">
               {/* Stats Cards */}
-              <div className="grid grid-cols-4 gap-4 mb-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 {[
                   { icon: Users, value: "1,248", label: "מטופלים פעילים", color: "#0d47a1" },
                   { icon: Calendar, value: "42", label: "תורים היום", color: "#00838f" },
