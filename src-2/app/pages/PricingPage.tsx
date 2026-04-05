@@ -1,11 +1,16 @@
 import { motion } from "motion/react";
 import { Check } from "lucide-react";
 import { Link } from "react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PremiumContactForm } from "../components/PremiumContactForm";
+import { useAuth } from "@/lib/auth-context";
+import { getUserAccess } from "@/lib/supabase";
+
+const PLAN_ORDER = ['basic', 'professional', 'full', 'premium'];
 
 const regularPlans = [
   {
+    slug: "basic",
     name: "חבילה בסיסית",
     price: "₪3,450",
     period: "לנצח",
@@ -18,6 +23,7 @@ const regularPlans = [
     ],
   },
   {
+    slug: "professional",
     name: "חבילה מקצועית",
     price: "₪4,590",
     period: "לנצח",
@@ -33,6 +39,7 @@ const regularPlans = [
     ],
   },
   {
+    slug: "full",
     name: "חבילת ניהול מלאה",
     price: "₪5,890",
     period: "לנצח",
@@ -78,6 +85,37 @@ const premiumAddOns = [
 
 export function PricingPage() {
   const [showAddOns, setShowAddOns] = useState(false);
+  const { user } = useAuth();
+  const [userPlan, setUserPlan] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      getUserAccess(user.id).then(access => {
+        if (access?.is_active) setUserPlan(access.plan);
+      });
+    }
+  }, [user]);
+
+  function getPlanButton(slug: string, isPopular: boolean) {
+    if (userPlan) {
+      const currentIdx = PLAN_ORDER.indexOf(userPlan);
+      const thisIdx = PLAN_ORDER.indexOf(slug);
+      if (slug === userPlan) {
+        return { label: "✓ החבילה שלך", disabled: true, style: "bg-green-50 text-green-700 border border-green-200 cursor-default" };
+      }
+      if (thisIdx > currentIdx) {
+        return { label: "שדרג לחבילה זו", disabled: false, style: isPopular ? "bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white hover:shadow-lg hover:shadow-[#0d47a1]/30" : "bg-[#f5f7f9] text-[#1a2332] hover:bg-[#e8f4f8] border border-[#d1dbe5] hover:border-[#0d47a1]" };
+      }
+      return { label: "חבילה נמוכה יותר", disabled: true, style: "bg-[#f5f7f9] text-[#6b7c93] border border-[#e1e6ec] cursor-default" };
+    }
+    return {
+      label: "התחילו עכשיו",
+      disabled: false,
+      style: isPopular
+        ? "bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white hover:shadow-lg hover:shadow-[#0d47a1]/30"
+        : "bg-[#f5f7f9] text-[#1a2332] hover:bg-[#e8f4f8] border border-[#d1dbe5] hover:border-[#0d47a1]"
+    };
+  }
 
   return (
     <div className="pt-32 pb-20">
@@ -142,16 +180,21 @@ export function PricingPage() {
                 </ul>
               </div>
 
-              <Link
-                to={`/payment?plan=${plan.name === "חבילה בסיסית" ? "basic" : plan.name === "חבילה מקצועית" ? "professional" : "full"}`}
-                className={`block w-full py-4 rounded-xl text-center font-medium transition-all active:scale-95 ${
-                  plan.popular
-                    ? "bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white hover:shadow-lg hover:shadow-[#0d47a1]/30"
-                    : "bg-[#f5f7f9] text-[#1a2332] hover:bg-[#e8f4f8] border border-[#d1dbe5] hover:border-[#0d47a1]"
-                }`}
-              >
-                התחילו עכשיו
-              </Link>
+              {(() => {
+                const btn = getPlanButton(plan.slug, !!plan.popular);
+                return btn.disabled ? (
+                  <div className={`block w-full py-4 rounded-xl text-center font-medium ${btn.style}`}>
+                    {btn.label}
+                  </div>
+                ) : (
+                  <Link
+                    to={`/payment?plan=${plan.slug}`}
+                    className={`block w-full py-4 rounded-xl text-center font-medium transition-all active:scale-95 ${btn.style}`}
+                  >
+                    {btn.label}
+                  </Link>
+                );
+              })()}
             </motion.div>
           ))}
         </div>
