@@ -23,8 +23,14 @@ Deno.serve(async (req) => {
   try {
     const { plan, userId, email } = await req.json();
 
+    console.log('Request:', { plan, userId, email });
+    console.log('Price IDs:', PRICE_IDS);
+    console.log('Stripe key set:', !!Deno.env.get('STRIPE_SECRET_KEY'));
+    console.log('Site URL:', Deno.env.get('SITE_URL'));
+
     if (!plan || !PRICE_IDS[plan]) {
-      return new Response(JSON.stringify({ error: 'Invalid plan' }), {
+      console.error('Invalid plan or missing price ID:', plan, PRICE_IDS);
+      return new Response(JSON.stringify({ error: `Invalid plan: "${plan}". Available: ${Object.keys(PRICE_IDS).join(', ')}` }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }

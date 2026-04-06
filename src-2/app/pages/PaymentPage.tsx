@@ -61,10 +61,18 @@ export function PaymentPage() {
         body: { plan, userId: user.id, email: user.email },
       });
 
-      if (fnError || !data?.url) throw new Error(fnError?.message || 'שגיאה ביצירת דף התשלום');
+      if (fnError) {
+        const detail = (fnError as any)?.context?.error || fnError.message || JSON.stringify(fnError);
+        throw new Error(detail);
+      }
+
+      if (!data?.url) {
+        throw new Error(data?.error || 'לא התקבל קישור לדף התשלום');
+      }
 
       window.location.href = data.url;
     } catch (err: any) {
+      console.error('Checkout error:', err);
       setError(err.message || 'שגיאה בעיבוד התשלום');
       setProcessing(false);
     }
