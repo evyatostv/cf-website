@@ -1,34 +1,137 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
 import { motion } from 'motion/react';
-import { AlertCircle, Shield, Lock, ArrowLeft, Check } from 'lucide-react';
+import { AlertCircle, Shield, ArrowLeft, Check, Lock } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { loadStripe } from '@stripe/stripe-js';
+import {
+  Elements,
+  PaymentElement,
+  useStripe,
+  useElements,
+} from '@stripe/react-stripe-js';
 
-const PLAN_INFO: Record<string, { name: string; price: string; features: string[] }> = {
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
+const PLAN_INFO: Record<string, { name: string; price: string; amount: number; features: string[] }> = {
   basic: {
     name: 'חבילה בסיסית',
-    price: '₪3,450',
+    price: '₪759',
+    amount: 75900,
     features: ['סיכומי ביקור מעוצבים', 'יצירת מסמכי PDF', 'ניהול יומן פגישות', 'ניהול חולים ורקע רפואי'],
   },
   professional: {
     name: 'חבילה מקצועית',
-    price: '₪4,590',
+    price: '₪999',
+    amount: 99900,
     features: ['כל מה שבחבילה הבסיסית', 'דוח מעקב סטטיסטי', 'גרפים וניתוח נתונים', 'יומן אישי ותיוג רשומות', 'הערות דביקות', 'חיפוש וסינון מתקדם'],
   },
   full: {
     name: 'חבילת ניהול מלאה',
-    price: '₪5,890',
+    price: '₪1,299',
+    amount: 129900,
     features: ['כל מה שבחבילה המקצועית', 'דוח הכנסות פיננסיים', 'הנפקת קבלות וחשבוניות', 'קבלה וחשבונית משולבת', 'עקבוי שיטות תשלום'],
   },
 };
+
+// Inner component — has access to Stripe context
+function CheckoutForm({ planInfo, userEmail }: { planInfo: typeof PLAN_INFO[string]; userEmail: string }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+
+    setProcessing(true);
+    setError('');
+
+    const { error: submitError } = await elements.submit();
+    if (submitError) {
+      setError(submitError.message || 'שגיאה בעיבוד פרטי התשלום');
+      setProcessing(false);
+      return;
+    }
+
+    const { error: confirmError } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/thank-you`,
+        receipt_email: userEmail,
+      },
+    });
+
+    // confirmPayment only rejects on immediate errors (redirect happens on success)
+    if (confirmError) {
+      setError(confirmError.message || 'שגיאה בעיבוד התשלום');
+      setProcessing(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col h-full justify-between">
+      <div>
+        <h3 className="text-lg font-bold text-[#1a2332] mb-2">פרטי תשלום</h3>
+        <p className="text-sm text-[#6b7c93] mb-5">הזן את פרטי כרטיס האשראי שלך.</p>
+
+        <div className="bg-[#f5f7f9] rounded-xl p-4 mb-5">
+          <p className="text-xs text-[#6b7c93] mb-1">הרכישה תירשם לחשבון</p>
+          <p className="font-medium text-[#1a2332] text-sm">{userEmail}</p>
+        </div>
+
+        <div className="border border-[#e1e6ec] rounded-xl p-4 mb-5 space-y-2">
+          <div className="flex justify-between text-sm">
+            <span className="text-[#6b7c93]">{planInfo.name}</span>
+            <span className="font-medium text-[#1a2332]">{planInfo.price}</span>
+          </div>
+          <div className="flex justify-between text-sm border-t border-[#e1e6ec] pt-2">
+            <span className="font-bold text-[#1a2332]">סה"כ לתשלום</span>
+            <span className="font-bold text-[#0d47a1]">{planInfo.price}</span>
+          </div>
+        </div>
+
+        {/* Stripe Payment Element */}
+        <div className="mb-5">
+          <PaymentElement
+            options={{
+              layout: 'tabs',
+              defaultValues: { billingDetails: { email: userEmail } },
+            }}
+          />
+        </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+            <p className="text-red-600 text-sm">{error}</p>
+          </div>
+        )}
+      </div>
+
+      <div>
+        <button
+          type="submit"
+          disabled={!stripe || processing}
+          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-bold py-4 rounded-xl hover:shadow-lg transition disabled:opacity-60 text-lg mb-3"
+        >
+          <Lock className="w-4 h-4" />
+          {processing ? 'מעבד תשלום...' : `שלם ${planInfo.price}`}
+        </button>
+        <p className="text-center text-xs text-[#6b7c93]">מוגן על ידי Stripe</p>
+      </div>
+    </form>
+  );
+}
 
 export function PaymentPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState('');
+  const [clientSecret, setClientSecret] = useState('');
+  const [initError, setInitError] = useState('');
 
   const plan = searchParams.get('plan') || '';
   const planInfo = PLAN_INFO[plan];
@@ -36,6 +139,25 @@ export function PaymentPage() {
   useEffect(() => {
     if (!loading && !user) navigate('/login?redirect=/payment?plan=' + plan);
   }, [user, loading, navigate, plan]);
+
+  const createIntent = useCallback(async () => {
+    if (!user || !planInfo) return;
+
+    const { data, error } = await supabase.functions.invoke('create-payment-intent', {
+      body: { plan },
+    });
+
+    if (error || !data?.clientSecret) {
+      setInitError((error as any)?.context?.error || error?.message || 'שגיאה ביצירת סשן תשלום');
+      return;
+    }
+
+    setClientSecret(data.clientSecret);
+  }, [user, plan, planInfo]);
+
+  useEffect(() => {
+    createIntent();
+  }, [createIntent]);
 
   if (!plan || !planInfo) {
     return (
@@ -50,33 +172,6 @@ export function PaymentPage() {
       </div>
     );
   }
-
-  const handleCheckout = async () => {
-    if (!user) return;
-    setProcessing(true);
-    setError('');
-
-    try {
-      const { data, error: fnError } = await supabase.functions.invoke('create-checkout-session', {
-        body: { plan, userId: user.id, email: user.email },
-      });
-
-      if (fnError) {
-        const detail = (fnError as any)?.context?.error || fnError.message || JSON.stringify(fnError);
-        throw new Error(detail);
-      }
-
-      if (!data?.url) {
-        throw new Error(data?.error || 'לא התקבל קישור לדף התשלום');
-      }
-
-      window.location.href = data.url;
-    } catch (err: any) {
-      console.error('Checkout error:', err);
-      setError(err.message || 'שגיאה בעיבוד התשלום');
-      setProcessing(false);
-    }
-  };
 
   if (loading || !user) return null;
 
@@ -118,50 +213,45 @@ export function PaymentPage() {
             </div>
           </div>
 
-          {/* Checkout */}
-          <div className="bg-white rounded-2xl border border-[#e1e6ec] p-8 flex flex-col justify-between">
-            <div>
-              <h3 className="text-lg font-bold text-[#1a2332] mb-2">מעבר לתשלום מאובטח</h3>
-              <p className="text-sm text-[#6b7c93] mb-6">
-                תועבר לדף Stripe המאובטח להשלמת הרכישה.
-              </p>
-
-              <div className="bg-[#f5f7f9] rounded-xl p-4 mb-6">
-                <p className="text-xs text-[#6b7c93] mb-1">הרכישה תירשם לחשבון</p>
-                <p className="font-medium text-[#1a2332] text-sm">{user.email}</p>
+          {/* Payment form */}
+          <div className="bg-white rounded-2xl border border-[#e1e6ec] p-8">
+            {initError ? (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <AlertCircle className="w-10 h-10 text-red-400 mb-3" />
+                <p className="text-red-600 text-sm mb-4">{initError}</p>
+                <button
+                  onClick={createIntent}
+                  className="px-5 py-2 bg-[#0d47a1] text-white rounded-xl text-sm font-medium"
+                >
+                  נסה שוב
+                </button>
               </div>
-
-              <div className="border border-[#e1e6ec] rounded-xl p-4 mb-6 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#6b7c93]">{planInfo.name}</span>
-                  <span className="font-medium text-[#1a2332]">{planInfo.price}</span>
-                </div>
-                <div className="flex justify-between text-sm border-t border-[#e1e6ec] pt-2">
-                  <span className="font-bold text-[#1a2332]">סה"כ לתשלום</span>
-                  <span className="font-bold text-[#0d47a1]">{planInfo.price}</span>
-                </div>
+            ) : !clientSecret ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="w-8 h-8 border-4 border-[#0d47a1] border-t-transparent rounded-full animate-spin" />
               </div>
-
-              {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-red-600 text-sm">{error}</p>
-                </div>
-              )}
-            </div>
-
-            <div>
-              <button
-                onClick={handleCheckout}
-                disabled={processing}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-bold py-4 rounded-xl hover:shadow-lg transition disabled:opacity-60 text-lg mb-3"
+            ) : (
+              <Elements
+                stripe={stripePromise}
+                options={{
+                  clientSecret,
+                  locale: 'he',
+                  appearance: {
+                    theme: 'stripe',
+                    variables: {
+                      colorPrimary: '#0d47a1',
+                      colorBackground: '#ffffff',
+                      colorText: '#1a2332',
+                      colorDanger: '#ef4444',
+                      fontFamily: 'inherit',
+                      borderRadius: '12px',
+                    },
+                  },
+                }}
               >
-                <Lock className="w-4 h-4" />
-                {processing ? 'מעביר לדף תשלום...' : 'המשך לתשלום מאובטח'}
-              </button>
-
-              <p className="text-center text-xs text-[#6b7c93]">מוגן על ידי Stripe</p>
-            </div>
+                <CheckoutForm planInfo={planInfo} userEmail={user.email!} />
+              </Elements>
+            )}
           </div>
         </motion.div>
       </div>

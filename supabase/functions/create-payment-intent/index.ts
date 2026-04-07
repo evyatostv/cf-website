@@ -3,11 +3,17 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
 
-// Map plan slugs → Stripe Price IDs
-const PRICE_IDS: Record<string, string> = {
-  basic:        Deno.env.get('STRIPE_PRICE_BASIC')!,
-  professional: Deno.env.get('STRIPE_PRICE_PROFESSIONAL')!,
-  full:         Deno.env.get('STRIPE_PRICE_FULL')!,
+// Amounts in agorot (ILS cents)
+const PLAN_AMOUNTS: Record<string, number> = {
+  basic:        345000,  // ₪3,450
+  professional: 459000,  // ₪4,590
+  full:         589000,  // ₪5,890
+};
+
+const PLAN_NAMES: Record<string, string> = {
+  basic:        'חבילה בסיסית',
+  professional: 'חבילה מקצועית',
+  full:         'חבילת ניהול מלאה',
 };
 
 const corsHeaders = {
@@ -45,31 +51,31 @@ Deno.serve(async (req) => {
   try {
     const { plan } = await req.json();
 
-    if (!plan || !PRICE_IDS[plan]) {
-      return new Response(JSON.stringify({ error: `Invalid plan: "${plan}"` }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (!plan || !PLAN_AMOUNTS[plan]) {
+      return new Response(
+        JSON.stringify({ error: `Invalid plan: "${plan}"` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
     }
 
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      line_items: [{ price: PRICE_IDS[plan], quantity: 1 }],
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: PLAN_AMOUNTS[plan],
+      currency: 'ils',
       // Use verified identity from JWT — never from request body
-      customer_email: user.email,
-      metadata: { plan, userId: user.id },
-      success_url: `${Deno.env.get('SITE_URL')}/thank-you?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${Deno.env.get('SITE_URL')}/pricing`,
-      payment_method_types: ['card'],
-      locale: 'auto',
+      metadata: { plan, userId: user.id, planName: PLAN_NAMES[plan] },
+      receipt_email: user.email || undefined,
+      description: PLAN_NAMES[plan],
     });
 
-    return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ clientSecret: paymentIntent.client_secret }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
   } catch (err) {
-    console.error('create-checkout-session error:', err.message);
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    console.error('create-payment-intent error:', err.message);
+    return new Response(
+      JSON.stringify({ error: err.message }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
   }
 });

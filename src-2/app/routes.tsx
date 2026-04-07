@@ -9,6 +9,7 @@ import { SignupPage } from "@/app/pages/SignupPage";
 import { DashboardPage } from "@/app/pages/DashboardPage";
 import { PaymentPage } from "@/app/pages/PaymentPage";
 import { ThankYouPage } from "@/app/pages/ThankYouPage";
+import { CalendarPage } from "@/app/pages/CalendarPage";
 import { Layout } from "@/app/components/Layout";
 
 export const router = createHashRouter([
@@ -26,6 +27,7 @@ export const router = createHashRouter([
       { path: "dashboard", element: <DashboardPage /> },
       { path: "payment", element: <PaymentPage /> },
       { path: "thank-you", element: <ThankYouPage /> },
+      { path: "calendar", element: <CalendarPage /> },
     ],
   },
 ]);

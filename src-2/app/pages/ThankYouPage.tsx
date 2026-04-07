@@ -1,20 +1,45 @@
 import { useSearchParams, Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
 import { motion } from 'motion/react';
-import { Download, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Download, CheckCircle2, ArrowLeft, AlertCircle } from 'lucide-react';
 
 export function ThankYouPage() {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
+
+  // Payment Element flow: ?payment_intent=pi_xxx&redirect_status=succeeded
+  // Checkout Session flow: ?session_id=cs_xxx
+  const redirectStatus = searchParams.get('redirect_status');
+  const paymentIntentId = searchParams.get('payment_intent');
   const sessionId = searchParams.get('session_id');
 
-  // Stripe only redirects here on success, so session_id present = paid
-  if (!sessionId) {
+  const isSuccess = redirectStatus === 'succeeded' || !!sessionId;
+  const orderId = paymentIntentId || sessionId;
+
+  if (!orderId) {
     return (
       <div className="min-h-screen flex items-center justify-center" dir="rtl">
         <div className="text-center">
           <p className="text-[#6b7c93] mb-2">לא נמצאה הזמנה.</p>
           <Link to="/pricing" className="text-[#0d47a1] hover:underline">חזרה לתמחור</Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center pt-28 pb-20" dir="rtl">
+        <div className="text-center">
+          <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-[#1a2332] mb-2">התשלום לא הושלם</h1>
+          <p className="text-[#6b7c93] mb-6">משהו השתבש. אנא נסה שוב.</p>
+          <Link
+            to="/pricing"
+            className="inline-block px-6 py-3 bg-[#0d47a1] text-white rounded-xl font-medium"
+          >
+            חזרה לתמחור
+          </Link>
         </div>
       </div>
     );
@@ -75,7 +100,7 @@ export function ThankYouPage() {
             )}
             <div className="flex justify-between text-sm">
               <span className="text-[#6b7c93]">מזהה הזמנה</span>
-              <span className="font-mono text-xs text-[#1a2332] truncate max-w-[180px]">{sessionId}</span>
+              <span className="font-mono text-xs text-[#1a2332] truncate max-w-[180px]">{orderId}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-[#6b7c93]">סטטוס</span>

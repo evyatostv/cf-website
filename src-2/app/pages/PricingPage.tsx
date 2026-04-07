@@ -12,7 +12,7 @@ const regularPlans = [
   {
     slug: "basic",
     name: "חבילה בסיסית",
-    price: "₪3,450",
+    price: "₪759",
     period: "לנצח",
     description: "למטפלים יחידים שרוצים להתחיל",
     newFeatures: [
@@ -25,7 +25,7 @@ const regularPlans = [
   {
     slug: "professional",
     name: "חבילה מקצועית",
-    price: "₪4,590",
+    price: "₪999",
     period: "לנצח",
     description: "לקליניקות קטנות עם ארגון מתקדם",
     popular: true,
@@ -41,7 +41,7 @@ const regularPlans = [
   {
     slug: "full",
     name: "חבילת ניהול מלאה",
-    price: "₪5,890",
+    price: "₪1,299",
     period: "לנצח",
     description: "לקליניקות בינוניות עם ניהול כספי",
     newFeatures: [
@@ -134,9 +134,9 @@ export function PricingPage() {
             </span>
           </h1>
           <p className="text-xl text-[#6b7c93] max-w-2xl mx-auto">
-            כל החבילות כוללות רישיון לנצח. אין עלויות חודשיות או שנתיות.
+            כל החבילות כוללות רישיון לצמיתות — ללא עלויות חודשיות או שנתיות.
             <br />
-            <span className="font-semibold">רכישה חד-פעמית בלבד!</span>
+            <span className="font-semibold">תשלום חד-פעמי בלבד.</span>
           </p>
         </motion.div>
 
