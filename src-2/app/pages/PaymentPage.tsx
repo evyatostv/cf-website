@@ -279,13 +279,14 @@ export function PaymentPage() {
             {initError ? (
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <AlertCircle className="w-10 h-10 text-red-400 mb-3" />
-                <p className="text-red-600 text-sm mb-4">{initError}</p>
-                <button
-                  onClick={createIntent}
-                  className="px-5 py-2 bg-[#0d47a1] text-white rounded-xl text-sm font-medium"
+                <p className="text-[#1a2332] font-semibold mb-2">משהו השתבש</p>
+                <p className="text-[#6b7c93] text-sm mb-6">לא הצלחנו לאתחל את דף התשלום. אנא צרו קשר ונסייע לכם לרכוש.</p>
+                <Link
+                  to="/contact"
+                  className="px-5 py-2.5 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-xl text-sm font-medium"
                 >
-                  נסה שוב
-                </button>
+                  צרו קשר
+                </Link>
               </div>
             ) : !clientSecret ? (
               <div className="flex items-center justify-center h-full">
