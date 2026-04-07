@@ -108,7 +108,7 @@ export function SecuritySection() {
                   <ShieldOff className="w-8 h-8 text-[#00838f] bg-white px-2" />
                 </div>
               </div>
-              <p className="text-xs text-[#6b7c93] mt-2 font-medium">אין חיבור</p>
+              <p className="text-sm text-[#6b7c93] mt-5 font-medium">אין חיבור</p>
             </div>
 
             <div className="text-center opacity-40">
