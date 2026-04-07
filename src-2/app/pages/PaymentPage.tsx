@@ -100,7 +100,7 @@ function CheckoutForm({ planInfo, userEmail, userId, plan, discountAmount, final
           </div>
           {discountAmount > 0 && (
             <div className="flex justify-between text-sm text-green-600">
-              <span>הנחת שדרוג (50%)</span>
+              <span>זיכוי תשלום קודם</span>
               <span>-₪{Math.round(discountAmount / 100).toLocaleString('he-IL')}</span>
             </div>
           )}
@@ -253,7 +253,7 @@ export function PaymentPage() {
                   </span>
                   <div className="mt-1 inline-flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-full px-3 py-1 mr-2">
                     <span className="text-green-700 text-xs font-semibold">
-                      חיסכון ₪{Math.round(discountAmount / 100).toLocaleString('he-IL')} (50% הנחת שדרוג)
+                      זיכוי שדרוג ₪{Math.round(discountAmount / 100).toLocaleString('he-IL')}
                     </span>
                   </div>
                 </div>

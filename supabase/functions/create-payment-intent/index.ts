@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (purchases?.amount) {
-        discountAmount = Math.floor(purchases.amount * 0.5);
+        discountAmount = purchases.amount;
         finalAmount = Math.max(finalAmount - discountAmount, 0);
       }
     }
@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
       },
       receipt_email: user.email || undefined,
       description: isUpgrade
-        ? `שדרוג ל-${PLAN_NAMES[plan]} (כולל הנחת שדרוג 50%)`
+        ? `שדרוג ל-${PLAN_NAMES[plan]} (זיכוי תשלום קודם)`
         : PLAN_NAMES[plan],
     });
 
