@@ -171,7 +171,7 @@ function CheckoutForm({ planInfo, userEmail, userId, plan, discountAmount, final
 export function PaymentPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, session, loading } = useAuth();
   const [clientSecret, setClientSecret] = useState('');
   const [initError, setInitError] = useState('');
   const [discountAmount, setDiscountAmount] = useState(0);
@@ -189,7 +189,6 @@ export function PaymentPage() {
     if (!user || !planInfo) return;
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
         setInitError('יש להתחבר מחדש');
         return;
@@ -220,7 +219,7 @@ export function PaymentPage() {
     } catch (err: any) {
       setInitError(err.message || 'שגיאה ביצירת סשן תשלום');
     }
-  }, [user, plan, planInfo, isUpgrade]);
+  }, [user, session, plan, planInfo, isUpgrade]);
 
   useEffect(() => {
     createIntent();
