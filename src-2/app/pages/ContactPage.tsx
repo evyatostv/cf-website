@@ -54,7 +54,7 @@ export function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-[#1a2332] mb-1">אימייל</h3>
-                    <p className="text-[#6b7c93]">info@clinic-flow.co.il</p>
+                    <p className="text-[#6b7c93]">contact@clinic-flow.co.il</p>
                   </div>
                 </div>
 

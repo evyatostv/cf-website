@@ -21,7 +21,7 @@ export function RefundPage() {
               החזר כספי מלא עשוי להינתן, לפי שיקול דעת החברה, אם:
             </p>
             <ul className="list-disc list-inside space-y-2 text-[#4a5568]">
-              <li>התוכנה נכשלת בהתקנה או בהפעלה הבסיסית במערכת הפעלה נתמכת (Windows 10+ / macOS 12+)</li>
+              <li>התוכנה נכשלת בהתקנה או בהפעלה הבסיסית במערכת הפעלה נתמכת</li>
               <li>הבקשה הוגשה תוך 7 ימי עסקים מיום הרכישה</li>
               <li>המשתמש יצר קשר עם התמיכה לפני הגשת הבקשה ונעשה ניסיון לפתרון הבעיה</li>
             </ul>
@@ -42,7 +42,7 @@ export function RefundPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-3">4. תהליך הגשת בקשה</h2>
             <ol className="list-decimal list-inside space-y-2 text-[#4a5568]">
-              <li>שלח דוא״ל אל <a href="mailto:info@clinic-flow.co.il" className="text-[#0d47a1] hover:underline">info@clinic-flow.co.il</a> עם נושא: "בקשת החזר — [מספר הזמנה]"</li>
+              <li>שלח דוא״ל אל <a href="mailto:contact@clinic-flow.co.il" className="text-[#0d47a1] hover:underline">contact@clinic-flow.co.il</a> עם נושא: "בקשת החזר — [מספר הזמנה]"</li>
               <li>פרט את הבעיה שנתקלת בה ומה ניסית לפתור</li>
               <li>צרף צילום מסך של השגיאה (אם רלוונטי)</li>
               <li>קבלת אישור בדוא״ל תוך 48 שעות עסקים</li>
@@ -61,7 +61,7 @@ export function RefundPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-3">6. יצירת קשר</h2>
             <p className="text-[#4a5568] leading-relaxed">
-              לכל שאלה: <a href="mailto:info@clinic-flow.co.il" className="text-[#0d47a1] hover:underline">info@clinic-flow.co.il</a>
+              לכל שאלה: <a href="mailto:contact@clinic-flow.co.il" className="text-[#0d47a1] hover:underline">contact@clinic-flow.co.il</a>
             </p>
           </section>
 

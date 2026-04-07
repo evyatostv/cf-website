@@ -48,8 +48,8 @@ export function PrivacyPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-2">ג. נתוני שימוש אנונימיים (באתר)</h3>
                 <ul className="list-disc list-inside space-y-1 text-[#4a5568]">
-                  <li>Vercel Analytics — צפיות בדפים, ביצועי טעינה; ללא זיהוי אישי</li>
-                  <li>Vercel Speed Insights — מדדי ביצועים; ללא זיהוי אישי</li>
+                  <li>אנליטיקת צפיות בדפים וביצועי טעינה — אנונימית, ללא זיהוי אישי</li>
+                  <li>מדדי ביצועים — ללא זיהוי אישי</li>
                 </ul>
               </div>
             </div>
@@ -58,41 +58,40 @@ export function PrivacyPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-3">4. עם מי משותפים הנתונים</h2>
             <ul className="list-disc list-inside space-y-2 text-[#4a5568]">
-              <li><strong>Supabase</strong> — ספק בסיס הנתונים לנתוני הרישיון (שרתים ב-EU/US)</li>
+              <li><strong>ספק בסיס הנתונים</strong> — לניהול נתוני הרישיון והחשבון (שרתים ב-EU/US)</li>
               <li><strong>Stripe</strong> — עיבוד תשלומים; בכפוף למדיניות הפרטיות של Stripe</li>
-              <li><strong>Vercel</strong> — אחסון האתר ואנליטיקה אנונימית</li>
-              <li>לאף גורם אחר — נתוני חשבון לא נמכרים ולא מועברים לצד שלישי לצרכי שיווק</li>
+              <li><strong>ספק אחסון האתר</strong> — אחסון האתר ואנליטיקה אנונימית</li>
+              <li>לצרכי שיווק — ייתכן שחלק מהנתונים והמידע ישמשו לצרכי שיווק. לא מועבר מידע אישי מזהה לצדדים שלישיים לצרכים אלה</li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-3">5. כמה זמן שומרים את הנתונים</h2>
             <ul className="list-disc list-inside space-y-2 text-[#4a5568]">
-              <li>נתוני חשבון ורישיון: כל עוד הרישיון פעיל + 7 שנים (חובה חוקית)</li>
-              <li>לוגים של אישור תנאים: 7 שנים (ראיה משפטית)</li>
-              <li>נתוני אנליטיקה: לפי מדיניות Vercel</li>
+              <li>נתוני חשבון ורישיון: כל עוד הרישיון פעיל</li>
+              <li>נתוני אנליטיקה: לתקופה מוגבלת</li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-3">6. זכויות המשתמש</h2>
-            <p className="text-[#4a5568] leading-relaxed mb-3">
-              בהתאם לחוק הגנת הפרטיות הישראלי, יש לך זכות ל:
-            </p>
             <ul className="list-disc list-inside space-y-2 text-[#4a5568]">
               <li>עיון בנתונים האישיים שלך השמורים אצלנו</li>
               <li>תיקון נתונים שגויים</li>
-              <li>מחיקת חשבון (בכפוף לחובות שמירה חוקיות)</li>
+              <li>מחיקת חשבון</li>
             </ul>
-            <p className="text-[#4a5568] mt-3">
-              לפניות: <a href="mailto:info@clinic-flow.co.il" className="text-[#0d47a1] hover:underline">info@clinic-flow.co.il</a>
-            </p>
+            <p className="text-[#4a5568] mt-3">לפניות בנושא פרטיות:</p>
+            <ul className="list-none space-y-1 text-[#4a5568] mt-1">
+              <li>דוא״ל: <a href="mailto:contact@clinic-flow.co.il" className="text-[#0d47a1] hover:underline">contact@clinic-flow.co.il</a></li>
+              <li>טלפון: <a href="tel:+972501234567" className="text-[#0d47a1] hover:underline">050-123-4567</a></li>
+              <li>כתובת: תל אביב, ישראל</li>
+            </ul>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-3">7. עוגיות (Cookies)</h2>
             <p className="text-[#4a5568] leading-relaxed">
-              האתר משתמש בעוגיות טכניות לניהול ההתחברות (Supabase Auth) ובאחסון מקומי לצורכי אנליטיקה אנונימית (Vercel).
+              האתר משתמש בעוגיות טכניות לניהול ההתחברות ובאחסון מקומי לצורכי אנליטיקה אנונימית.
               אנו לא משתמשים בעוגיות שיווקיות או עוקבות.
             </p>
           </section>

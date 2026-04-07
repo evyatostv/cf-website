@@ -70,7 +70,7 @@ function CheckoutForm({ planInfo, userEmail, userId, plan, discountAmount, final
     const { error: confirmError } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/thank-you`,
+        return_url: `${window.location.origin}/#/thank-you`,
         receipt_email: userEmail,
       },
     });

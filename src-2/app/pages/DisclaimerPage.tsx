@@ -95,7 +95,7 @@ export function DisclaimerPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-3">8. יצירת קשר</h2>
             <p className="text-[#4a5568] leading-relaxed">
-              לשאלות: <a href="mailto:info@clinic-flow.co.il" className="text-[#0d47a1] hover:underline">info@clinic-flow.co.il</a>
+              לשאלות: <a href="mailto:contact@clinic-flow.co.il" className="text-[#0d47a1] hover:underline">contact@clinic-flow.co.il</a>
             </p>
           </section>
 

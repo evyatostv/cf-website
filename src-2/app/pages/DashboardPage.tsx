@@ -6,7 +6,7 @@ import { motion } from 'motion/react';
 import {
   Download, LogOut, Clock, CheckCircle2, XCircle, AlertCircle,
   BookOpen, MessageCircle, Monitor, HardDrive, Cpu, RefreshCw,
-  Star, ArrowLeft, Shield, Zap, ChevronDown, ChevronUp
+  Star, ArrowLeft, Shield, Zap, ChevronDown, ChevronUp, ArrowUpCircle
 } from 'lucide-react';
 
 const CHANGELOG = [
@@ -15,12 +15,12 @@ const CHANGELOG = [
 
 const RESOURCES = [
   { icon: BookOpen, title: 'מדריך התחלה מהירה', desc: 'כל מה שצריך לדעת להתחיל', href: '/contact', color: '#0d47a1' },
-  { icon: MessageCircle, title: 'תמיכה טכנית', desc: 'נענה תוך 24 שעות', href: 'mailto:info@clinic-flow.co.il', color: '#00838f' },
+  { icon: MessageCircle, title: 'תמיכה טכנית', desc: 'נענה תוך 24 שעות', href: 'mailto:contact@clinic-flow.co.il', color: '#00838f' },
   { icon: Star, title: 'שדרוג חבילה', desc: 'גלה את כל היכולות', href: '/pricing', color: '#f59e0b' },
 ];
 
 const SYSTEM_REQ = [
-  { icon: Monitor, label: 'מערכת הפעלה', value: 'Windows 10/11 (64-bit)' },
+  { icon: Monitor, label: 'מערכת הפעלה', value: 'Windows 10/11 או macOS 12+' },
   { icon: Cpu, label: 'מעבד', value: 'Intel / AMD x64 (כל דגם מ-2015)' },
   { icon: HardDrive, label: 'דיסק', value: '500MB פנויים לפחות' },
 ];
@@ -64,6 +64,13 @@ export function DashboardPage() {
   const isTrialExpired = access?.plan === 'trial' && access?.expires_at && new Date(access.expires_at) < new Date();
   const hasActiveAccess = access?.is_active && !isTrialExpired;
   const planLabel = access ? PLAN_LABELS[access.plan] ?? access.plan : null;
+
+  const UPGRADE_NEXT: Record<string, { label: string; desc: string; features: string[]; to: string; btnLabel: string }> = {
+    trial: { label: 'חבילה בסיסית', desc: 'רכוש רישיון לצמיתות ותמשיך להשתמש ללא הגבלת זמן', features: ['סיכומי ביקור ו-PDF', 'ניהול יומן תורים', 'כרטיס מטופל מלא'], to: '/pricing', btnLabel: 'בחר חבילה' },
+    basic: { label: 'חבילה מקצועית', desc: 'קבל כלים מתקדמים לניתוח הפעילות שלך', features: ['דוחות סטטיסטיים וגרפים', 'יומן אישי ותיוג רשומות', 'הערות דביקות וחיפוש מתקדם'], to: '/payment?plan=professional&upgrade=true', btnLabel: 'שדרג עכשיו' },
+    professional: { label: 'חבילת ניהול מלאה', desc: 'הוסף ניהול כספי מלא לקליניקה שלך', features: ['חשבוניות וקבלות אוטומטיות', 'דוחות הכנסות פיננסיים', 'מעקב שיטות תשלום'], to: '/payment?plan=full&upgrade=true', btnLabel: 'שדרג עכשיו' },
+  };
+  const upgradeNext = access?.plan ? UPGRADE_NEXT[access.plan] : null;
   const trialDaysLeft = access?.plan === 'trial' && access.expires_at && !isTrialExpired
     ? Math.ceil((new Date(access.expires_at).getTime() - Date.now()) / 86400000) : null;
   const memberSince = user.created_at ? new Date(user.created_at).toLocaleDateString('he-IL') : '—';
@@ -168,19 +175,46 @@ export function DashboardPage() {
                         className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white px-6 py-3.5 rounded-xl hover:shadow-lg transition w-full font-medium"
                       >
                         <Download className="w-5 h-5" />
-                        הורד את האפליקציה (Windows)
+                        הורד את האפליקציה (Windows / macOS)
                       </a>
 
-                      {access.plan !== 'full' && access.plan !== 'premium' && (
-                        <Link to="/pricing" className="flex items-center justify-center gap-2 mt-3 text-sm text-[#0d47a1] hover:underline font-medium">
-                          שדרג לחבילה מלאה
-                          <ArrowLeft className="w-3.5 h-3.5" />
-                        </Link>
-                      )}
                     </div>
                   )}
                 </Card>
               </motion.div>
+
+              {/* Upgrade CTA */}
+              {upgradeNext && hasActiveAccess && (
+                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+                  <div className="rounded-2xl border-2 border-[#0d47a1]/20 bg-gradient-to-br from-[#f0f4ff] to-[#e8f4f8] p-6">
+                    <div className="flex items-start gap-3 mb-4">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0d47a1] to-[#00838f] flex items-center justify-center flex-shrink-0">
+                        <ArrowUpCircle className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-[#6b7c93] mb-0.5">הצעד הבא עבורך</p>
+                        <h3 className="font-bold text-[#1a2332]">{upgradeNext.label}</h3>
+                        <p className="text-sm text-[#6b7c93] mt-0.5">{upgradeNext.desc}</p>
+                      </div>
+                    </div>
+                    <ul className="space-y-2 mb-5">
+                      {upgradeNext.features.map(f => (
+                        <li key={f} className="flex items-center gap-2 text-sm text-[#1a2332]">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#00838f] flex-shrink-0" />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <Link
+                      to={upgradeNext.to}
+                      className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white text-sm font-bold py-3 rounded-xl hover:shadow-md transition w-full"
+                    >
+                      {upgradeNext.btnLabel}
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                </motion.div>
+              )}
 
               {/* Installation Steps */}
               {hasActiveAccess && (
@@ -337,10 +371,10 @@ export function DashboardPage() {
                   <p className="font-bold text-sm mb-1">צריכ/ה עזרה?</p>
                   <p className="text-xs opacity-70 mb-3">צוות התמיכה שלנו כאן</p>
                   <a
-                    href="mailto:info@clinic-flow.co.il"
+                    href="mailto:contact@clinic-flow.co.il"
                     className="inline-block bg-white text-[#0d47a1] text-xs font-semibold px-4 py-2 rounded-lg hover:bg-[#f5f7f9] transition"
                   >
-                    info@clinic-flow.co.il
+                    contact@clinic-flow.co.il
                   </a>
                 </div>
               </motion.div>

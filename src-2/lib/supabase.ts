@@ -9,7 +9,7 @@ export type UserAccess = {
   id: string;
   user_id: string;
   email: string;
-  plan: 'basic' | 'journal' | 'full' | 'premium' | 'trial';
+  plan: 'basic' | 'professional' | 'full' | 'premium' | 'trial';
   is_active: boolean;
   expires_at: string | null;
   notes: string | null;

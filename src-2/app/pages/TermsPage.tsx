@@ -24,9 +24,25 @@ export function TermsPage() {
             <ul className="list-disc list-inside space-y-2 text-[#4a5568]">
               <li>הרישיון הוא ליחיד — אסור לשתף, להפיץ, או להשכיר את התוכנה.</li>
               <li>הרישיון מקושר לכתובת ה-MAC של המחשב שבו הופעלה התוכנה לראשונה.</li>
-              <li>העברת הרישיון למחשב אחר מחייבת פנייה בכתב אל info@clinic-flow.co.il.</li>
+              <li>העברת הרישיון למחשב אחר מחייבת פנייה בכתב אל contact@clinic-flow.co.il.</li>
               <li>אסור לבצע הנדסה לאחור, פירוק קוד, או ניסיון להעתיק את התוכנה.</li>
             </ul>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold mb-3">2א. הגבלת גיל</h2>
+            <p className="text-[#4a5568] leading-relaxed">
+              רכישת רישיון דרך אתר clinic-flow.co.il מותרת לבני 18 ומעלה בלבד.
+              ביצוע רכישה מהווה הצהרה שהרוכש/ת מלאו לו/ה 18 שנים.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold mb-3">2ב. אספקת המוצר</h2>
+            <p className="text-[#4a5568] leading-relaxed">
+              לאחר השלמת התשלום, הרישיון מופעל מיידית. קובץ ההתקנה זמין להורדה מיד עם אישור העסקה.
+              לא יחולו עיכובים בהספקת הרישיון — השירות ניתן לאלתר עם אישור חברת האשראי.
+            </p>
           </section>
 
           <section>
@@ -52,11 +68,10 @@ export function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-3">5. תמיכה טכנית</h2>
+            <h2 className="text-2xl font-semibold mb-3">5. שאלות ופניות</h2>
             <p className="text-[#4a5568] leading-relaxed">
-              תמיכה טכנית זמינה בימי עבודה א׳–ה׳, 09:00–18:00, דרך info@clinic-flow.co.il.
-              זמן תגובה מטרה: עד 48 שעות בימי עבודה. החברה תשתדל לעמוד ביעד זה אך אינה מתחייבת לזמן תגובה מוגדר.
-              "תמיכה טכנית" מתייחסת לסיוע בבעיות תפעול התוכנה — ולא ייעוץ רפואי, משפטי, או רגולטורי.
+              הרישיון הוא חד-פעמי ואינו כולל תמיכה טכנית שוטפת או עדכונים עתידיים.
+              לשאלות כלליות ניתן לפנות ל-<a href="mailto:contact@clinic-flow.co.il" className="text-[#0d47a1] hover:underline">contact@clinic-flow.co.il</a> — אין התחייבות לזמן תגובה.
             </p>
           </section>
 
@@ -91,8 +106,8 @@ export function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-3">9. עדכון תנאים</h2>
             <p className="text-[#4a5568] leading-relaxed">
-              החברה רשאית לעדכן תנאים אלו. שינויים מהותיים יובאו לידיעת המשתמשים בהתראה של 30 יום מראש בדוא״ל.
-              המשך השימוש לאחר מועד ההתראה מהווה הסכמה לתנאים המעודכנים.
+              החברה רשאית לעדכן תנאים אלו בכל עת. שינויים מהותיים יובאו לידיעת המשתמשים בדוא״ל.
+              המשך השימוש לאחר קבלת ההודעה מהווה הסכמה לתנאים המעודכנים.
             </p>
           </section>
 
@@ -106,7 +121,7 @@ export function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-3">11. יצירת קשר</h2>
             <p className="text-[#4a5568] leading-relaxed">
-              לכל שאלה בנוגע לתנאים אלו: <a href="mailto:info@clinic-flow.co.il" className="text-[#0d47a1] hover:underline">info@clinic-flow.co.il</a>
+              לכל שאלה בנוגע לתנאים אלו: <a href="mailto:contact@clinic-flow.co.il" className="text-[#0d47a1] hover:underline">contact@clinic-flow.co.il</a>
             </p>
           </section>
 

@@ -50,7 +50,7 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="text-lg font-semibold mb-4">משפטי</h4>
+            <h4 className="text-lg font-semibold mb-4">Policies</h4>
             <ul className="space-y-2">
               <li>
                 <Link to="/terms" className="text-[#b8d4e6] hover:text-white transition-colors">
@@ -80,14 +80,17 @@ export function Footer() {
             <h4 className="text-lg font-semibold mb-4">צור קשר</h4>
             <ul className="space-y-2">
               <li>
-                <a href="mailto:info@clinic-flow.co.il" className="text-[#b8d4e6] hover:text-white transition-colors">
-                  info@clinic-flow.co.il
+                <a href="mailto:contact@clinic-flow.co.il" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  contact@clinic-flow.co.il
                 </a>
               </li>
               <li>
                 <a href="tel:+972501234567" className="text-[#b8d4e6] hover:text-white transition-colors">
                   050-123-4567
                 </a>
+              </li>
+              <li className="text-[#b8d4e6] text-sm">
+                תל אביב, ישראל
               </li>
             </ul>
           </div>

@@ -132,7 +132,7 @@ export function ThankYouPage() {
             className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-bold py-4 rounded-xl hover:shadow-lg transition mb-3"
           >
             <Download className="w-5 h-5" />
-            הורד את האפליקציה (Windows)
+            הורד את האפליקציה (Windows / macOS)
           </a>
 
           <Link
@@ -151,8 +151,8 @@ export function ThankYouPage() {
           className="text-center text-xs text-[#6b7c93]"
         >
           שאלות?{' '}
-          <a href="mailto:info@clinic-flow.co.il" className="text-[#0d47a1] hover:underline">
-            info@clinic-flow.co.il
+          <a href="mailto:contact@clinic-flow.co.il" className="text-[#0d47a1] hover:underline">
+            contact@clinic-flow.co.il
           </a>
         </motion.p>
       </motion.div>

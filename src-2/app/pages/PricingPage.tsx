@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Check } from "lucide-react";
+import { Check, ArrowUpCircle } from "lucide-react";
 import { Link } from "react-router";
 import { useState, useEffect } from "react";
 import { PremiumContactForm } from "../components/PremiumContactForm";
@@ -171,7 +171,7 @@ export function PricingPage() {
               </div>
 
               <div className="flex-grow">
-                <ul className="space-y-4 mb-8">
+                <ul className="space-y-4 mb-6">
                   {plan.newFeatures.map((feature, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <Check className="w-5 h-5 text-[#00838f] flex-shrink-0 mt-0.5" />
