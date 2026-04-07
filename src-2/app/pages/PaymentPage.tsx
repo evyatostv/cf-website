@@ -4,7 +4,6 @@ import { useAuth } from '@/lib/auth-context';
 import { motion } from 'motion/react';
 import { AlertCircle, Shield, ArrowLeft, Check, Lock } from 'lucide-react';
 import { supabase, logPolicyAcceptance } from '@/lib/supabase';
-import { Link } from 'react-router';
 import { loadStripe } from '@stripe/stripe-js';
 import {
   Elements,
