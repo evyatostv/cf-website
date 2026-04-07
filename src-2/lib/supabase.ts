@@ -67,6 +67,23 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
   return data || [];
 }
 
+export async function logPolicyAcceptance(
+  userId: string,
+  userEmail: string,
+  plan: string,
+  policyVersion: string = '2026-04-07'
+): Promise<void> {
+  const { error } = await supabase.from('policy_acceptances').insert({
+    user_id: userId,
+    user_email: userEmail,
+    plan,
+    policy_version: policyVersion,
+    user_agent: navigator.userAgent,
+    accepted_at: new Date().toISOString(),
+  });
+  if (error) console.error('Failed to log policy acceptance:', error);
+}
+
 export async function recordPurchase(
   userId: string,
   email: string,

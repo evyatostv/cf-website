@@ -20,10 +20,10 @@ export function GooeyText({
   const text2Ref = React.useRef<HTMLSpanElement>(null);
 
   React.useEffect(() => {
-    let textIndex = texts.length - 1;
+    let textIndex = 0;
     let time = new Date();
-    let morph = 0;
-    let cooldown = cooldownTime;
+    let morph = morphTime;
+    let cooldown = 0;
     let rafId: number;
 
     const setMorph = (fraction: number) => {
@@ -56,6 +56,8 @@ export function GooeyText({
       }
       setMorph(fraction);
     };
+
+    if (text2Ref.current) text2Ref.current.textContent = texts[0];
 
     const animate = () => {
       rafId = requestAnimationFrame(animate);

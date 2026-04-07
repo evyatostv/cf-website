@@ -3,7 +3,8 @@ import { useSearchParams, useNavigate, Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
 import { motion } from 'motion/react';
 import { AlertCircle, Shield, ArrowLeft, Check, Lock } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase, logPolicyAcceptance } from '@/lib/supabase';
+import { Link } from 'react-router';
 import { loadStripe } from '@stripe/stripe-js';
 import {
   Elements,
@@ -36,11 +37,22 @@ const PLAN_INFO: Record<string, { name: string; price: string; amount: number; f
 };
 
 // Inner component — has access to Stripe context
-function CheckoutForm({ planInfo, userEmail }: { planInfo: typeof PLAN_INFO[string]; userEmail: string }) {
+function CheckoutForm({ planInfo, userEmail, userId, plan }: { planInfo: typeof PLAN_INFO[string]; userEmail: string; userId: string; plan: string }) {
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [termsLogged, setTermsLogged] = useState(false);
+
+  const handleTermsChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
+    setTermsAccepted(checked);
+    if (checked && !termsLogged) {
+      await logPolicyAcceptance(userId, userEmail, plan);
+      setTermsLogged(true);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -112,10 +124,31 @@ function CheckoutForm({ planInfo, userEmail }: { planInfo: typeof PLAN_INFO[stri
       </div>
 
       <div>
+        {/* Terms checkbox */}
+        <label className="flex items-start gap-3 mb-5 cursor-pointer group">
+          <input
+            type="checkbox"
+            checked={termsAccepted}
+            onChange={handleTermsChange}
+            className="mt-0.5 w-4 h-4 accent-[#0d47a1] flex-shrink-0 cursor-pointer"
+          />
+          <span className="text-xs text-[#4a5568] leading-relaxed">
+            קראתי ואני מסכים/ה{" "}
+            <Link to="/terms" target="_blank" className="text-[#0d47a1] hover:underline">לתנאי השימוש</Link>
+            {", "}
+            <Link to="/privacy" target="_blank" className="text-[#0d47a1] hover:underline">מדיניות הפרטיות</Link>
+            {", "}
+            <Link to="/disclaimer" target="_blank" className="text-[#0d47a1] hover:underline">הסרת האחריות על נתונים</Link>
+            {" ו"}
+            <Link to="/refund" target="_blank" className="text-[#0d47a1] hover:underline">מדיניות ההחזרים</Link>
+            {" של ClinicFlow."}
+          </span>
+        </label>
+
         <button
           type="submit"
-          disabled={!stripe || processing}
-          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-bold py-4 rounded-xl hover:shadow-lg transition disabled:opacity-60 text-lg mb-3"
+          disabled={!stripe || processing || !termsAccepted}
+          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-bold py-4 rounded-xl hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-lg mb-3"
         >
           <Lock className="w-4 h-4" />
           {processing ? 'מעבד תשלום...' : `שלם ${planInfo.price}`}
@@ -249,7 +282,7 @@ export function PaymentPage() {
                   },
                 }}
               >
-                <CheckoutForm planInfo={planInfo} userEmail={user.email!} />
+                <CheckoutForm planInfo={planInfo} userEmail={user.email!} userId={user.id} plan={plan} />
               </Elements>
             )}
           </div>

@@ -10,6 +10,10 @@ import { DashboardPage } from "@/app/pages/DashboardPage";
 import { PaymentPage } from "@/app/pages/PaymentPage";
 import { ThankYouPage } from "@/app/pages/ThankYouPage";
 import { CalendarPage } from "@/app/pages/CalendarPage";
+import { TermsPage } from "@/app/pages/TermsPage";
+import { PrivacyPage } from "@/app/pages/PrivacyPage";
+import { DisclaimerPage } from "@/app/pages/DisclaimerPage";
+import { RefundPage } from "@/app/pages/RefundPage";
 import { Layout } from "@/app/components/Layout";
 
 export const router = createHashRouter([
@@ -28,6 +32,10 @@ export const router = createHashRouter([
       { path: "payment", element: <PaymentPage /> },
       { path: "thank-you", element: <ThankYouPage /> },
       { path: "calendar", element: <CalendarPage /> },
+      { path: "terms", element: <TermsPage /> },
+      { path: "privacy", element: <PrivacyPage /> },
+      { path: "disclaimer", element: <DisclaimerPage /> },
+      { path: "refund", element: <RefundPage /> },
     ],
   },
 ]);

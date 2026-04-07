@@ -151,8 +151,8 @@ export function ThankYouPage() {
           className="text-center text-xs text-[#6b7c93]"
         >
           שאלות?{' '}
-          <a href="mailto:info@clinicflow.co.il" className="text-[#0d47a1] hover:underline">
-            info@clinicflow.co.il
+          <a href="mailto:info@clinic-flow.co.il" className="text-[#0d47a1] hover:underline">
+            info@clinic-flow.co.il
           </a>
         </motion.p>
       </motion.div>

@@ -15,7 +15,7 @@ const CHANGELOG = [
 
 const RESOURCES = [
   { icon: BookOpen, title: 'מדריך התחלה מהירה', desc: 'כל מה שצריך לדעת להתחיל', href: '/contact', color: '#0d47a1' },
-  { icon: MessageCircle, title: 'תמיכה טכנית', desc: 'נענה תוך 24 שעות', href: 'mailto:info@clinicflow.co.il', color: '#00838f' },
+  { icon: MessageCircle, title: 'תמיכה טכנית', desc: 'נענה תוך 24 שעות', href: 'mailto:info@clinic-flow.co.il', color: '#00838f' },
   { icon: Star, title: 'שדרוג חבילה', desc: 'גלה את כל היכולות', href: '/pricing', color: '#f59e0b' },
 ];
 
@@ -337,10 +337,10 @@ export function DashboardPage() {
                   <p className="font-bold text-sm mb-1">צריכ/ה עזרה?</p>
                   <p className="text-xs opacity-70 mb-3">צוות התמיכה שלנו כאן</p>
                   <a
-                    href="mailto:info@clinicflow.co.il"
+                    href="mailto:info@clinic-flow.co.il"
                     className="inline-block bg-white text-[#0d47a1] text-xs font-semibold px-4 py-2 rounded-lg hover:bg-[#f5f7f9] transition"
                   >
-                    info@clinicflow.co.il
+                    info@clinic-flow.co.il
                   </a>
                 </div>
               </motion.div>

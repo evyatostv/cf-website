@@ -8,7 +8,7 @@ export function Footer() {
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
       <div className="container mx-auto px-6 max-w-7xl relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-12">
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
@@ -48,13 +48,40 @@ export function Footer() {
             </ul>
           </div>
 
+          {/* Legal */}
+          <div>
+            <h4 className="text-lg font-semibold mb-4">משפטי</h4>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/terms" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  תנאי שימוש
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  מדיניות פרטיות
+                </Link>
+              </li>
+              <li>
+                <Link to="/disclaimer" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  הסרת אחריות
+                </Link>
+              </li>
+              <li>
+                <Link to="/refund" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  מדיניות החזרים
+                </Link>
+              </li>
+            </ul>
+          </div>
+
           {/* Contact */}
           <div>
             <h4 className="text-lg font-semibold mb-4">צור קשר</h4>
             <ul className="space-y-2">
               <li>
-                <a href="mailto:info@clinicflow.co.il" className="text-[#b8d4e6] hover:text-white transition-colors">
-                  info@clinicflow.co.il
+                <a href="mailto:info@clinic-flow.co.il" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  info@clinic-flow.co.il
                 </a>
               </li>
               <li>

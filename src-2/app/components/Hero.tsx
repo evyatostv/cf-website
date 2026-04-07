@@ -5,15 +5,27 @@ import { GooeyText } from "./ui/gooey-text-morphing";
 
 const professions = [
   "לרופאים פרטיים",
+  "לרופאות פרטיות",
   "לפסיכולוגים",
+  "לפסיכולוגיות",
   "לפיזיותרפיסטים",
+  "לפיזיותרפיסטיות",
   "למרפאים בעיסוק",
+  "למרפאות בעיסוק",
   "לפסיכותרפיסטים",
+  "לפסיכותרפיסטיות",
   "לקלינאי תקשורת",
+  "לקלינאיות תקשורת",
   "לדיאטנים",
+  "לדיאטניות",
   "למטפלים ברגש",
+  "למטפלות ברגש",
   "לרופאי משפחה",
+  "לרופאות משפחה",
   "לאורתופדים",
+  "לאורתופדיות",
+  "לווטרינרים",
+  "לווטרינריות",
 ];
 
 export function Hero() {
@@ -29,14 +41,14 @@ export function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center"
+          className="text-center pt-20"
         >
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-[#e1e6ec] rounded-full px-5 py-2.5 mb-8 shadow-sm"
+            className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-[#e1e6ec] rounded-full px-5 py-2.5 shadow-sm"
           >
             <WifiOff className="w-4 h-4 text-[#00838f]" />
             <span className="text-sm text-[#1a2332]">מערכת אופליין מלאה</span>
@@ -47,20 +59,20 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="mb-10 pt-6"
+            className="mb-10"
           >
-            <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold text-[#1a2332] leading-[1.1] tracking-tight">
+            <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold text-[#1a2332] leading-[1.1] tracking-tight mb-4">
               מערכת ניהול
             </h1>
 
             {/* Morphing profession text */}
-            <div className="relative h-28 md:h-32 lg:h-36 flex items-end justify-center pb-2">
+            <div className="relative h-36 md:h-40 lg:h-44 flex items-end justify-center pb-2">
               <GooeyText
                 texts={professions}
-                morphTime={1.2}
-                cooldownTime={2.5}
+                morphTime={0.6}
+                cooldownTime={1.25}
                 className="w-full h-full"
-                textClassName="text-6xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-[#0d47a1] to-[#00838f] bg-clip-text text-transparent"
+                textClassName="text-6xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-[#0d47a1] to-[#00838f] bg-clip-text text-transparent whitespace-nowrap"
               />
             </div>
           </motion.div>
