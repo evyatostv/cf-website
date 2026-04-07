@@ -36,7 +36,7 @@ const PLAN_INFO: Record<string, { name: string; price: string; amount: number; f
 };
 
 // Inner component — has access to Stripe context
-function CheckoutForm({ planInfo, userEmail, userId, plan }: { planInfo: typeof PLAN_INFO[string]; userEmail: string; userId: string; plan: string }) {
+function CheckoutForm({ planInfo, userEmail, userId, plan, discountAmount, finalAmount }: { planInfo: typeof PLAN_INFO[string]; userEmail: string; userId: string; plan: string; discountAmount: number; finalAmount: number }) {
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
@@ -98,9 +98,19 @@ function CheckoutForm({ planInfo, userEmail, userId, plan }: { planInfo: typeof 
             <span className="text-[#6b7c93]">{planInfo.name}</span>
             <span className="font-medium text-[#1a2332]">{planInfo.price}</span>
           </div>
+          {discountAmount > 0 && (
+            <div className="flex justify-between text-sm text-green-600">
+              <span>הנחת שדרוג (50%)</span>
+              <span>-₪{Math.round(discountAmount / 100).toLocaleString('he-IL')}</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm border-t border-[#e1e6ec] pt-2">
             <span className="font-bold text-[#1a2332]">סה"כ לתשלום</span>
-            <span className="font-bold text-[#0d47a1]">{planInfo.price}</span>
+            <span className="font-bold text-[#0d47a1]">
+              {discountAmount > 0
+                ? `₪${Math.round(finalAmount / 100).toLocaleString('he-IL')}`
+                : planInfo.price}
+            </span>
           </div>
         </div>
 
@@ -150,7 +160,7 @@ function CheckoutForm({ planInfo, userEmail, userId, plan }: { planInfo: typeof 
           className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-bold py-4 rounded-xl hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-lg mb-3"
         >
           <Lock className="w-4 h-4" />
-          {processing ? 'מעבד תשלום...' : `שלם ${planInfo.price}`}
+          {processing ? 'מעבד תשלום...' : `שלם ${discountAmount > 0 ? `₪${Math.round(finalAmount / 100).toLocaleString('he-IL')}` : planInfo.price}`}
         </button>
         <p className="text-center text-xs text-[#6b7c93]">מוגן על ידי Stripe</p>
       </div>
@@ -164,8 +174,11 @@ export function PaymentPage() {
   const { user, loading } = useAuth();
   const [clientSecret, setClientSecret] = useState('');
   const [initError, setInitError] = useState('');
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [finalAmount, setFinalAmount] = useState(0);
 
   const plan = searchParams.get('plan') || '';
+  const isUpgrade = searchParams.get('upgrade') === 'true';
   const planInfo = PLAN_INFO[plan];
 
   useEffect(() => {
@@ -176,7 +189,7 @@ export function PaymentPage() {
     if (!user || !planInfo) return;
 
     const { data, error } = await supabase.functions.invoke('create-payment-intent', {
-      body: { plan },
+      body: { plan, isUpgrade },
     });
 
     if (error || !data?.clientSecret) {
@@ -185,6 +198,8 @@ export function PaymentPage() {
     }
 
     setClientSecret(data.clientSecret);
+    setDiscountAmount(data.discountAmount || 0);
+    setFinalAmount(data.finalAmount || planInfo.amount);
   }, [user, plan, planInfo]);
 
   useEffect(() => {
@@ -226,7 +241,21 @@ export function PaymentPage() {
             <div className="flex-1">
               <p className="text-sm font-medium text-[#6b7c93] mb-1">הזמנה</p>
               <h2 className="text-2xl font-bold text-[#1a2332] mb-1">{planInfo.name}</h2>
-              <div className="text-4xl font-black text-[#0d47a1] mb-1">{planInfo.price}</div>
+              {isUpgrade && discountAmount > 0 ? (
+                <div className="mb-1">
+                  <span className="text-2xl line-through text-[#6b7c93] ml-2">{planInfo.price}</span>
+                  <span className="text-4xl font-black text-[#0d47a1]">
+                    ₪{Math.round(finalAmount / 100).toLocaleString('he-IL')}
+                  </span>
+                  <div className="mt-1 inline-flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-full px-3 py-1 mr-2">
+                    <span className="text-green-700 text-xs font-semibold">
+                      חיסכון ₪{Math.round(discountAmount / 100).toLocaleString('he-IL')} (50% הנחת שדרוג)
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-4xl font-black text-[#0d47a1] mb-1">{planInfo.price}</div>
+              )}
               <p className="text-sm text-[#6b7c93] mb-8">תשלום חד-פעמי • רישיון לנצח</p>
 
               <ul className="space-y-3">
@@ -281,7 +310,7 @@ export function PaymentPage() {
                   },
                 }}
               >
-                <CheckoutForm planInfo={planInfo} userEmail={user.email!} userId={user.id} plan={plan} />
+                <CheckoutForm planInfo={planInfo} userEmail={user.email!} userId={user.id} plan={plan} discountAmount={discountAmount} finalAmount={finalAmount} />
               </Elements>
             )}
           </div>

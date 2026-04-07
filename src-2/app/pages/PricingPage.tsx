@@ -104,13 +104,14 @@ export function PricingPage() {
         return { label: "✓ החבילה שלך", disabled: true, style: "bg-green-50 text-green-700 border border-green-200 cursor-default" };
       }
       if (thisIdx > currentIdx) {
-        return { label: "שדרג לחבילה זו", disabled: false, style: isPopular ? "bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white hover:shadow-lg hover:shadow-[#0d47a1]/30" : "bg-[#f5f7f9] text-[#1a2332] hover:bg-[#e8f4f8] border border-[#d1dbe5] hover:border-[#0d47a1]" };
+        return { label: "שדרג לחבילה זו", disabled: false, isUpgrade: true, style: isPopular ? "bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white hover:shadow-lg hover:shadow-[#0d47a1]/30" : "bg-[#f5f7f9] text-[#1a2332] hover:bg-[#e8f4f8] border border-[#d1dbe5] hover:border-[#0d47a1]" };
       }
       return { label: "חבילה נמוכה יותר", disabled: true, style: "bg-[#f5f7f9] text-[#6b7c93] border border-[#e1e6ec] cursor-default" };
     }
     return {
       label: "התחילו עכשיו",
       disabled: false,
+      isUpgrade: false,
       style: isPopular
         ? "bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white hover:shadow-lg hover:shadow-[#0d47a1]/30"
         : "bg-[#f5f7f9] text-[#1a2332] hover:bg-[#e8f4f8] border border-[#d1dbe5] hover:border-[#0d47a1]"
@@ -188,7 +189,7 @@ export function PricingPage() {
                   </div>
                 ) : (
                   <Link
-                    to={`/payment?plan=${plan.slug}`}
+                    to={`/payment?plan=${plan.slug}${btn.isUpgrade ? '&upgrade=true' : ''}`}
                     className={`block w-full py-4 rounded-xl text-center font-medium transition-all active:scale-95 ${btn.style}`}
                   >
                     {btn.label}

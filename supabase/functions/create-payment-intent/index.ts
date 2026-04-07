@@ -5,9 +5,9 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
 
 // Amounts in agorot (ILS cents)
 const PLAN_AMOUNTS: Record<string, number> = {
-  basic:        345000,  // ₪3,450
-  professional: 459000,  // ₪4,590
-  full:         589000,  // ₪5,890
+  basic:        75900,   // ₪759
+  professional: 99900,   // ₪999
+  full:         129900,  // ₪1,299
 };
 
 const PLAN_NAMES: Record<string, string> = {
@@ -27,7 +27,6 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  // Verify the caller's JWT — use their identity, never trust the request body
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -49,7 +48,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { plan } = await req.json();
+    const { plan, isUpgrade } = await req.json();
 
     if (!plan || !PLAN_AMOUNTS[plan]) {
       return new Response(
@@ -58,17 +57,47 @@ Deno.serve(async (req) => {
       );
     }
 
+    let finalAmount = PLAN_AMOUNTS[plan];
+    let discountAmount = 0;
+
+    if (isUpgrade) {
+      // Fetch the user's most recent purchase to calculate the discount
+      const { data: purchases } = await supabase
+        .from('purchases')
+        .select('amount')
+        .eq('user_id', user.id)
+        .order('purchased_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (purchases?.amount) {
+        discountAmount = Math.floor(purchases.amount * 0.5);
+        finalAmount = Math.max(finalAmount - discountAmount, 0);
+      }
+    }
+
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: PLAN_AMOUNTS[plan],
+      amount: finalAmount,
       currency: 'ils',
-      // Use verified identity from JWT — never from request body
-      metadata: { plan, userId: user.id, planName: PLAN_NAMES[plan] },
+      metadata: {
+        plan,
+        userId: user.id,
+        planName: PLAN_NAMES[plan],
+        isUpgrade: isUpgrade ? 'true' : 'false',
+        discountAmount: String(discountAmount),
+      },
       receipt_email: user.email || undefined,
-      description: PLAN_NAMES[plan],
+      description: isUpgrade
+        ? `שדרוג ל-${PLAN_NAMES[plan]} (כולל הנחת שדרוג 50%)`
+        : PLAN_NAMES[plan],
     });
 
     return new Response(
-      JSON.stringify({ clientSecret: paymentIntent.client_secret }),
+      JSON.stringify({
+        clientSecret: paymentIntent.client_secret,
+        finalAmount,
+        discountAmount,
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   } catch (err) {
