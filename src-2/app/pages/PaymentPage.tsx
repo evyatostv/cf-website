@@ -188,8 +188,12 @@ export function PaymentPage() {
   const createIntent = useCallback(async () => {
     if (!user || !planInfo) return;
 
+    const { data: { session } } = await supabase.auth.getSession();
     const { data, error } = await supabase.functions.invoke('create-payment-intent', {
       body: { plan, isUpgrade },
+      headers: session?.access_token
+        ? { Authorization: `Bearer ${session.access_token}` }
+        : undefined,
     });
 
     if (error || !data?.clientSecret) {

@@ -19,6 +19,9 @@ const PLAN_NAMES: Record<string, string> = {
 const ALLOWED_ORIGINS = [
   'http://localhost:5173',
   'http://localhost:4173',
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://cf-website-flame.vercel.app',
   'https://clinic-flow.co.il',
   'https://www.clinic-flow.co.il',
   Deno.env.get('SITE_URL'),
