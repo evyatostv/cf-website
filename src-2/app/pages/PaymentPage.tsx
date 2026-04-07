@@ -188,23 +188,39 @@ export function PaymentPage() {
   const createIntent = useCallback(async () => {
     if (!user || !planInfo) return;
 
-    const { data: { session } } = await supabase.auth.getSession();
-    const { data, error } = await supabase.functions.invoke('create-payment-intent', {
-      body: { plan, isUpgrade },
-      headers: session?.access_token
-        ? { Authorization: `Bearer ${session.access_token}` }
-        : undefined,
-    });
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setInitError('יש להתחבר מחדש');
+        return;
+      }
 
-    if (error || !data?.clientSecret) {
-      setInitError((error as any)?.context?.error || error?.message || 'שגיאה ביצירת סשן תשלום');
-      return;
+      const res = await fetch(
+        'https://dmuwxydmuylcbhcoagri.supabase.co/functions/v1/create-payment-intent',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtdXd4eWRtdXlsY2JoY29hZ3JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MjAyMDYsImV4cCI6MjA4NDk5NjIwNn0.GETQeDKZk9FV41B7HCN95guPEkyWhJSQ8VYb_SNGfWY',
+          },
+          body: JSON.stringify({ plan, isUpgrade }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok || !data.clientSecret) {
+        setInitError(data.error || `שגיאה (${res.status})`);
+        return;
+      }
+
+      setClientSecret(data.clientSecret);
+      setDiscountAmount(data.discountAmount || 0);
+      setFinalAmount(data.finalAmount || planInfo.amount);
+    } catch (err: any) {
+      setInitError(err.message || 'שגיאה ביצירת סשן תשלום');
     }
-
-    setClientSecret(data.clientSecret);
-    setDiscountAmount(data.discountAmount || 0);
-    setFinalAmount(data.finalAmount || planInfo.amount);
-  }, [user, plan, planInfo]);
+  }, [user, plan, planInfo, isUpgrade]);
 
   useEffect(() => {
     createIntent();
