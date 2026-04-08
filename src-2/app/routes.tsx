@@ -14,6 +14,8 @@ import { TermsPage } from "@/app/pages/TermsPage";
 import { PrivacyPage } from "@/app/pages/PrivacyPage";
 import { DisclaimerPage } from "@/app/pages/DisclaimerPage";
 import { RefundPage } from "@/app/pages/RefundPage";
+import { BlogPage } from "@/app/pages/BlogPage";
+import { BlogPostPage } from "@/app/pages/BlogPostPage";
 import { Layout } from "@/app/components/Layout";
 
 export const router = createHashRouter([
@@ -36,6 +38,8 @@ export const router = createHashRouter([
       { path: "privacy", element: <PrivacyPage /> },
       { path: "disclaimer", element: <DisclaimerPage /> },
       { path: "refund", element: <RefundPage /> },
+      { path: "blog", element: <BlogPage /> },
+      { path: "blog/:slug", element: <BlogPostPage /> },
     ],
   },
 ]);
