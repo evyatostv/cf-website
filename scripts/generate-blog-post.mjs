@@ -2,10 +2,10 @@
 /**
  * Auto blog post generator for ClinicFlow
  * Called by GitHub Actions every 2 days.
- * Reads existing slugs → asks Claude to write a new post → appends to blog-posts.ts
+ * Reads existing slugs → asks Gemini to write a new post → appends to blog-posts.ts
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -27,7 +27,7 @@ const TOPICS = [
   'Pricing transparency in private clinics — building trust',
   'Work-life balance for private practitioners in Israel',
   'Building word-of-mouth referrals as a doctor',
-  'WhatsApp communication with patients — dos and don'ts',
+  'WhatsApp communication with patients — dos and donts',
   'First impressions at the clinic — waiting room design that works',
   'Email newsletters for private clinics — is it worth it?',
   'Managing negative patient reviews online',
@@ -39,11 +39,13 @@ const TOPICS = [
   'End-of-year patient retention tactics for private clinics',
 ];
 
-// ── 3. Call Claude ──────────────────────────────────────────────────────────
-const client = new Anthropic();
+// ── 3. Call Gemini ──────────────────────────────────────────────────────────
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 const today = new Date().toISOString().split('T')[0];
 
-const systemPrompt = `You write blog posts for ClinicFlow — a clinic management SaaS for private clinics in Israel.
+const prompt = `You write blog posts for ClinicFlow — a clinic management SaaS for private clinics in Israel.
+
 Rules:
 - Write ONLY in Hebrew (title, description, content). Slugs must be English kebab-case.
 - Content: 500–900 words, practical and specific, no corporate speak
@@ -52,9 +54,9 @@ Rules:
 - HTML tags allowed in content: h2, p, ul, li, strong — nothing else
 - The image must be a REAL Unsplash photo ID. Format: https://images.unsplash.com/photo-XXXXX?w=640&q=80
   Choose a professional/business/medical photo relevant to the topic. Avoid generic stock-photo-looking images.
-- Return ONLY the raw TypeScript object literal — start with { end with } — no code fences, no explanation.`;
+- Return ONLY the raw TypeScript object literal — start with { and end with } — no code fences, no explanation.
 
-const userPrompt = `Today's date: ${today}
+Today's date: ${today}
 
 Existing blog post slugs (do NOT repeat these topics):
 ${existingSlugs.join('\n')}
@@ -75,24 +77,21 @@ Write a complete TypeScript object literal matching this interface:
   content: string;       // full HTML in Hebrew, 500–900 words
 }`;
 
-console.log('Calling Claude API…');
-const message = await client.messages.create({
-  model: 'claude-sonnet-4-6',
-  max_tokens: 4096,
-  system: systemPrompt,
-  messages: [{ role: 'user', content: userPrompt }],
-});
-
-const rawText = message.content[0].text.trim();
+console.log('Calling Gemini API…');
+const result = await model.generateContent(prompt);
+const rawText = result.response.text().trim();
 
 // ── 4. Validate we got an object ────────────────────────────────────────────
-if (!rawText.startsWith('{') || !rawText.endsWith('}')) {
-  console.error('Unexpected response format:\n', rawText.slice(0, 500));
+// Strip markdown code fences if Gemini adds them despite instructions
+const cleaned = rawText.replace(/^```(?:typescript|ts|json)?\n?/i, '').replace(/\n?```$/i, '').trim();
+
+if (!cleaned.startsWith('{') || !cleaned.endsWith('}')) {
+  console.error('Unexpected response format:\n', cleaned.slice(0, 500));
   process.exit(1);
 }
 
 // Quick sanity: ensure the slug doesn't already exist
-const newSlugMatch = rawText.match(/slug:\s*['"]([^'"]+)['"]/);
+const newSlugMatch = cleaned.match(/slug:\s*['"]([^'"]+)['"]/);
 if (!newSlugMatch) {
   console.error('Could not extract slug from response');
   process.exit(1);
@@ -116,7 +115,7 @@ if (insertPos === -1) {
 const newFileContent =
   fileContent.slice(0, insertPos) +
   '  ' +
-  rawText +
+  cleaned +
   ',\n' +
   fileContent.slice(insertPos);
 

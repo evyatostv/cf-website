@@ -24,12 +24,12 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install Anthropic SDK
-        run: npm install @anthropic-ai/sdk
+      - name: Install Gemini SDK
+        run: npm install @google/generative-ai
 
       - name: Generate blog post
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: node scripts/generate-blog-post.mjs
 
       - name: Commit and push new post
