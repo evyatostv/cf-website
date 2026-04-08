@@ -188,22 +188,18 @@ export function PaymentPage() {
 
   useEffect(() => {
     if (!user || !planInfo || didFetch.current) return;
-
     didFetch.current = true;
 
     (async () => {
       try {
-        // Always get a fresh session right before the call
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !session?.access_token) {
-          // Try refreshing once
-          const { data: { session: refreshed } } = await supabase.auth.refreshSession();
-          if (!refreshed?.access_token) {
-            setInitError('יש להתחבר מחדש');
-            return;
-          }
+        // Get fresh token — refresh first to avoid expired token issues
+        const { data: refreshData } = await supabase.auth.refreshSession();
+        const token = refreshData.session?.access_token;
+
+        if (!token) {
+          setInitError('פג תוקף ההתחברות — אנא התחבר מחדש');
+          return;
         }
-        const token = (await supabase.auth.getSession()).data.session?.access_token;
 
         const res = await fetch(
           'https://dmuwxydmuylcbhcoagri.supabase.co/functions/v1/create-payment-intent',
