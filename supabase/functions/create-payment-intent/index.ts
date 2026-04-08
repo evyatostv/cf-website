@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { plan, isUpgrade } = await req.json();
+    const { plan } = await req.json();
 
     if (!plan || !PLAN_AMOUNTS[plan]) {
       return new Response(
@@ -77,21 +77,36 @@ Deno.serve(async (req) => {
     let finalAmount = PLAN_AMOUNTS[plan];
     let discountAmount = 0;
 
-    if (isUpgrade) {
-      // Fetch the user's most recent purchase to calculate the discount
-      const { data: purchases } = await supabase
-        .from('purchases')
-        .select('amount')
+    // Always check for existing paid plan and auto-apply credit
+    const { data: purchase } = await supabase
+      .from('purchases')
+      .select('amount')
+      .eq('user_id', user.id)
+      .order('purchased_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (purchase?.amount) {
+      discountAmount = purchase.amount;
+    } else {
+      // Fallback: derive from user_access current plan
+      const { data: access } = await supabase
+        .from('user_access')
+        .select('plan')
         .eq('user_id', user.id)
-        .order('purchased_at', { ascending: false })
-        .limit(1)
         .maybeSingle();
 
-      if (purchases?.amount) {
-        discountAmount = purchases.amount;
-        finalAmount = Math.max(finalAmount - discountAmount, 0);
+      if (access?.plan && PLAN_AMOUNTS[access.plan]) {
+        discountAmount = PLAN_AMOUNTS[access.plan];
       }
     }
+
+    // Only apply credit if upgrading (target plan costs more than what they paid)
+    if (discountAmount >= PLAN_AMOUNTS[plan]) {
+      discountAmount = 0; // same or lower plan — no discount
+    }
+
+    finalAmount = Math.max(PLAN_AMOUNTS[plan] - discountAmount, 0);
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: finalAmount,
@@ -100,11 +115,11 @@ Deno.serve(async (req) => {
         plan,
         userId: user.id,
         planName: PLAN_NAMES[plan],
-        isUpgrade: isUpgrade ? 'true' : 'false',
+        isUpgrade: discountAmount > 0 ? 'true' : 'false',
         discountAmount: String(discountAmount),
       },
       receipt_email: user.email || undefined,
-      description: isUpgrade
+      description: discountAmount > 0
         ? `שדרוג ל-${PLAN_NAMES[plan]} (זיכוי תשלום קודם)`
         : PLAN_NAMES[plan],
       payment_method_options: {
@@ -112,6 +127,7 @@ Deno.serve(async (req) => {
           request_three_d_secure: 'automatic',
         },
       },
+      automatic_payment_methods: { enabled: true },
     });
 
     return new Response(

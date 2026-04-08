@@ -119,10 +119,14 @@ function CheckoutForm({ planInfo, userEmail, userId, plan, discountAmount, final
           <PaymentElement
             options={{
               layout: 'tabs',
+              fields: {
+                billingDetails: {
+                  address: 'never',
+                },
+              },
               defaultValues: {
                 billingDetails: {
                   email: userEmail,
-                  address: { country: 'IL' },
                 },
               },
             }}
