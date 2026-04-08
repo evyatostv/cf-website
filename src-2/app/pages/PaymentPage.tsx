@@ -119,7 +119,12 @@ function CheckoutForm({ planInfo, userEmail, userId, plan, discountAmount, final
           <PaymentElement
             options={{
               layout: 'tabs',
-              defaultValues: { billingDetails: { email: userEmail } },
+              defaultValues: {
+                billingDetails: {
+                  email: userEmail,
+                  address: { country: 'IL' },
+                },
+              },
             }}
           />
         </div>
@@ -321,6 +326,11 @@ export function PaymentPage() {
                 options={{
                   clientSecret,
                   locale: 'he',
+                  fonts: [
+                    {
+                      cssSrc: 'https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap',
+                    },
+                  ],
                   appearance: {
                     theme: 'stripe',
                     variables: {
@@ -328,7 +338,7 @@ export function PaymentPage() {
                       colorBackground: '#ffffff',
                       colorText: '#1a2332',
                       colorDanger: '#ef4444',
-                      fontFamily: 'inherit',
+                      fontFamily: '"Heebo", sans-serif',
                       borderRadius: '12px',
                     },
                   },

@@ -7,11 +7,13 @@ export function ThankYouPage() {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
 
-  // Payment Element flow: ?payment_intent=pi_xxx&redirect_status=succeeded
-  // Checkout Session flow: ?session_id=cs_xxx
-  const redirectStatus = searchParams.get('redirect_status');
-  const paymentIntentId = searchParams.get('payment_intent');
-  const sessionId = searchParams.get('session_id');
+  // Stripe appends params before the hash: site.com/?payment_intent=pi_xxx#/thank-you
+  // So check both window.location.search AND the hash router's searchParams
+  const windowParams = new URLSearchParams(window.location.search);
+
+  const redirectStatus = searchParams.get('redirect_status') || windowParams.get('redirect_status');
+  const paymentIntentId = searchParams.get('payment_intent') || windowParams.get('payment_intent');
+  const sessionId = searchParams.get('session_id') || windowParams.get('session_id');
 
   const isSuccess = redirectStatus === 'succeeded' || !!sessionId;
   const orderId = paymentIntentId || sessionId;

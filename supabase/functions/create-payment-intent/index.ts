@@ -107,6 +107,11 @@ Deno.serve(async (req) => {
       description: isUpgrade
         ? `שדרוג ל-${PLAN_NAMES[plan]} (זיכוי תשלום קודם)`
         : PLAN_NAMES[plan],
+      payment_method_options: {
+        card: {
+          request_three_d_secure: 'automatic',
+        },
+      },
     });
 
     return new Response(
