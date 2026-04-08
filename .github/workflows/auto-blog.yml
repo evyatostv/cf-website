@@ -1,0 +1,42 @@
+name: Auto Blog Post
+
+on:
+  schedule:
+    # Every 2 days at 08:00 UTC (11:00 Israel time)
+    - cron: '0 8 */2 * *'
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+permissions:
+  contents: write
+
+jobs:
+  generate-post:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Anthropic SDK
+        run: npm install @anthropic-ai/sdk
+
+      - name: Generate blog post
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node scripts/generate-blog-post.mjs
+
+      - name: Commit and push new post
+        run: |
+          git config user.name "ClinicFlow Bot"
+          git config user.email "bot@clinic-flow.co.il"
+          git add src-2/app/data/blog-posts.ts
+          # Only commit if there are staged changes
+          git diff --staged --quiet || git commit -m "blog: auto-generated post $(date +%Y-%m-%d) [skip ci]"
+          git push
