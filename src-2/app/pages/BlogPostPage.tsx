@@ -82,7 +82,6 @@ export function BlogPostPage() {
         </motion.div>
       </div>
 
-      {/* Content placeholder */}
       <motion.article
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -90,9 +89,16 @@ export function BlogPostPage() {
         className="mx-auto max-w-3xl px-6 py-10"
       >
         <div className="bg-white rounded-2xl border border-[#e1e6ec] p-8 shadow-sm">
-          <p className="text-[#6b7c93] text-center text-sm py-8">
-            התוכן יתווסף בקרוב.
-          </p>
+          {post.content ? (
+            <div
+              className="blog-content"
+              dangerouslySetInnerHTML={{ __html: post.content }}
+            />
+          ) : (
+            <p className="text-[#6b7c93] text-center text-sm py-8">
+              התוכן יתווסף בקרוב.
+            </p>
+          )}
         </div>
 
         {/* Related posts */}

@@ -3,6 +3,43 @@
 @import "./fonts.css";
 @import "./carousel.css";
 
+/* Blog post content */
+.blog-content {
+  direction: rtl;
+  color: #1a2332;
+  line-height: 1.8;
+  font-size: 1rem;
+}
+.blog-content p {
+  margin-bottom: 1.25rem;
+}
+.blog-content h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a2332;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid #e1e6ec;
+}
+.blog-content ul {
+  margin-bottom: 1.25rem;
+  padding-right: 1.25rem;
+  list-style: disc;
+}
+.blog-content ul li {
+  margin-bottom: 0.4rem;
+  color: #1a2332;
+}
+.blog-content strong {
+  font-weight: 600;
+  color: #0d47a1;
+}
+.blog-content em {
+  font-style: italic;
+  color: #6b7c93;
+}
+
 /* Smooth scroll behavior */
 html {
   scroll-behavior: smooth;
