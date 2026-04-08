@@ -3,17 +3,6 @@ import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { Tabs, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
-import { useScrollSpy } from "@/app/hooks/useScrollSpy";
-
-const SECTION_IDS = ["hero", "security", "features", "dashboard", "offline", "cta"];
-const SECTION_LABELS: Record<string, string> = {
-  hero:      "1. בית",
-  security:  "2. אבטחה",
-  features:  "3. יכולות",
-  dashboard: "4. ממשק",
-  offline:   "5. עבודה מקומית",
-  cta:       "6. התחלה",
-};
 
 const NAV_LINKS = [
   { to: "/", label: "בית" },
@@ -48,7 +37,6 @@ export function Navigation() {
 
   const navigate = useNavigate();
   const isHome = location.pathname === "/";
-  const activeSection = useScrollSpy(SECTION_IDS, 80);
 
   return (
     <>
@@ -145,37 +133,6 @@ export function Navigation() {
           </div>
         </div>
 
-        {/* Scrollspy section tabs — only on homepage */}
-        <AnimatePresence>
-          {isHome && (
-            <motion.div
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.2 }}
-              className="border-t border-[#e1e6ec] hidden md:block"
-            >
-              <div className="container mx-auto px-6 max-w-7xl">
-                <Tabs value={activeSection} onValueChange={(id) => {
-                  const el = document.getElementById(id);
-                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                }} orientation="horizontal">
-                  <TabsList className="border-b-0 gap-0 h-9">
-                    {SECTION_IDS.map((id) => (
-                      <TabsTrigger
-                        key={id}
-                        value={id}
-                        className="h-full rounded-none px-4 text-xs font-medium"
-                      >
-                        {SECTION_LABELS[id]}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </Tabs>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.nav>
 
       {/* Mobile drawer */}
