@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
 import { motion } from 'motion/react';
@@ -171,11 +171,12 @@ function CheckoutForm({ planInfo, userEmail, userId, plan, discountAmount, final
 export function PaymentPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, session, loading } = useAuth();
+  const { user, loading } = useAuth();
   const [clientSecret, setClientSecret] = useState('');
   const [initError, setInitError] = useState('');
   const [discountAmount, setDiscountAmount] = useState(0);
   const [finalAmount, setFinalAmount] = useState(0);
+  const didFetch = useRef(false);
 
   const plan = searchParams.get('plan') || '';
   const isUpgrade = searchParams.get('upgrade') === 'true';
@@ -185,45 +186,52 @@ export function PaymentPage() {
     if (!loading && !user) navigate('/login?redirect=/payment?plan=' + plan);
   }, [user, loading, navigate, plan]);
 
-  const createIntent = useCallback(async () => {
-    if (!user || !planInfo) return;
-
-    try {
-      if (!session?.access_token) {
-        setInitError('יש להתחבר מחדש');
-        return;
-      }
-
-      const res = await fetch(
-        'https://dmuwxydmuylcbhcoagri.supabase.co/functions/v1/create-payment-intent',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtdXd4eWRtdXlsY2JoY29hZ3JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MjAyMDYsImV4cCI6MjA4NDk5NjIwNn0.GETQeDKZk9FV41B7HCN95guPEkyWhJSQ8VYb_SNGfWY',
-          },
-          body: JSON.stringify({ plan, isUpgrade }),
-        }
-      );
-
-      const data = await res.json();
-      if (!res.ok || !data.clientSecret) {
-        setInitError(data.error || `שגיאה (${res.status})`);
-        return;
-      }
-
-      setClientSecret(data.clientSecret);
-      setDiscountAmount(data.discountAmount || 0);
-      setFinalAmount(data.finalAmount || planInfo.amount);
-    } catch (err: any) {
-      setInitError(err.message || 'שגיאה ביצירת סשן תשלום');
-    }
-  }, [user, session, plan, planInfo, isUpgrade]);
-
   useEffect(() => {
-    createIntent();
-  }, [createIntent]);
+    if (!user || !planInfo || didFetch.current) return;
+
+    didFetch.current = true;
+
+    (async () => {
+      try {
+        // Always get a fresh session right before the call
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !session?.access_token) {
+          // Try refreshing once
+          const { data: { session: refreshed } } = await supabase.auth.refreshSession();
+          if (!refreshed?.access_token) {
+            setInitError('יש להתחבר מחדש');
+            return;
+          }
+        }
+        const token = (await supabase.auth.getSession()).data.session?.access_token;
+
+        const res = await fetch(
+          'https://dmuwxydmuylcbhcoagri.supabase.co/functions/v1/create-payment-intent',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtdXd4eWRtdXlsY2JoY29hZ3JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MjAyMDYsImV4cCI6MjA4NDk5NjIwNn0.GETQeDKZk9FV41B7HCN95guPEkyWhJSQ8VYb_SNGfWY',
+            },
+            body: JSON.stringify({ plan, isUpgrade }),
+          }
+        );
+
+        const data = await res.json();
+        if (!res.ok || !data.clientSecret) {
+          setInitError(data.error || `שגיאה (${res.status})`);
+          return;
+        }
+
+        setClientSecret(data.clientSecret);
+        setDiscountAmount(data.discountAmount || 0);
+        setFinalAmount(data.finalAmount || planInfo.amount);
+      } catch (err: any) {
+        setInitError(err.message || 'שגיאה ביצירת סשן תשלום');
+      }
+    })();
+  }, [user, plan, planInfo, isUpgrade]);
 
   if (!plan || !planInfo) {
     return (
