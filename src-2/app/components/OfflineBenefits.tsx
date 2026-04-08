@@ -53,7 +53,7 @@ export function OfflineBenefits() {
   ];
 
   return (
-    <section className="py-32 bg-gradient-to-br from-[#0d47a1] via-[#0d47a1] to-[#00838f] relative overflow-hidden">
+    <section id="offline" className="py-32 bg-gradient-to-br from-[#0d47a1] via-[#0d47a1] to-[#00838f] relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden opacity-10">
         <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl" />

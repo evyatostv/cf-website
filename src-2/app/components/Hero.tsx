@@ -30,7 +30,7 @@ const professions = [
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-white via-[#f8fafb] to-[#f0f4f7]">
+    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-white via-[#f8fafb] to-[#f0f4f7]">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 right-1/4 w-96 h-96 bg-[#0d47a1]/5 rounded-full blur-3xl" />
         <div className="absolute bottom-20 left-1/4 w-96 h-96 bg-[#00838f]/5 rounded-full blur-3xl" />

@@ -72,6 +72,11 @@ function CheckoutForm({ planInfo, userEmail, userId, plan, discountAmount, final
       confirmParams: {
         return_url: `${window.location.origin}/#/thank-you`,
         receipt_email: userEmail,
+        payment_method_data: {
+          billing_details: {
+            address: { country: 'IL' },
+          },
+        },
       },
     });
 
@@ -83,7 +88,14 @@ function CheckoutForm({ planInfo, userEmail, userId, plan, discountAmount, final
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col h-full justify-between">
+    <form onSubmit={handleSubmit} className="flex flex-col h-full justify-between relative">
+      {/* Processing overlay */}
+      {processing && (
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl z-10 flex flex-col items-center justify-center gap-4">
+          <div className="w-10 h-10 border-4 border-[#0d47a1] border-t-transparent rounded-full animate-spin" />
+          <p className="text-[#1a2332] font-semibold text-sm">מעבד תשלום, אנא המתן...</p>
+        </div>
+      )}
       <div>
         <h3 className="text-lg font-bold text-[#1a2332] mb-2">פרטי תשלום</h3>
         <p className="text-sm text-[#6b7c93] mb-5">הזן את פרטי כרטיס האשראי שלך.</p>
@@ -168,8 +180,17 @@ function CheckoutForm({ planInfo, userEmail, userId, plan, discountAmount, final
           disabled={!stripe || processing || !termsAccepted}
           className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-bold py-4 rounded-xl hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-lg mb-3"
         >
-          <Lock className="w-4 h-4" />
-          {processing ? 'מעבד תשלום...' : `שלם ${discountAmount > 0 ? `₪${Math.round(finalAmount / 100).toLocaleString('he-IL')}` : planInfo.price}`}
+          {processing ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              מעבד תשלום
+            </>
+          ) : (
+            <>
+              <Lock className="w-4 h-4" />
+              {`שלם ${discountAmount > 0 ? `₪${Math.round(finalAmount / 100).toLocaleString('he-IL')}` : planInfo.price}`}
+            </>
+          )}
         </button>
         <p className="text-center text-xs text-[#6b7c93]">מוגן על ידי Stripe</p>
       </div>

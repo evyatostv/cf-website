@@ -15,7 +15,7 @@ export function CTASection() {
   ];
 
   return (
-    <section className="py-32 bg-gradient-to-b from-[#f8fafb] to-white relative overflow-hidden">
+    <section id="cta" className="py-32 bg-gradient-to-b from-[#f8fafb] to-white relative overflow-hidden">
       <div className="container mx-auto px-6 max-w-5xl" ref={ref}>
         <motion.div
           initial={{ opacity: 0, y: 30 }}

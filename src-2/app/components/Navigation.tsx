@@ -1,7 +1,19 @@
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { Tabs, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
+import { useScrollSpy } from "@/app/hooks/useScrollSpy";
+
+const SECTION_IDS = ["hero", "security", "features", "dashboard", "offline", "cta"];
+const SECTION_LABELS: Record<string, string> = {
+  hero:      "1. בית",
+  security:  "2. אבטחה",
+  features:  "3. יכולות",
+  dashboard: "4. ממשק",
+  offline:   "5. עבודה מקומית",
+  cta:       "6. התחלה",
+};
 
 const NAV_LINKS = [
   { to: "/", label: "בית" },
@@ -34,7 +46,9 @@ export function Navigation() {
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
-  const isActive = (path: string) => location.pathname === path;
+  const navigate = useNavigate();
+  const isHome = location.pathname === "/";
+  const activeSection = useScrollSpy(SECTION_IDS, 80);
 
   return (
     <>
@@ -59,24 +73,24 @@ export function Navigation() {
             </Link>
 
             {/* Desktop nav links */}
-            <div className="hidden md:flex items-center gap-8">
-              {NAV_LINKS.map(({ to, label }) => (
-                <Link
-                  key={to}
-                  to={to}
-                  className={`text-[#1a2332] hover:text-[#0d47a1] transition-colors font-medium relative ${
-                    isActive(to) ? "text-[#0d47a1]" : ""
-                  }`}
-                >
-                  {label}
-                  {isActive(to) && (
-                    <motion.div
-                      layoutId="underline"
-                      className="absolute bottom-[-8px] left-0 right-0 h-0.5 bg-[#0d47a1]"
-                    />
-                  )}
-                </Link>
-              ))}
+            <div className="hidden md:flex items-center">
+              <Tabs
+                value={location.pathname}
+                onValueChange={(val) => navigate(val)}
+                orientation="horizontal"
+              >
+                <TabsList className="border-b-0 gap-0 h-20">
+                  {NAV_LINKS.map(({ to, label }) => (
+                    <TabsTrigger
+                      key={to}
+                      value={to}
+                      className="h-full rounded-none px-5 text-[0.9rem]"
+                    >
+                      {label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
             </div>
 
             {/* Desktop auth buttons */}
@@ -130,6 +144,38 @@ export function Navigation() {
             </button>
           </div>
         </div>
+
+        {/* Scrollspy section tabs — only on homepage */}
+        <AnimatePresence>
+          {isHome && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.2 }}
+              className="border-t border-[#e1e6ec] hidden md:block"
+            >
+              <div className="container mx-auto px-6 max-w-7xl">
+                <Tabs value={activeSection} onValueChange={(id) => {
+                  const el = document.getElementById(id);
+                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }} orientation="horizontal">
+                  <TabsList className="border-b-0 gap-0 h-9">
+                    {SECTION_IDS.map((id) => (
+                      <TabsTrigger
+                        key={id}
+                        value={id}
+                        className="h-full rounded-none px-4 text-xs font-medium"
+                      >
+                        {SECTION_LABELS[id]}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.nav>
 
       {/* Mobile drawer */}

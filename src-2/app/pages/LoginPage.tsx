@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
 import { motion } from 'motion/react';
+import { PasswordInput } from '@/app/components/ui/password-input';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -65,13 +66,10 @@ export function LoginPage() {
               <label className="block text-sm font-medium text-[#1a2332] mb-2">
                 סיסמה
               </label>
-              <input
-                type="password"
+              <PasswordInput
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-[#e1e6ec] rounded-lg focus:outline-none focus:border-[#0d47a1] transition"
-                placeholder="••••••••"
               />
             </div>
 

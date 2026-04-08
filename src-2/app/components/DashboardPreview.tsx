@@ -18,7 +18,7 @@ const pieData = [
 
 export function DashboardPreview() {
   return (
-    <section className="bg-white relative overflow-hidden">
+    <section id="dashboard" className="bg-white relative overflow-hidden">
       <div className="container mx-auto px-6 max-w-7xl">
         <ContainerScroll
           titleComponent={

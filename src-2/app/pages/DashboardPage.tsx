@@ -163,7 +163,7 @@ export function DashboardPage() {
                           <p className="font-bold text-[#1a2332]">
                             {access.plan === 'trial' && access.expires_at
                               ? new Date(access.expires_at).toLocaleDateString('he-IL')
-                              : 'לנצח ♾'}
+                              : <span>לנצח <span className="text-2xl">♾</span></span>}
                           </p>
                         </div>
                       </div>

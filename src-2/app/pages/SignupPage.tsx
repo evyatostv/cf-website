@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { supabase } from '@/lib/supabase';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { motion } from 'motion/react';
+import { PasswordInput } from '@/app/components/ui/password-input';
 
 export function SignupPage() {
   const [fullName, setFullName] = useState('');
@@ -174,13 +175,10 @@ export function SignupPage() {
               <label className="block text-sm font-medium text-[#1a2332] mb-2">
                 סיסמה
               </label>
-              <input
-                type="password"
+              <PasswordInput
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-[#e1e6ec] rounded-lg focus:outline-none focus:border-[#0d47a1] transition"
-                placeholder="••••••••"
               />
             </div>
 
@@ -188,13 +186,10 @@ export function SignupPage() {
               <label className="block text-sm font-medium text-[#1a2332] mb-2">
                 אימות סיסמה
               </label>
-              <input
-                type="password"
+              <PasswordInput
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-[#e1e6ec] rounded-lg focus:outline-none focus:border-[#0d47a1] transition"
-                placeholder="••••••••"
               />
             </div>
 
