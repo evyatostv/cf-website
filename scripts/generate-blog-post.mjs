@@ -52,8 +52,7 @@ Rules:
 - Do NOT write about how to use the ClinicFlow software itself
 - HTML tags allowed in content: h2, p, ul, li, strong — nothing else
 - The image must be a REAL Unsplash photo ID. Format: https://images.unsplash.com/photo-XXXXX?w=640&q=80
-  Choose a professional/business/medical photo relevant to the topic. Avoid generic stock-photo-looking images.
-- Return ONLY the raw TypeScript object literal — start with { and end with } — no code fences, no explanation.
+- Return ONLY valid JSON — no markdown fences, no explanation, just the raw JSON object.
 
 Today's date: ${today}
 
@@ -63,17 +62,17 @@ ${existingSlugs.join('\n')}
 Topic pool — pick the most interesting topic NOT yet covered:
 ${TOPICS.join('\n')}
 
-Write a complete TypeScript object literal matching this interface:
+Return a JSON object with these fields:
 {
-  slug: string;          // English kebab-case, unique
-  title: string;         // Hebrew
-  description: string;   // Hebrew, 1–2 sentences
-  image: string;         // Unsplash URL (real photo ID)
-  category: string;      // one of: 'ניהול מטופלים' | 'ניהול מרפאה' | 'תיעוד רפואי' | 'אבטחת מידע' | 'ניהול כספי' | 'ניהול תורים' | 'נוכחות דיגיטלית' | 'חוויית מטופל' | 'שיווק'
-  author: string;        // always 'צוות ClinicFlow'
-  createdAt: string;     // '${today}'
-  readTime: string;      // e.g. '6 דקות קריאה'
-  content: string;       // full HTML in Hebrew, 500–900 words
+  "slug": "english-kebab-case",
+  "title": "Hebrew title",
+  "description": "Hebrew 1-2 sentence description",
+  "image": "https://images.unsplash.com/photo-XXXXX?w=640&q=80",
+  "category": "one of: ניהול מטופלים | ניהול מרפאה | תיעוד רפואי | אבטחת מידע | ניהול כספי | ניהול תורים | נוכחות דיגיטלית | חוויית מטופל | שיווק",
+  "author": "צוות ClinicFlow",
+  "createdAt": "${today}",
+  "readTime": "X דקות קריאה",
+  "content": "full HTML string in Hebrew, 500-900 words, using h2/p/ul/li/strong tags"
 }`;
 
 console.log('Calling Groq API…');
@@ -85,29 +84,48 @@ const completion = await groq.chat.completions.create({
 
 const rawText = completion.choices[0].message.content.trim();
 
-// ── 4. Validate we got an object ────────────────────────────────────────────
-const cleaned = rawText.replace(/^```(?:typescript|ts|json)?\n?/i, '').replace(/\n?```$/i, '').trim();
+// ── 4. Parse JSON response ───────────────────────────────────────────────────
+const jsonStr = rawText.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim();
 
-if (!cleaned.startsWith('{') || !cleaned.endsWith('}')) {
-  console.error('Unexpected response format:\n', cleaned.slice(0, 500));
+let post;
+try {
+  post = JSON.parse(jsonStr);
+} catch (e) {
+  console.error('Failed to parse JSON response:\n', jsonStr.slice(0, 500));
   process.exit(1);
 }
 
-// Quick sanity: ensure the slug doesn't already exist
-const newSlugMatch = cleaned.match(/slug:\s*['"]([^'"]+)['"]/);
-if (!newSlugMatch) {
-  console.error('Could not extract slug from response');
-  process.exit(1);
+// Validate required fields
+const required = ['slug', 'title', 'description', 'image', 'category', 'author', 'createdAt', 'readTime', 'content'];
+for (const field of required) {
+  if (!post[field]) {
+    console.error(`Missing field: ${field}`);
+    process.exit(1);
+  }
 }
-const newSlug = newSlugMatch[1];
-if (existingSlugs.includes(newSlug)) {
-  console.error(`Slug '${newSlug}' already exists — aborting to avoid duplicate`);
+
+if (existingSlugs.includes(post.slug)) {
+  console.error(`Slug '${post.slug}' already exists — aborting to avoid duplicate`);
   process.exit(1);
 }
 
-console.log(`New post slug: ${newSlug}`);
+console.log(`New post slug: ${post.slug}`);
 
-// ── 5. Append to blog-posts.ts ──────────────────────────────────────────────
+// ── 5. Serialize to TypeScript object literal ────────────────────────────────
+// Use backtick template literal for content to safely handle multiline HTML
+const tsObject = `{
+    slug: '${post.slug}',
+    title: '${post.title.replace(/'/g, "\\'")}',
+    description: '${post.description.replace(/'/g, "\\'")}',
+    image: '${post.image}',
+    category: '${post.category}',
+    author: '${post.author}',
+    createdAt: '${post.createdAt}',
+    readTime: '${post.readTime}',
+    content: \`${post.content.replace(/`/g, '\\`')}\`,
+  }`;
+
+// ── 6. Append to blog-posts.ts ──────────────────────────────────────────────
 const INSERTION_MARKER = '];\n\nexport const categoryColors';
 const insertPos = fileContent.indexOf(INSERTION_MARKER);
 if (insertPos === -1) {
@@ -118,9 +136,9 @@ if (insertPos === -1) {
 const newFileContent =
   fileContent.slice(0, insertPos) +
   '  ' +
-  cleaned +
+  tsObject +
   ',\n' +
   fileContent.slice(insertPos);
 
 fs.writeFileSync(BLOG_FILE, newFileContent, 'utf-8');
-console.log(`✓ Post '${newSlug}' appended to blog-posts.ts`);
+console.log(`✓ Post '${post.slug}' appended to blog-posts.ts`);

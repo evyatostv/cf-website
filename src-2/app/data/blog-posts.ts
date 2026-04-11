@@ -463,15 +463,15 @@ export const blogPosts: BlogPost[] = [
     `,
   },
   {
-  slug: "reducing-no-shows-with-smart-reminder-strategies",
-  title: "צמצום מספר המטופלים שלא מגיעים: אסטרטגיות תזכורות חכמות",
-  description: "גישות יעילות לצמצום מספר המטופלים שלא מגיעים לתורים, ושיפור היעילות של המרפאה. האם אתה מחפש דרכים להפחית את מספר המטופלים שלא מגיעים?",
-  image: "https://images.unsplash.com/photo-1558981403-6cd5db5a1a54?w=640&q=80",
-  category: "ניהול תורים",
-  author: "צוות ClinicFlow",
-  createdAt: "2026-04-11",
-  readTime: "8 דקות קריאה",
-  content: "
+    slug: 'reducing-no-shows-with-smart-reminder-strategies',
+    title: 'צמצום מספר המטופלים שלא מגיעים: אסטרטגיות תזכורות חכמות',
+    description: 'גישות יעילות לצמצום מספר המטופלים שלא מגיעים לתורים, ושיפור היעילות של המרפאה.',
+    image: 'https://images.unsplash.com/photo-1558981403-6cd5db5a1a54?w=640&q=80',
+    category: 'ניהול תורים',
+    author: 'צוות ClinicFlow',
+    createdAt: '2026-04-11',
+    readTime: '8 דקות קריאה',
+    content: `
 <h2>מהו הבעיה?</h2>
 <p>מטופלים שלא מגיעים לתורים הם בעיה נפוצה במרפאות רבות. לפי סקרים, כ-20% מהמטופלים לא מגיעים לתורים, וזה יכול לגרום להפסדים כספיים ולפגיעה ביעילות המרפאה.</p>
 <p>ישנן מספר סיבות לכך, כולל: שכחה, חוסר תיאום, או אפילו חוסר מודעות לחשיבות התור.</p>
@@ -490,8 +490,8 @@ export const blogPosts: BlogPost[] = [
 <li><strong>שיפור היעילות</strong>: המרפאה יכולה לנצל את זמנה בצורה טובה יותר, ולקבל מטופלים נוספים.</li>
 <li><strong>חיסכון כספי</strong>: צמצום מספר המטופלים שלא מגיעים יכול לחסוך למרפאה הוצאות כספיות רבות.</li>
 </ul>
-"
-},
+    `,
+  },
 ];
 
 export const categoryColors: Record<string, string> = {
