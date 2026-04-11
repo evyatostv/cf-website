@@ -12,7 +12,7 @@ const regularPlans = [
   {
     slug: "basic",
     name: "חבילה בסיסית",
-    price: "₪759",
+    price: "₪899",
     period: "לנצח",
     description: "למטפלים יחידים שרוצים להתחיל",
     newFeatures: [
@@ -259,7 +259,7 @@ export function PricingPage() {
             </div>
 
             {/* Contact Form - Right Side */}
-            <div className="w-full lg:w-1/3 flex-shrink-0 flex flex-col justify-center lg:pl-8 lg:border-r border-[#e1e6ec]">
+            <div className="w-full lg:w-1/3 flex-shrink-0 flex flex-col justify-center">
               <PremiumContactForm />
             </div>
           </div>

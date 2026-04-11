@@ -45,8 +45,8 @@ export function Navigation() {
         animate={{ y: 0 }}
         transition={{ duration: 0.6 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? "bg-white/95 backdrop-blur-lg shadow-sm" : "bg-white/80 backdrop-blur-lg"
-        } border-b border-[#e1e6ec]`}
+          scrolled ? "bg-white/95 backdrop-blur-lg shadow-sm border-b border-[#e1e6ec]" : "bg-transparent"
+        }`}
       >
         <div className="container mx-auto px-6 max-w-7xl">
           <div className="flex items-center justify-between h-20">

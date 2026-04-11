@@ -16,6 +16,7 @@ import { DisclaimerPage } from "@/app/pages/DisclaimerPage";
 import { RefundPage } from "@/app/pages/RefundPage";
 import { BlogPage } from "@/app/pages/BlogPage";
 import { BlogPostPage } from "@/app/pages/BlogPostPage";
+import { ResetPasswordPage } from "@/app/pages/ResetPasswordPage";
 import { Layout } from "@/app/components/Layout";
 
 export const router = createHashRouter([
@@ -40,6 +41,7 @@ export const router = createHashRouter([
       { path: "refund", element: <RefundPage /> },
       { path: "blog", element: <BlogPage /> },
       { path: "blog/:slug", element: <BlogPostPage /> },
+      { path: "reset-password", element: <ResetPasswordPage /> },
     ],
   },
 ]);

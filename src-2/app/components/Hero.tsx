@@ -48,7 +48,7 @@ export function Hero() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-[#e1e6ec] rounded-full px-5 py-2.5 shadow-sm"
+            className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-[#e1e6ec] rounded-full px-5 py-2.5 shadow-sm mt-16"
           >
             <WifiOff className="w-4 h-4 text-[#00838f]" />
             <span className="text-sm text-[#1a2332]">מערכת אופליין מלאה</span>
@@ -59,14 +59,14 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="mb-10"
+            className="mb-2"
           >
             <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold text-[#1a2332] leading-[1.1] tracking-tight mb-4">
               מערכת ניהול
             </h1>
 
             {/* Morphing profession text */}
-            <div className="relative h-36 md:h-40 lg:h-44 flex items-end justify-center pb-2">
+            <div className="relative h-36 md:h-40 lg:h-44 flex items-end justify-center pb-2 mt-8">
               <GooeyText
                 texts={professions}
                 morphTime={0.6}
@@ -84,9 +84,9 @@ export function Hero() {
             transition={{ delay: 0.4, duration: 0.6 }}
             className="text-xl md:text-2xl text-[#6b7c93] mb-12 max-w-3xl mx-auto leading-relaxed"
           >
-            כל הנתונים של המטופלים שלך מאוחסנים בהצפנה בסטנדרט צבאי במחשב שלך.
+            תיק רפואי דיגיטלי שנשאר אצלך בלבד — ללא שרתים חיצוניים, ללא מנוי חודשי.
             <br />
-            אפס סיכון להדלפות. פרטיות מובטחת.
+            עובד מהר, עובד תמיד, גם בלי אינטרנט.
           </motion.p>
 
           {/* CTA Buttons */}
@@ -96,7 +96,7 @@ export function Hero() {
             transition={{ delay: 0.5, duration: 0.6 }}
             className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4"
           >
-            <Link to="/contact">
+            <Link to="/pricing">
               <motion.button
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}

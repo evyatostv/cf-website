@@ -23,29 +23,46 @@ async function grantAccess(
 
   const now = new Date().toISOString();
 
-  // Update user_access
-  const { error: accessError } = await supabase.from('user_access').upsert({
-    user_id: userId || null,
-    email: email,
-    plan,
-    is_active: true,
-    expires_at: null,
-    notes: `Stripe: ${sourceId}`,
-    granted_at: now,
-  }, { onConflict: 'user_id' });
+  // Try update first (existing user upgrading)
+  const { data: existing } = await supabase
+    .from('user_access')
+    .select('id')
+    .eq('user_id', userId || '')
+    .maybeSingle();
+
+  let accessError;
+  if (existing) {
+    const { error } = await supabase
+      .from('user_access')
+      .update({ plan, is_active: true, expires_at: null, notes: `Stripe: ${sourceId}`, granted_at: now })
+      .eq('user_id', userId || '');
+    accessError = error;
+  } else {
+    const { error } = await supabase
+      .from('user_access')
+      .insert({ user_id: userId || null, email, plan, is_active: true, expires_at: null, notes: `Stripe: ${sourceId}`, granted_at: now });
+    accessError = error;
+  }
 
   if (accessError) {
     console.error('Failed to update user_access:', accessError);
     return false;
   }
 
-  // Record purchase (for upgrade credit logic)
+  // Record purchase — store full plan price (not discounted amount) for future upgrade credit
+  const PLAN_AMOUNTS: Record<string, number> = {
+    basic: 89900,
+    professional: 99900,
+    full: 129900,
+  };
+  const fullPlanAmount = PLAN_AMOUNTS[plan] || amount;
+
   const { error: purchaseError } = await supabase.from('purchases').insert({
     user_id: userId || null,
     email: email,
     plan,
     version: plan,
-    amount,
+    amount: fullPlanAmount,
     payment_id: sourceId,
     discount_eligible: false,
     purchased_at: now,

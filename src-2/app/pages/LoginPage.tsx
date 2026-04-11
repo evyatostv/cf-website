@@ -82,7 +82,13 @@ export function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-4 text-center">
+            <Link to="/reset-password" className="text-sm text-[#6b7c93] hover:text-[#0d47a1] transition">
+              שכחתי סיסמה
+            </Link>
+          </div>
+
+          <div className="mt-4 text-center">
             <p className="text-[#6b7c93]">
               אין לך חשבון?{' '}
               <Link to="/signup" className="text-[#0d47a1] font-medium hover:underline">

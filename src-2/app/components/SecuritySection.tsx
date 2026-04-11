@@ -54,7 +54,6 @@ export function SecuritySection() {
 
   return (
     <section id="security" className="py-32 bg-gradient-to-b from-[#f0f4f7] to-white relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#e1e6ec] to-transparent" />
 
       <div className="container mx-auto px-6 max-w-7xl" ref={ref}>
         <motion.div

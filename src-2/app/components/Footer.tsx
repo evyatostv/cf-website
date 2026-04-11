@@ -3,17 +3,17 @@ import { Link } from "react-router";
 
 export function Footer() {
   return (
-    <footer className="bg-[#1a2332] text-white py-12 relative overflow-hidden">
+    <footer className="bg-[#1a2332] text-white py-24 relative overflow-hidden">
       {/* Subtle top border */}
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
       <div className="container mx-auto px-6 max-w-7xl relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-16 mb-16">
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0d47a1] to-[#00838f]" />
-              <span className="text-2xl font-bold">Clinic Flow</span>
+              <span className="text-3xl font-bold">Clinic Flow</span>
             </div>
             <p className="text-[#b8d4e6] leading-relaxed max-w-md">
               מערכת ניהול חולים אופליין מתקדמת לרופאים שמעריכים פרטיות,
@@ -23,8 +23,8 @@ export function Footer() {
 
           {/* Links */}
           <div>
-            <h4 className="text-lg font-semibold mb-4">קישורים</h4>
-            <ul className="space-y-2">
+            <h4 className="text-xl font-semibold mb-6">קישורים</h4>
+            <ul className="space-y-4">
               <li>
                 <Link to="/about" className="text-[#b8d4e6] hover:text-white transition-colors">
                   אודות
@@ -50,8 +50,8 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="text-lg font-semibold mb-4">Policies</h4>
-            <ul className="space-y-2">
+            <h4 className="text-xl font-semibold mb-6">מדיניות</h4>
+            <ul className="space-y-4">
               <li>
                 <Link to="/terms" className="text-[#b8d4e6] hover:text-white transition-colors">
                   תנאי שימוש
@@ -77,8 +77,8 @@ export function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="text-lg font-semibold mb-4">צור קשר</h4>
-            <ul className="space-y-2">
+            <h4 className="text-xl font-semibold mb-6">צור קשר</h4>
+            <ul className="space-y-4">
               <li>
                 <a href="mailto:contact@clinic-flow.co.il" className="text-[#b8d4e6] hover:text-white transition-colors">
                   contact@clinic-flow.co.il

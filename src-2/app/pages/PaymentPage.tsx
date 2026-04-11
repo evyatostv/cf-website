@@ -17,8 +17,8 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 const PLAN_INFO: Record<string, { name: string; price: string; amount: number; features: string[] }> = {
   basic: {
     name: 'חבילה בסיסית',
-    price: '₪759',
-    amount: 75900,
+    price: '₪899',
+    amount: 89900,
     features: ['סיכומי ביקור מעוצבים', 'יצירת מסמכי PDF', 'ניהול יומן פגישות', 'ניהול חולים ורקע רפואי'],
   },
   professional: {

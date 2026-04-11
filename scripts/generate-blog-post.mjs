@@ -41,7 +41,7 @@ const TOPICS = [
 
 // ── 3. Call Gemini ──────────────────────────────────────────────────────────
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 const today = new Date().toISOString().split('T')[0];
 
 const prompt = `You write blog posts for ClinicFlow — a clinic management SaaS for private clinics in Israel.

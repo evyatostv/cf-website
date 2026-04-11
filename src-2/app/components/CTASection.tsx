@@ -53,12 +53,12 @@ export function CTASection() {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ delay: 0.4, duration: 0.6 }}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mb-10"
+              className="inline-grid grid-cols-2 gap-x-24 gap-y-6 mx-auto mb-10"
             >
               {checkmarks.map((item, index) => (
-                <div key={index} className="flex items-center justify-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-[#b8d4e6] flex-shrink-0" />
-                  <span className="text-white">{item}</span>
+                <div key={index} className="flex items-center gap-2">
+                  <CheckCircle2 className="w-7 h-7 text-[#b8d4e6] flex-shrink-0" />
+                  <span className="text-white text-xl font-medium">{item}</span>
                 </div>
               ))}
             </motion.div>

@@ -5,7 +5,7 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
 
 // Amounts in agorot (ILS cents)
 const PLAN_AMOUNTS: Record<string, number> = {
-  basic:        75900,   // ₪759
+  basic:        89900,   // ₪899
   professional: 99900,   // ₪999
   full:         129900,  // ₪1,299
 };
