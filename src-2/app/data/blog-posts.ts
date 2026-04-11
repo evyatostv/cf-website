@@ -466,7 +466,7 @@ export const blogPosts: BlogPost[] = [
     slug: 'reducing-no-shows-with-smart-reminder-strategies',
     title: 'צמצום מספר המטופלים שלא מגיעים: אסטרטגיות תזכורות חכמות',
     description: 'גישות יעילות לצמצום מספר המטופלים שלא מגיעים לתורים, ושיפור היעילות של המרפאה.',
-    image: 'https://images.unsplash.com/photo-1558981403-6cd5db5a1a54?w=640&q=80',
+    image: 'https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=640&q=80',
     category: 'ניהול תורים',
     author: 'צוות ClinicFlow',
     createdAt: '2026-04-11',

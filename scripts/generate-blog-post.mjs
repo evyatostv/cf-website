@@ -20,7 +20,24 @@ const existingSlugs = slugMatches.map((m) => m[1]).filter((s) => s !== 'string')
 
 console.log(`Found ${existingSlugs.length} existing posts: ${existingSlugs.join(', ')}`);
 
-// ── 2. Topic pool ───────────────────────────────────────────────────────────
+// ── 2. Verified Unsplash images ─────────────────────────────────────────────
+// These are real, confirmed-working Unsplash photo IDs
+const IMAGES = [
+  'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=640&q=80', // doctor at desk
+  'https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=640&q=80', // medical paperwork
+  'https://images.unsplash.com/photo-1504439468489-c8920d796a29?w=640&q=80', // clinic hallway
+  'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=640&q=80', // doctor with tablet
+  'https://images.unsplash.com/photo-1585435557343-3b092031a831?w=640&q=80', // stethoscope
+  'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=640&q=80', // hospital corridor
+  'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=640&q=80', // doctor smiling
+  'https://images.unsplash.com/photo-1530026405186-ed1f139313f8?w=640&q=80', // medical team
+  'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=640&q=80', // laptop analytics
+  'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=640&q=80', // marketing/social
+  'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=640&q=80', // person working laptop
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=640&q=80', // professional portrait
+];
+
+// ── 3. Topic pool ───────────────────────────────────────────────────────────
 const TOPICS = [
   'Google reviews and reputation management for private doctors',
   'Social media (Instagram/Facebook) for private clinics in Israel',
@@ -51,7 +68,8 @@ Rules:
 - Use real examples and numbers where relevant
 - Do NOT write about how to use the ClinicFlow software itself
 - HTML tags allowed in content: h2, p, ul, li, strong — nothing else
-- The image must be a REAL Unsplash photo ID. Format: https://images.unsplash.com/photo-XXXXX?w=640&q=80
+- For the image field, pick the most relevant URL from this list (copy it exactly):
+${IMAGES.join('\n')}
 - Return ONLY valid JSON — no markdown fences, no explanation, just the raw JSON object.
 
 Today's date: ${today}
