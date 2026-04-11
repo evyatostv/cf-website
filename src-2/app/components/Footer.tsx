@@ -26,6 +26,11 @@ export function Footer() {
             <h4 className="text-xl font-semibold mb-6">קישורים</h4>
             <ul className="space-y-4">
               <li>
+                <Link to="/blog" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  בלוג
+                </Link>
+              </li>
+              <li>
                 <Link to="/about" className="text-[#b8d4e6] hover:text-white transition-colors">
                   אודות
                 </Link>
