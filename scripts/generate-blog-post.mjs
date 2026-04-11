@@ -41,7 +41,7 @@ const TOPICS = [
 
 // ── 3. Call Gemini ──────────────────────────────────────────────────────────
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 const today = new Date().toISOString().split('T')[0];
 
 const prompt = `You write blog posts for ClinicFlow — a clinic management SaaS for private clinics in Israel.
@@ -77,8 +77,24 @@ Write a complete TypeScript object literal matching this interface:
   content: string;       // full HTML in Hebrew, 500–900 words
 }`;
 
-console.log('Calling Gemini API…');
-const result = await model.generateContent(prompt);
+// Retry up to 3 times with 60s delay for rate limit errors
+async function callWithRetry(retries = 3, delayMs = 60000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      console.log(`Calling Gemini API… (attempt ${i + 1})`);
+      return await model.generateContent(prompt);
+    } catch (err) {
+      if (err.status === 429 && i < retries - 1) {
+        console.log(`Rate limited. Waiting 60s before retry…`);
+        await new Promise((r) => setTimeout(r, delayMs));
+      } else {
+        throw err;
+      }
+    }
+  }
+}
+
+const result = await callWithRetry();
 const rawText = result.response.text().trim();
 
 // ── 4. Validate we got an object ────────────────────────────────────────────
