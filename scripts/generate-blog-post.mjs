@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
  * Auto blog post generator for ClinicFlow
- * Called by GitHub Actions every 2 days.
- * Reads existing slugs → asks Gemini to write a new post → appends to blog-posts.ts
+ * Called by GitHub Actions every Sunday.
+ * Reads existing slugs → asks Groq to write a new post → appends to blog-posts.ts
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -39,9 +39,8 @@ const TOPICS = [
   'End-of-year patient retention tactics for private clinics',
 ];
 
-// ── 3. Call Gemini ──────────────────────────────────────────────────────────
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+// ── 3. Call Groq ─────────────────────────────────────────────────────────────
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const today = new Date().toISOString().split('T')[0];
 
 const prompt = `You write blog posts for ClinicFlow — a clinic management SaaS for private clinics in Israel.
@@ -77,28 +76,16 @@ Write a complete TypeScript object literal matching this interface:
   content: string;       // full HTML in Hebrew, 500–900 words
 }`;
 
-// Retry up to 3 times with 60s delay for rate limit errors
-async function callWithRetry(retries = 3, delayMs = 60000) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      console.log(`Calling Gemini API… (attempt ${i + 1})`);
-      return await model.generateContent(prompt);
-    } catch (err) {
-      if (err.status === 429 && i < retries - 1) {
-        console.log(`Rate limited. Waiting 60s before retry…`);
-        await new Promise((r) => setTimeout(r, delayMs));
-      } else {
-        throw err;
-      }
-    }
-  }
-}
+console.log('Calling Groq API…');
+const completion = await groq.chat.completions.create({
+  model: 'llama-3.3-70b-versatile',
+  messages: [{ role: 'user', content: prompt }],
+  temperature: 0.7,
+});
 
-const result = await callWithRetry();
-const rawText = result.response.text().trim();
+const rawText = completion.choices[0].message.content.trim();
 
 // ── 4. Validate we got an object ────────────────────────────────────────────
-// Strip markdown code fences if Gemini adds them despite instructions
 const cleaned = rawText.replace(/^```(?:typescript|ts|json)?\n?/i, '').replace(/\n?```$/i, '').trim();
 
 if (!cleaned.startsWith('{') || !cleaned.endsWith('}')) {

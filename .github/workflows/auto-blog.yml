@@ -24,12 +24,12 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install Gemini SDK
-        run: npm install @google/generative-ai
+      - name: Install Groq SDK
+        run: npm install groq-sdk
 
       - name: Generate blog post
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: node scripts/generate-blog-post.mjs
 
       - name: Commit and push new post
