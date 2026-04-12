@@ -37,6 +37,7 @@ export function Navigation() {
 
   const navigate = useNavigate();
   const isHome = location.pathname === "/";
+  const isActive = (path: string) => location.pathname === path;
 
   return (
     <>
@@ -57,7 +58,7 @@ export function Navigation() {
                 transition={{ duration: 0.6 }}
                 className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0d47a1] to-[#00838f]"
               />
-              <span className="text-xl font-bold text-[#1a2332]">Clinic Flow</span>
+              <span className={`text-xl font-bold transition-colors ${scrolled ? "text-[#1a2332]" : "text-white"}`}>Clinic Flow</span>
             </Link>
 
             {/* Desktop nav links */}
@@ -87,7 +88,9 @@ export function Navigation() {
                 <>
                   <Link
                     to="/login"
-                    className="px-6 py-2.5 text-[#0d47a1] hover:bg-[#f5f7f9] rounded-xl transition-all font-medium"
+                    className={`px-6 py-2.5 rounded-xl transition-all font-medium ${
+                      scrolled ? "text-[#0d47a1] hover:bg-[#f5f7f9]" : "text-white hover:bg-white/10"
+                    }`}
                   >
                     כניסה
                   </Link>
@@ -117,17 +120,17 @@ export function Navigation() {
               <motion.span
                 animate={mobileOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
                 transition={{ duration: 0.25 }}
-                className="block w-5 h-0.5 bg-[#1a2332] rounded-full"
+                className={`block w-5 h-0.5 rounded-full ${scrolled ? "bg-[#1a2332]" : "bg-white"}`}
               />
               <motion.span
                 animate={mobileOpen ? { opacity: 0 } : { opacity: 1 }}
                 transition={{ duration: 0.15 }}
-                className="block w-5 h-0.5 bg-[#1a2332] rounded-full"
+                className={`block w-5 h-0.5 rounded-full ${scrolled ? "bg-[#1a2332]" : "bg-white"}`}
               />
               <motion.span
                 animate={mobileOpen ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }}
                 transition={{ duration: 0.25 }}
-                className="block w-5 h-0.5 bg-[#1a2332] rounded-full"
+                className={`block w-5 h-0.5 rounded-full ${scrolled ? "bg-[#1a2332]" : "bg-white"}`}
               />
             </button>
           </div>
