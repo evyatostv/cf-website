@@ -1,30 +1,84 @@
-import { useSearchParams, Link } from 'react-router';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
 import { motion } from 'motion/react';
-import { Download, CheckCircle2, ArrowLeft, AlertCircle } from 'lucide-react';
+import { Download, CheckCircle2, ArrowLeft, AlertCircle, Loader2 } from 'lucide-react';
+import { supabase, PLAN_LABELS } from '@/lib/supabase';
 
 export function ThankYouPage() {
-  const [searchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const [plan, setPlan] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // AllPay redirects with ?plan=xxx after successful payment
-  const windowParams = new URLSearchParams(window.location.search);
-  const plan = searchParams.get('plan') || windowParams.get('plan');
-  const isSuccess = !!plan;
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) { setLoading(false); return; }
 
-  if (!isSuccess) {
+    // Poll user_access — webhook may take a few seconds to grant access
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    const check = async () => {
+      const { data } = await supabase
+        .from('user_access')
+        .select('plan, is_active, granted_at')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (data?.is_active && data.plan) {
+        // Verify access was granted recently (within last 10 minutes)
+        const grantedAt = new Date(data.granted_at).getTime();
+        const now = Date.now();
+        if (now - grantedAt < 10 * 60 * 1000) {
+          setPlan(data.plan);
+          setLoading(false);
+          return;
+        }
+      }
+
+      attempts++;
+      if (attempts < maxAttempts) {
+        setTimeout(check, 2000);
+      } else {
+        setLoading(false);
+      }
+    };
+
+    check();
+  }, [user, authLoading]);
+
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center pt-28 pb-20" dir="rtl">
         <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-[#1a2332] mb-2">התשלום לא הושלם</h1>
-          <p className="text-[#6b7c93] mb-6">משהו השתבש. אנא נסה שוב.</p>
-          <Link
-            to="/pricing"
-            className="inline-block px-6 py-3 bg-[#0d47a1] text-white rounded-xl font-medium"
-          >
-            חזרה לתמחור
-          </Link>
+          <Loader2 className="w-12 h-12 text-[#0d47a1] mx-auto mb-4 animate-spin" />
+          <p className="text-[#6b7c93]">מאמת את התשלום...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!plan) {
+    return (
+      <div className="min-h-screen flex items-center justify-center pt-28 pb-20" dir="rtl">
+        <div className="text-center max-w-md mx-auto px-4">
+          <AlertCircle className="w-16 h-16 text-orange-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-[#1a2332] mb-2">התשלום עדיין לא אומת</h1>
+          <p className="text-[#6b7c93] mb-6">
+            ייתכן שהתשלום עובד כרגע. אנא המתן מספר דקות ורענן את העמוד, או בדוק את
+            ה-Dashboard שלך.
+          </p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 bg-[#0d47a1] text-white rounded-xl font-medium"
+            >
+              רענון
+            </button>
+            <Link to="/dashboard" className="text-[#0d47a1] hover:underline">
+              עבור ל-Dashboard
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -38,7 +92,6 @@ export function ThankYouPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-lg mx-auto px-4"
       >
-        {/* Success icon */}
         <div className="text-center mb-8">
           <motion.div
             initial={{ scale: 0 }}
@@ -68,7 +121,6 @@ export function ThankYouPage() {
           </motion.p>
         </div>
 
-        {/* Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -85,7 +137,7 @@ export function ThankYouPage() {
             )}
             <div className="flex justify-between text-sm">
               <span className="text-[#6b7c93]">חבילה</span>
-              <span className="font-medium text-[#1a2332]">{plan}</span>
+              <span className="font-medium text-[#1a2332]">{PLAN_LABELS[plan] || plan}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-[#6b7c93]">סטטוס</span>
@@ -93,7 +145,6 @@ export function ThankYouPage() {
             </div>
           </div>
 
-          {/* Next steps */}
           <div className="bg-blue-50 rounded-xl p-5 mb-6">
             <h3 className="font-bold text-[#1a2332] text-sm mb-3">הצעדים הבאים:</h3>
             <ol className="space-y-2">
