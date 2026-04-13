@@ -61,23 +61,71 @@ export function ThankYouPage() {
   if (!plan) {
     return (
       <div className="min-h-screen flex items-center justify-center pt-28 pb-20" dir="rtl">
-        <div className="text-center max-w-md mx-auto px-4">
-          <AlertCircle className="w-16 h-16 text-orange-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-[#1a2332] mb-2">התשלום עדיין לא אומת</h1>
-          <p className="text-[#6b7c93] mb-6">
-            ייתכן שהתשלום עובד כרגע. אנא המתן מספר דקות ורענן את העמוד, או בדוק את
-            ה-Dashboard שלך.
-          </p>
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => window.location.reload()}
-              className="px-6 py-3 bg-[#0d47a1] text-white rounded-xl font-medium"
-            >
-              רענון
-            </button>
-            <Link to="/dashboard" className="text-[#0d47a1] hover:underline">
-              עבור ל-Dashboard
-            </Link>
+        <div className="w-full max-w-lg mx-auto px-4">
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-orange-100">
+            <div className="text-center mb-6">
+              <AlertCircle className="w-16 h-16 text-orange-400 mx-auto mb-4" />
+              <h1 className="text-2xl font-bold text-[#1a2332] mb-2">התשלום עדיין לא אומת</h1>
+              <p className="text-[#6b7c93]">
+                ייתכן שהתשלום עדיין מעובד, או שחל עיכוב באישור.
+              </p>
+            </div>
+
+            <div className="bg-[#f5f7f9] rounded-xl p-5 mb-6">
+              <h3 className="font-bold text-[#1a2332] text-sm mb-3">מה לעשות עכשיו:</h3>
+              <ol className="space-y-2.5">
+                <li className="flex gap-2.5 text-sm text-[#1a2332]">
+                  <span className="w-5 h-5 rounded-full bg-[#0d47a1] text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">1</span>
+                  <span>המתן 1-2 דקות ולחץ "רענון" — אישור התשלום לוקח לפעמים זמן</span>
+                </li>
+                <li className="flex gap-2.5 text-sm text-[#1a2332]">
+                  <span className="w-5 h-5 rounded-full bg-[#0d47a1] text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">2</span>
+                  <span>בדוק ב-Dashboard אם החבילה שלך פעילה</span>
+                </li>
+                <li className="flex gap-2.5 text-sm text-[#1a2332]">
+                  <span className="w-5 h-5 rounded-full bg-[#0d47a1] text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">3</span>
+                  <span>אם לא חויבת — חזור לעמוד התמחור ונסה שוב</span>
+                </li>
+                <li className="flex gap-2.5 text-sm text-[#1a2332]">
+                  <span className="w-5 h-5 rounded-full bg-[#0d47a1] text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">4</span>
+                  <span>אם חויבת אך החבילה לא הופעלה — צור קשר עם התמיכה</span>
+                </li>
+              </ol>
+            </div>
+
+            <div className="flex flex-col gap-3 mb-4">
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full px-6 py-3 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-xl font-semibold hover:shadow-lg transition"
+              >
+                רענון ובדיקה מחדש
+              </button>
+              <Link
+                to="/dashboard"
+                className="w-full text-center px-6 py-3 border-2 border-[#0d47a1] text-[#0d47a1] rounded-xl font-medium hover:bg-[#f5f7f9] transition"
+              >
+                עבור ל-Dashboard
+              </Link>
+              <Link
+                to="/pricing"
+                className="w-full text-center px-6 py-2 text-sm text-[#6b7c93] hover:text-[#0d47a1]"
+              >
+                חזרה לעמוד התמחור
+              </Link>
+            </div>
+
+            <div className="border-t border-[#e1e6ec] pt-4 text-center">
+              <p className="text-xs text-[#6b7c93] mb-2">זקוק לעזרה?</p>
+              <a
+                href="mailto:contact@clinic-flow.co.il?subject=תשלום לא אומת"
+                className="text-sm text-[#0d47a1] font-medium hover:underline"
+              >
+                contact@clinic-flow.co.il
+              </a>
+              <p className="text-[10px] text-[#6b7c93] mt-2">
+                כלול את הזמן המדויק של הרכישה והאימייל שלך
+              </p>
+            </div>
           </div>
         </div>
       </div>
