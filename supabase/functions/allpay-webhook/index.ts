@@ -18,8 +18,9 @@ const PLAN_AMOUNTS: Record<string, number> = {
  * Applied exactly on the data received from AllPay, without type transformations.
  */
 /**
- * AllPay signature verification — same algorithm as the official Node.js example.
- * Applied exactly on webhook data as received, without type transformations.
+ * AllPay signature verification — follows official Node.js algorithm.
+ * Webhook peculiarities: `items` arrives as a JSON string (not array), and
+ * numbers/strings are mixed. We parse items into an array when applicable.
  */
 async function computeSign(params: Record<string, unknown>, apiKey: string): Promise<string> {
   const chunks: string[] = [];
@@ -27,7 +28,17 @@ async function computeSign(params: Record<string, unknown>, apiKey: string): Pro
   const sortedKeys = Object.keys(params).filter(k => k !== 'sign').sort();
 
   for (const key of sortedKeys) {
-    const value = params[key];
+    let value = params[key];
+
+    // Try parsing strings that look like JSON arrays back into actual arrays
+    if (typeof value === 'string' && value.trim().startsWith('[')) {
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) value = parsed;
+      } catch {
+        // keep as string if not valid JSON
+      }
+    }
 
     if (Array.isArray(value)) {
       for (const item of value) {
