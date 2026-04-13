@@ -2,17 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
 import { motion } from 'motion/react';
-import { AlertCircle, Shield, ArrowLeft, Check, Lock } from 'lucide-react';
+import { AlertCircle, Shield, ArrowLeft, Check, Lock, CreditCard } from 'lucide-react';
 import { supabase, logPolicyAcceptance } from '@/lib/supabase';
-import { loadStripe } from '@stripe/stripe-js';
-import {
-  Elements,
-  PaymentElement,
-  useStripe,
-  useElements,
-} from '@stripe/react-stripe-js';
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const PLAN_INFO: Record<string, { name: string; price: string; amount: number; features: string[] }> = {
   basic: {
@@ -31,233 +22,79 @@ const PLAN_INFO: Record<string, { name: string; price: string; amount: number; f
     name: 'חבילת ניהול מלאה',
     price: '₪1,299',
     amount: 129900,
-    features: ['כל מה שבחבילה המקצועית', 'דוח הכנסות פיננסיים', 'הנפקת קבלות וחשבוניות', 'קבלה וחשבונית משולבת', 'עקבוי שיטות תשלום'],
+    features: ['כל מה שבחבילה המקצועית', 'דוח הכנסות פיננסיים', 'הנפקת קבלות וחשבוניות', 'קבלה וחשבונית משולבת', 'מעקב שיטות תשלום'],
   },
 };
-
-// Inner component — has access to Stripe context
-function CheckoutForm({ planInfo, userEmail, userId, plan, discountAmount, finalAmount }: { planInfo: typeof PLAN_INFO[string]; userEmail: string; userId: string; plan: string; discountAmount: number; finalAmount: number }) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState('');
-  const [termsAccepted, setTermsAccepted] = useState(false);
-  const [termsLogged, setTermsLogged] = useState(false);
-
-  const handleTermsChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked;
-    setTermsAccepted(checked);
-    if (checked && !termsLogged) {
-      await logPolicyAcceptance(userId, userEmail, plan);
-      setTermsLogged(true);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!stripe || !elements) return;
-
-    setProcessing(true);
-    setError('');
-
-    const { error: submitError } = await elements.submit();
-    if (submitError) {
-      setError(submitError.message || 'שגיאה בעיבוד פרטי התשלום');
-      setProcessing(false);
-      return;
-    }
-
-    const { error: confirmError } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/#/thank-you`,
-        receipt_email: userEmail,
-        payment_method_data: {
-          billing_details: {
-            address: { country: 'IL' },
-          },
-        },
-      },
-    });
-
-    // confirmPayment only rejects on immediate errors (redirect happens on success)
-    if (confirmError) {
-      setError(confirmError.message || 'שגיאה בעיבוד התשלום');
-      setProcessing(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="flex flex-col h-full justify-between relative">
-      {/* Processing overlay */}
-      {processing && (
-        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl z-10 flex flex-col items-center justify-center gap-4">
-          <div className="w-10 h-10 border-4 border-[#0d47a1] border-t-transparent rounded-full animate-spin" />
-          <p className="text-[#1a2332] font-semibold text-sm">מעבד תשלום, אנא המתן...</p>
-        </div>
-      )}
-      <div>
-        <h3 className="text-lg font-bold text-[#1a2332] mb-2">פרטי תשלום</h3>
-        <p className="text-sm text-[#6b7c93] mb-5">הזן את פרטי כרטיס האשראי שלך.</p>
-
-        <div className="bg-[#f5f7f9] rounded-xl p-4 mb-5">
-          <p className="text-xs text-[#6b7c93] mb-1">הרכישה תירשם לחשבון</p>
-          <p className="font-medium text-[#1a2332] text-sm">{userEmail}</p>
-        </div>
-
-        <div className="border border-[#e1e6ec] rounded-xl p-4 mb-5 space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-[#6b7c93]">{planInfo.name}</span>
-            <span className="font-medium text-[#1a2332]">{planInfo.price}</span>
-          </div>
-          {discountAmount > 0 && (
-            <div className="flex justify-between text-sm text-green-600">
-              <span>זיכוי תשלום קודם</span>
-              <span>-₪{Math.round(discountAmount / 100).toLocaleString('he-IL')}</span>
-            </div>
-          )}
-          <div className="flex justify-between text-sm border-t border-[#e1e6ec] pt-2">
-            <span className="font-bold text-[#1a2332]">סה"כ לתשלום</span>
-            <span className="font-bold text-[#0d47a1]">
-              {discountAmount > 0
-                ? `₪${Math.round(finalAmount / 100).toLocaleString('he-IL')}`
-                : planInfo.price}
-            </span>
-          </div>
-        </div>
-
-        {/* Stripe Payment Element */}
-        <div className="mb-5">
-          <PaymentElement
-            options={{
-              layout: 'tabs',
-              fields: {
-                billingDetails: {
-                  address: 'never',
-                },
-              },
-              defaultValues: {
-                billingDetails: {
-                  email: userEmail,
-                },
-              },
-            }}
-          />
-        </div>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-            <p className="text-red-600 text-sm">{error}</p>
-          </div>
-        )}
-      </div>
-
-      <div>
-        {/* Terms checkbox */}
-        <label className="flex items-start gap-3 mb-5 cursor-pointer group">
-          <input
-            type="checkbox"
-            checked={termsAccepted}
-            onChange={handleTermsChange}
-            className="mt-0.5 w-4 h-4 accent-[#0d47a1] flex-shrink-0 cursor-pointer"
-          />
-          <span className="text-xs text-[#4a5568] leading-relaxed">
-            קראתי ואני מסכים/ה{" "}
-            <Link to="/terms" target="_blank" className="text-[#0d47a1] hover:underline">לתנאי השימוש</Link>
-            {", "}
-            <Link to="/privacy" target="_blank" className="text-[#0d47a1] hover:underline">מדיניות הפרטיות</Link>
-            {", "}
-            <Link to="/disclaimer" target="_blank" className="text-[#0d47a1] hover:underline">הסרת האחריות על נתונים</Link>
-            {" ו"}
-            <Link to="/refund" target="_blank" className="text-[#0d47a1] hover:underline">מדיניות ההחזרים</Link>
-            {" של ClinicFlow."}
-          </span>
-        </label>
-
-        <button
-          type="submit"
-          disabled={!stripe || processing || !termsAccepted}
-          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-bold py-4 rounded-xl hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-lg mb-3"
-        >
-          {processing ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              מעבד תשלום
-            </>
-          ) : (
-            <>
-              <Lock className="w-4 h-4" />
-              {`שלם ${discountAmount > 0 ? `₪${Math.round(finalAmount / 100).toLocaleString('he-IL')}` : planInfo.price}`}
-            </>
-          )}
-        </button>
-        <p className="text-center text-xs text-[#6b7c93]">מוגן על ידי Stripe</p>
-      </div>
-    </form>
-  );
-}
 
 export function PaymentPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const [clientSecret, setClientSecret] = useState('');
-  const [initError, setInitError] = useState('');
-  const [discountAmount, setDiscountAmount] = useState(0);
-  const [finalAmount, setFinalAmount] = useState(0);
-  const didFetch = useRef(false);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [termsLogged, setTermsLogged] = useState(false);
 
   const plan = searchParams.get('plan') || '';
-  const isUpgrade = searchParams.get('upgrade') === 'true';
   const planInfo = PLAN_INFO[plan];
 
   useEffect(() => {
     if (!loading && !user) navigate('/login?redirect=/payment?plan=' + plan);
   }, [user, loading, navigate, plan]);
 
-  useEffect(() => {
-    if (!user || !planInfo || didFetch.current) return;
-    didFetch.current = true;
+  const handleTermsChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
+    setTermsAccepted(checked);
+    if (checked && !termsLogged && user) {
+      await logPolicyAcceptance(user.id, user.email!, plan);
+      setTermsLogged(true);
+    }
+  };
 
-    (async () => {
-      try {
-        // Get fresh token — refresh first to avoid expired token issues
-        const { data: refreshData } = await supabase.auth.refreshSession();
-        const token = refreshData.session?.access_token;
+  const handlePayment = async () => {
+    if (!user || !planInfo) return;
 
-        if (!token) {
-          setInitError('פג תוקף ההתחברות — אנא התחבר מחדש');
-          return;
-        }
+    setProcessing(true);
+    setError('');
 
-        const res = await fetch(
-          'https://dmuwxydmuylcbhcoagri.supabase.co/functions/v1/create-payment-intent',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtdXd4eWRtdXlsY2JoY29hZ3JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MjAyMDYsImV4cCI6MjA4NDk5NjIwNn0.GETQeDKZk9FV41B7HCN95guPEkyWhJSQ8VYb_SNGfWY',
-            },
-            body: JSON.stringify({ plan, isUpgrade }),
-          }
-        );
+    try {
+      const { data: refreshData } = await supabase.auth.refreshSession();
+      const token = refreshData.session?.access_token;
 
-        const data = await res.json();
-        if (!res.ok || !data.clientSecret) {
-          setInitError(data.error || `שגיאה (${res.status})`);
-          return;
-        }
-
-        setClientSecret(data.clientSecret);
-        setDiscountAmount(data.discountAmount || 0);
-        setFinalAmount(data.finalAmount || planInfo.amount);
-      } catch (err: any) {
-        setInitError(err.message || 'שגיאה ביצירת סשן תשלום');
+      if (!token) {
+        setError('פג תוקף ההתחברות — אנא התחבר מחדש');
+        setProcessing(false);
+        return;
       }
-    })();
-  }, [user, plan, planInfo, isUpgrade]);
+
+      const res = await fetch(
+        'https://dmuwxydmuylcbhcoagri.supabase.co/functions/v1/create-allpay-payment',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtdXd4eWRtdXlsY2JoY29hZ3JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MjAyMDYsImV4cCI6MjA4NDk5NjIwNn0.GETQeDKZk9FV41B7HCN95guPEkyWhJSQ8VYb_SNGfWY',
+          },
+          body: JSON.stringify({ plan }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok || !data.payment_url) {
+        setError(data.error || 'שגיאה ביצירת תשלום');
+        setProcessing(false);
+        return;
+      }
+
+      // Redirect to AllPay payment page
+      window.location.href = data.payment_url;
+    } catch (err: any) {
+      setError(err.message || 'שגיאה ביצירת תשלום');
+      setProcessing(false);
+    }
+  };
 
   if (!plan || !planInfo) {
     return (
@@ -285,7 +122,7 @@ export function PaymentPage() {
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
           {/* Plan summary */}
-          <div className="bg-white rounded-2xl border border-[#e1e6ec] p-8 flex flex-col">
+          <div className="bg-white rounded-2xl border border-[#e1e6ec] p-5 sm:p-8 flex flex-col">
             <Link to="/pricing" className="flex items-center gap-1.5 text-sm text-[#6b7c93] hover:text-[#0d47a1] mb-6 w-fit">
               <ArrowLeft className="w-3.5 h-3.5 rotate-180" />
               חזרה לתמחור
@@ -294,21 +131,7 @@ export function PaymentPage() {
             <div className="flex-1">
               <p className="text-sm font-medium text-[#6b7c93] mb-1">הזמנה</p>
               <h2 className="text-2xl font-bold text-[#1a2332] mb-1">{planInfo.name}</h2>
-              {isUpgrade && discountAmount > 0 ? (
-                <div className="mb-1">
-                  <span className="text-2xl line-through text-[#6b7c93] ml-2">{planInfo.price}</span>
-                  <span className="text-4xl font-black text-[#0d47a1]">
-                    ₪{Math.round(finalAmount / 100).toLocaleString('he-IL')}
-                  </span>
-                  <div className="mt-1 inline-flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-full px-3 py-1 mr-2">
-                    <span className="text-green-700 text-xs font-semibold">
-                      זיכוי שדרוג ₪{Math.round(discountAmount / 100).toLocaleString('he-IL')}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-4xl font-black text-[#0d47a1] mb-1">{planInfo.price}</div>
-              )}
+              <div className="text-4xl font-black text-[#0d47a1] mb-1">{planInfo.price}</div>
               <p className="text-sm text-[#6b7c93] mb-8">תשלום חד-פעמי • רישיון לנצח</p>
 
               <ul className="space-y-3">
@@ -327,51 +150,94 @@ export function PaymentPage() {
             </div>
           </div>
 
-          {/* Payment form */}
-          <div className="bg-white rounded-2xl border border-[#e1e6ec] p-8">
-            {initError ? (
-              <div className="flex flex-col items-center justify-center h-full text-center">
-                <AlertCircle className="w-10 h-10 text-red-400 mb-3" />
-                <p className="text-[#1a2332] font-semibold mb-2">משהו השתבש</p>
-                <p className="text-[#6b7c93] text-sm mb-6">לא הצלחנו לאתחל את דף התשלום. אנא צרו קשר ונסייע לכם לרכוש.</p>
-                <Link
-                  to="/contact"
-                  className="px-5 py-2.5 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-xl text-sm font-medium"
-                >
-                  צרו קשר
-                </Link>
+          {/* Payment action */}
+          <div className="bg-white rounded-2xl border border-[#e1e6ec] p-5 sm:p-8 flex flex-col justify-between relative">
+            {processing && (
+              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-2xl z-10 flex flex-col items-center justify-center gap-4">
+                <div className="w-10 h-10 border-4 border-[#0d47a1] border-t-transparent rounded-full animate-spin" />
+                <p className="text-[#1a2332] font-semibold text-sm">מעביר לדף תשלום מאובטח...</p>
               </div>
-            ) : !clientSecret ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="w-8 h-8 border-4 border-[#0d47a1] border-t-transparent rounded-full animate-spin" />
-              </div>
-            ) : (
-              <Elements
-                stripe={stripePromise}
-                options={{
-                  clientSecret,
-                  locale: 'he',
-                  fonts: [
-                    {
-                      cssSrc: 'https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap',
-                    },
-                  ],
-                  appearance: {
-                    theme: 'stripe',
-                    variables: {
-                      colorPrimary: '#0d47a1',
-                      colorBackground: '#ffffff',
-                      colorText: '#1a2332',
-                      colorDanger: '#ef4444',
-                      fontFamily: '"Heebo", sans-serif',
-                      borderRadius: '12px',
-                    },
-                  },
-                }}
-              >
-                <CheckoutForm planInfo={planInfo} userEmail={user.email!} userId={user.id} plan={plan} discountAmount={discountAmount} finalAmount={finalAmount} />
-              </Elements>
             )}
+
+            <div>
+              <h3 className="text-lg font-bold text-[#1a2332] mb-2">תשלום מאובטח</h3>
+              <p className="text-sm text-[#6b7c93] mb-6">תועבר לדף תשלום מאובטח להשלמת הרכישה.</p>
+
+              <div className="bg-[#f5f7f9] rounded-xl p-4 mb-5">
+                <p className="text-xs text-[#6b7c93] mb-1">הרכישה תירשם לחשבון</p>
+                <p className="font-medium text-[#1a2332] text-sm">{user.email}</p>
+              </div>
+
+              <div className="border border-[#e1e6ec] rounded-xl p-4 mb-5">
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#6b7c93]">{planInfo.name}</span>
+                  <span className="font-medium text-[#1a2332]">{planInfo.price}</span>
+                </div>
+                <div className="flex justify-between text-sm border-t border-[#e1e6ec] pt-2 mt-2">
+                  <span className="font-bold text-[#1a2332]">סה"כ לתשלום</span>
+                  <span className="font-bold text-[#0d47a1]">{planInfo.price}</span>
+                </div>
+              </div>
+
+              {/* Payment methods */}
+              <div className="flex items-center justify-center gap-3 mb-5 py-3 bg-[#f5f7f9] rounded-xl">
+                <CreditCard className="w-5 h-5 text-[#6b7c93]" />
+                <span className="text-xs text-[#6b7c93]">Visa • Mastercard • AmEx • Apple Pay • Bit</span>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-5 text-center">
+                <p className="text-xs text-blue-700">ניתן לשלם בתשלומים (עד 3)</p>
+              </div>
+
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-red-600 text-sm">{error}</p>
+                </div>
+              )}
+            </div>
+
+            <div>
+              {/* Terms checkbox */}
+              <label className="flex items-start gap-3 mb-5 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={termsAccepted}
+                  onChange={handleTermsChange}
+                  className="mt-0.5 w-4 h-4 accent-[#0d47a1] flex-shrink-0 cursor-pointer"
+                />
+                <span className="text-xs text-[#4a5568] leading-relaxed">
+                  קראתי ואני מסכים/ה{" "}
+                  <Link to="/terms" target="_blank" className="text-[#0d47a1] hover:underline">לתנאי השימוש</Link>
+                  {", "}
+                  <Link to="/privacy" target="_blank" className="text-[#0d47a1] hover:underline">מדיניות הפרטיות</Link>
+                  {", "}
+                  <Link to="/disclaimer" target="_blank" className="text-[#0d47a1] hover:underline">הסרת האחריות על נתונים</Link>
+                  {" ו"}
+                  <Link to="/refund" target="_blank" className="text-[#0d47a1] hover:underline">מדיניות ההחזרים</Link>
+                  {" של ClinicFlow."}
+                </span>
+              </label>
+
+              <button
+                onClick={handlePayment}
+                disabled={processing || !termsAccepted}
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-bold py-4 rounded-xl hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-lg mb-3"
+              >
+                {processing ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    מעביר לתשלום...
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4" />
+                    {`שלם ${planInfo.price}`}
+                  </>
+                )}
+              </button>
+              <p className="text-center text-xs text-[#6b7c93]">מוגן על ידי AllPay • תשלום מאובטח SSL</p>
+            </div>
           </div>
         </motion.div>
       </div>

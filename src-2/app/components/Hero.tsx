@@ -62,7 +62,7 @@ export function Hero() {
             className="mb-2"
           >
             <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-[#1a2332] leading-[1.1] tracking-tight mb-4">
-              מערכת ניהול
+              פחות ניירת. יותר רפואה.
             </h1>
 
             {/* Morphing profession text */}
