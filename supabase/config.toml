@@ -5,3 +5,12 @@ verify_jwt = false
 
 [functions.stripe-webhook]
 verify_jwt = false
+
+[functions.create-allpay-payment]
+verify_jwt = false
+
+[functions.allpay-webhook]
+verify_jwt = false
+
+[functions.notify-contact]
+verify_jwt = false

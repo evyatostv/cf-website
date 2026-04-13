@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { plan } = await req.json();
+    const { plan, isUpgrade } = await req.json();
 
     if (!plan || !PLAN_PRICES[plan]) {
       return new Response(
@@ -130,7 +130,27 @@ Deno.serve(async (req) => {
       );
     }
 
-    const price = PLAN_PRICES[plan];
+    let price = PLAN_PRICES[plan];
+    let discountAmount = 0;
+
+    // Check for existing purchase — apply upgrade credit
+    const { data: purchase } = await supabase
+      .from('purchases')
+      .select('amount')
+      .eq('user_id', user.id)
+      .order('purchased_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (purchase?.amount) {
+      // Convert agorot to ILS for comparison
+      const previousPaidILS = Math.round(purchase.amount / 100);
+      if (previousPaidILS < price) {
+        discountAmount = previousPaidILS;
+        price = price - discountAmount;
+      }
+    }
+
     const orderId = `cf_${user.id.slice(0, 8)}_${plan}_${Date.now()}`;
 
     const webhookUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/allpay-webhook`;
@@ -183,7 +203,11 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ payment_url: allpayData.payment_url }),
+      JSON.stringify({
+        payment_url: allpayData.payment_url,
+        finalAmount: price * 100,
+        discountAmount: discountAmount * 100,
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   } catch (err) {

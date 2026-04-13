@@ -76,7 +76,7 @@ const features: { icon: React.ElementType; title: string; description: string; p
     icon: Database,
     title: "נתונים אצלך בלבד",
     plan: "basic",
-    description: "אין שרת, אין ענן, אין גיבוי לשרת חיצוני. הכל על הדיסק שלך. אם יש לYaadoc מתקפת סייבר — זה לא הבעיה שלך.",
+    description: "אין שרת, אין ענן, אין גיבוי לשרת חיצוני. הכל על הדיסק שלך. מתקפת סייבר על שרת חיצוני? לא הבעיה שלך.",
   },
   {
     icon: Lock,

@@ -140,16 +140,11 @@ export function PricingPage() {
             <span className="font-semibold">תשלום חד-פעמי בלבד.</span>
           </p>
 
-          {/* Guarantee + Yaadoc comparison badges */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
+          {/* Guarantee badge */}
+          <div className="flex items-center justify-center mt-8">
             <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-5 py-2.5">
               <ShieldCheck className="w-5 h-5 text-green-600" />
               <span className="text-sm font-medium text-green-700">30 יום החזר כספי מלא</span>
-            </div>
-            <div className="inline-flex items-center gap-2 bg-[#f0f4f7] border border-[#d1dbe5] rounded-full px-5 py-2.5">
-              <span className="text-sm text-[#1a2332]">
-                Yaadoc עולה ~₪3,000 בשנה. ClinicFlow — <strong>₪999 פעם אחת.</strong>
-              </span>
             </div>
           </div>
         </motion.div>

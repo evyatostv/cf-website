@@ -36,8 +36,11 @@ export function PaymentPage() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [termsLogged, setTermsLogged] = useState(false);
   const [paymentStarted, setPaymentStarted] = useState(false);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [finalAmount, setFinalAmount] = useState(0);
 
   const plan = searchParams.get('plan') || '';
+  const isUpgrade = searchParams.get('upgrade') === 'true';
   const planInfo = PLAN_INFO[plan];
 
   useEffect(() => {
@@ -78,7 +81,7 @@ export function PaymentPage() {
             'Authorization': `Bearer ${token}`,
             'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtdXd4eWRtdXlsY2JoY29hZ3JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MjAyMDYsImV4cCI6MjA4NDk5NjIwNn0.GETQeDKZk9FV41B7HCN95guPEkyWhJSQ8VYb_SNGfWY',
           },
-          body: JSON.stringify({ plan }),
+          body: JSON.stringify({ plan, isUpgrade }),
         }
       );
 
@@ -91,6 +94,8 @@ export function PaymentPage() {
       }
 
       setPaymentUrl(data.payment_url);
+      setDiscountAmount(data.discountAmount || 0);
+      setFinalAmount(data.finalAmount || planInfo.amount);
       setPaymentStarted(true);
       setProcessing(false);
     } catch (err: any) {
@@ -164,7 +169,21 @@ export function PaymentPage() {
             <div className="flex-1">
               <p className="text-sm font-medium text-[#6b7c93] mb-1">הזמנה</p>
               <h2 className="text-2xl font-bold text-[#1a2332] mb-1">{planInfo.name}</h2>
-              <div className="text-4xl font-black text-[#0d47a1] mb-1">{planInfo.price}</div>
+              {discountAmount > 0 ? (
+                <div className="mb-1">
+                  <span className="text-2xl line-through text-[#6b7c93] ml-2">{planInfo.price}</span>
+                  <span className="text-4xl font-black text-[#0d47a1]">
+                    ₪{Math.round(finalAmount / 100).toLocaleString('he-IL')}
+                  </span>
+                  <div className="mt-1 inline-flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-full px-3 py-1 mr-2">
+                    <span className="text-green-700 text-xs font-semibold">
+                      זיכוי שדרוג ₪{Math.round(discountAmount / 100).toLocaleString('he-IL')}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-4xl font-black text-[#0d47a1] mb-1">{planInfo.price}</div>
+              )}
               <p className="text-sm text-[#6b7c93] mb-8">תשלום חד-פעמי • רישיון לנצח</p>
 
               <ul className="space-y-3">
