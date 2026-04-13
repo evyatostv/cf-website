@@ -7,27 +7,10 @@ export function ThankYouPage() {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
 
-  // Stripe appends params before the hash: site.com/?payment_intent=pi_xxx#/thank-you
-  // So check both window.location.search AND the hash router's searchParams
+  // AllPay redirects with ?plan=xxx after successful payment
   const windowParams = new URLSearchParams(window.location.search);
-
-  const redirectStatus = searchParams.get('redirect_status') || windowParams.get('redirect_status');
-  const paymentIntentId = searchParams.get('payment_intent') || windowParams.get('payment_intent');
-  const sessionId = searchParams.get('session_id') || windowParams.get('session_id');
-
-  const isSuccess = redirectStatus === 'succeeded' || !!sessionId;
-  const orderId = paymentIntentId || sessionId;
-
-  if (!orderId) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" dir="rtl">
-        <div className="text-center">
-          <p className="text-[#6b7c93] mb-2">לא נמצאה הזמנה.</p>
-          <Link to="/pricing" className="text-[#0d47a1] hover:underline">חזרה לתמחור</Link>
-        </div>
-      </div>
-    );
-  }
+  const plan = searchParams.get('plan') || windowParams.get('plan');
+  const isSuccess = !!plan;
 
   if (!isSuccess) {
     return (

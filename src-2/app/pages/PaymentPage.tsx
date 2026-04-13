@@ -306,7 +306,7 @@ export function PaymentPage() {
                   <Lock className="w-4 h-4" />
                   {`שלם ${planInfo.price}`}
                 </button>
-                <p className="text-center text-xs text-[#6b7c93] mt-2">מוגן על ידי AllPay • תשלום מאובטח SSL</p>
+                <p className="text-center text-xs text-[#6b7c93] mt-2">תשלום מאובטח SSL</p>
               </>
             )}
           </div>
