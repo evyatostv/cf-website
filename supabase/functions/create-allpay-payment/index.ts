@@ -1,5 +1,4 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { crypto } from 'https://deno.land/std@0.208.0/crypto/mod.ts';
 
 const ALLPAY_LOGIN = Deno.env.get('ALLPAY_LOGIN')!;
 const ALLPAY_KEY = Deno.env.get('ALLPAY_KEY')!;
@@ -44,7 +43,7 @@ function getCorsHeaders(req: Request) {
  * 5. Append API key at end (preceded by colon)
  * 6. SHA256 hash the result
  */
-function computeSign(params: Record<string, unknown>, apiKey: string): string {
+async function computeSign(params: Record<string, unknown>, apiKey: string): Promise<string> {
   function extractSortedValues(obj: unknown): string[] {
     if (Array.isArray(obj)) {
       const values: string[] = [];
@@ -79,11 +78,9 @@ function computeSign(params: Record<string, unknown>, apiKey: string): string {
   const signString = values.join(':');
 
   const encoder = new TextEncoder();
-  const data = encoder.encode(signString);
-  const hashBuffer = new Uint8Array(
-    crypto.subtle.digestSync('SHA-256', data)
-  );
-  return Array.from(hashBuffer)
+  const encoded = encoder.encode(signString);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', encoded);
+  return Array.from(new Uint8Array(hashBuffer))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
 }
@@ -181,7 +178,7 @@ Deno.serve(async (req) => {
       ],
     };
 
-    paymentParams.sign = computeSign(paymentParams, ALLPAY_KEY);
+    paymentParams.sign = await computeSign(paymentParams, ALLPAY_KEY);
 
     const allpayRes = await fetch(
       'https://allpay.to/app/?show=getpayment&mode=api11',
