@@ -275,12 +275,12 @@ export function PaymentPage() {
                   </button>
 
                   {/* Payment methods — minimal */}
-                  <div className="flex items-center justify-center gap-2 mt-3 opacity-50">
-                    <img src="https://allpay.to/hfields/visa.svg" alt="Visa" className="h-4" />
-                    <img src="https://allpay.to/hfields/mastercard.svg" alt="Mastercard" className="h-4" />
-                    <img src="https://allpay.to/hfields/amex.svg" alt="AmEx" className="h-4" />
-                    <img src="https://allpay.to/hfields/apple-pay.svg" alt="Apple Pay" className="h-4 bg-black rounded-sm px-0.5" />
-                    <img src="https://allpay.to/hfields/bit-cyan.svg" alt="Bit" className="h-4 bg-[#03353b] rounded-sm px-0.5" />
+                  <div className="flex items-center justify-center gap-2 mt-3">
+                    <img src="https://allpay.to/hfields/visa.svg" alt="Visa" className="h-6 rounded-[5px]" />
+                    <img src="https://allpay.to/hfields/mastercard.svg" alt="Mastercard" className="h-6 rounded-[5px]" />
+                    <img src="https://allpay.to/hfields/amex.svg" alt="AmEx" className="h-6 rounded-[5px]" />
+                    <img src="https://allpay.to/hfields/apple-pay.svg" alt="Apple Pay" className="h-6 bg-black rounded-[5px] px-1" />
+                    <img src="https://allpay.to/hfields/bit-cyan.svg" alt="Bit" className="h-6 bg-[#03353b] rounded-[5px] px-1" />
                   </div>
 
                   {/* Trust badge */}
