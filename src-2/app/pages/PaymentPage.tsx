@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
 import { motion } from 'motion/react';
@@ -30,10 +30,12 @@ export function PaymentPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const [paymentUrl, setPaymentUrl] = useState('');
+  const [initError, setInitError] = useState('');
   const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [termsLogged, setTermsLogged] = useState(false);
+  const [paymentStarted, setPaymentStarted] = useState(false);
 
   const plan = searchParams.get('plan') || '';
   const planInfo = PLAN_INFO[plan];
@@ -51,18 +53,18 @@ export function PaymentPage() {
     }
   };
 
-  const handlePayment = async () => {
+  const handleStartPayment = async () => {
     if (!user || !planInfo) return;
 
     setProcessing(true);
-    setError('');
+    setInitError('');
 
     try {
       const { data: refreshData } = await supabase.auth.refreshSession();
       const token = refreshData.session?.access_token;
 
       if (!token) {
-        setError('פג תוקף ההתחברות — אנא התחבר מחדש');
+        setInitError('פג תוקף ההתחברות — אנא התחבר מחדש');
         setProcessing(false);
         return;
       }
@@ -83,18 +85,49 @@ export function PaymentPage() {
       const data = await res.json();
 
       if (!res.ok || !data.payment_url) {
-        setError(data.error || 'שגיאה ביצירת תשלום');
+        setInitError(data.error || 'שגיאה ביצירת תשלום');
         setProcessing(false);
         return;
       }
 
-      // Redirect to AllPay payment page
-      window.location.href = data.payment_url;
+      setPaymentUrl(data.payment_url);
+      setPaymentStarted(true);
+      setProcessing(false);
     } catch (err: any) {
-      setError(err.message || 'שגיאה ביצירת תשלום');
+      setInitError(err.message || 'שגיאה ביצירת תשלום');
       setProcessing(false);
     }
   };
+
+  // Load AllPay Hosted Fields SDK
+  useEffect(() => {
+    if (!paymentUrl) return;
+
+    const existing = document.getElementById('allpay-hf-sdk');
+    if (existing) return;
+
+    const script = document.createElement('script');
+    script.id = 'allpay-hf-sdk';
+    script.src = 'https://allpay.to/js/allpay-hf.js';
+    script.onload = () => {
+      // @ts-ignore — AllpayPayment is loaded from the SDK
+      window.__allpayInstance = new window.AllpayPayment({
+        iframeId: 'allpay-iframe',
+        onSuccess: () => {
+          navigate('/thank-you?plan=' + plan);
+        },
+        onError: (error_n: number, error_msg: string) => {
+          setInitError(`שגיאה בתשלום: ${error_msg} (${error_n})`);
+        },
+      });
+    };
+    document.head.appendChild(script);
+
+    return () => {
+      // @ts-ignore
+      delete window.__allpayInstance;
+    };
+  }, [paymentUrl, navigate, plan]);
 
   if (!plan || !planInfo) {
     return (
@@ -150,94 +183,113 @@ export function PaymentPage() {
             </div>
           </div>
 
-          {/* Payment action */}
+          {/* Payment form */}
           <div className="bg-white rounded-2xl border border-[#e1e6ec] p-5 sm:p-8 flex flex-col justify-between relative">
             {processing && (
               <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-2xl z-10 flex flex-col items-center justify-center gap-4">
                 <div className="w-10 h-10 border-4 border-[#0d47a1] border-t-transparent rounded-full animate-spin" />
-                <p className="text-[#1a2332] font-semibold text-sm">מעביר לדף תשלום מאובטח...</p>
+                <p className="text-[#1a2332] font-semibold text-sm">טוען טופס תשלום...</p>
               </div>
             )}
 
-            <div>
-              <h3 className="text-lg font-bold text-[#1a2332] mb-2">תשלום מאובטח</h3>
-              <p className="text-sm text-[#6b7c93] mb-6">תועבר לדף תשלום מאובטח להשלמת הרכישה.</p>
-
-              <div className="bg-[#f5f7f9] rounded-xl p-4 mb-5">
-                <p className="text-xs text-[#6b7c93] mb-1">הרכישה תירשם לחשבון</p>
-                <p className="font-medium text-[#1a2332] text-sm">{user.email}</p>
+            {initError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                <p className="text-red-600 text-sm">{initError}</p>
               </div>
+            )}
 
-              <div className="border border-[#e1e6ec] rounded-xl p-4 mb-5">
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#6b7c93]">{planInfo.name}</span>
-                  <span className="font-medium text-[#1a2332]">{planInfo.price}</span>
+            {!paymentStarted ? (
+              /* Pre-payment: show info + terms + pay button */
+              <>
+                <div>
+                  <h3 className="text-lg font-bold text-[#1a2332] mb-2">תשלום מאובטח</h3>
+                  <p className="text-sm text-[#6b7c93] mb-6">הזן את פרטי התשלום כדי להשלים את הרכישה.</p>
+
+                  <div className="bg-[#f5f7f9] rounded-xl p-4 mb-5">
+                    <p className="text-xs text-[#6b7c93] mb-1">הרכישה תירשם לחשבון</p>
+                    <p className="font-medium text-[#1a2332] text-sm">{user.email}</p>
+                  </div>
+
+                  <div className="border border-[#e1e6ec] rounded-xl p-4 mb-5">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-[#6b7c93]">{planInfo.name}</span>
+                      <span className="font-medium text-[#1a2332]">{planInfo.price}</span>
+                    </div>
+                    <div className="flex justify-between text-sm border-t border-[#e1e6ec] pt-2 mt-2">
+                      <span className="font-bold text-[#1a2332]">סה"כ לתשלום</span>
+                      <span className="font-bold text-[#0d47a1]">{planInfo.price}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-center gap-3 mb-5 py-3 bg-[#f5f7f9] rounded-xl">
+                    <CreditCard className="w-5 h-5 text-[#6b7c93]" />
+                    <span className="text-xs text-[#6b7c93]">Visa • Mastercard • AmEx • Bit</span>
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-5 text-center">
+                    <p className="text-xs text-blue-700">ניתן לשלם בתשלומים (עד 3)</p>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm border-t border-[#e1e6ec] pt-2 mt-2">
-                  <span className="font-bold text-[#1a2332]">סה"כ לתשלום</span>
-                  <span className="font-bold text-[#0d47a1]">{planInfo.price}</span>
-                </div>
-              </div>
 
-              {/* Payment methods */}
-              <div className="flex items-center justify-center gap-3 mb-5 py-3 bg-[#f5f7f9] rounded-xl">
-                <CreditCard className="w-5 h-5 text-[#6b7c93]" />
-                <span className="text-xs text-[#6b7c93]">Visa • Mastercard • AmEx • Apple Pay • Bit</span>
-              </div>
+                <div>
+                  <label className="flex items-start gap-3 mb-5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={termsAccepted}
+                      onChange={handleTermsChange}
+                      className="mt-0.5 w-4 h-4 accent-[#0d47a1] flex-shrink-0 cursor-pointer"
+                    />
+                    <span className="text-xs text-[#4a5568] leading-relaxed">
+                      קראתי ואני מסכים/ה{" "}
+                      <Link to="/terms" target="_blank" className="text-[#0d47a1] hover:underline">לתנאי השימוש</Link>
+                      {", "}
+                      <Link to="/privacy" target="_blank" className="text-[#0d47a1] hover:underline">מדיניות הפרטיות</Link>
+                      {", "}
+                      <Link to="/disclaimer" target="_blank" className="text-[#0d47a1] hover:underline">הסרת האחריות על נתונים</Link>
+                      {" ו"}
+                      <Link to="/refund" target="_blank" className="text-[#0d47a1] hover:underline">מדיניות ההחזרים</Link>
+                      {" של ClinicFlow."}
+                    </span>
+                  </label>
 
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-5 text-center">
-                <p className="text-xs text-blue-700">ניתן לשלם בתשלומים (עד 3)</p>
-              </div>
-
-              {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-red-600 text-sm">{error}</p>
-                </div>
-              )}
-            </div>
-
-            <div>
-              {/* Terms checkbox */}
-              <label className="flex items-start gap-3 mb-5 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={termsAccepted}
-                  onChange={handleTermsChange}
-                  className="mt-0.5 w-4 h-4 accent-[#0d47a1] flex-shrink-0 cursor-pointer"
-                />
-                <span className="text-xs text-[#4a5568] leading-relaxed">
-                  קראתי ואני מסכים/ה{" "}
-                  <Link to="/terms" target="_blank" className="text-[#0d47a1] hover:underline">לתנאי השימוש</Link>
-                  {", "}
-                  <Link to="/privacy" target="_blank" className="text-[#0d47a1] hover:underline">מדיניות הפרטיות</Link>
-                  {", "}
-                  <Link to="/disclaimer" target="_blank" className="text-[#0d47a1] hover:underline">הסרת האחריות על נתונים</Link>
-                  {" ו"}
-                  <Link to="/refund" target="_blank" className="text-[#0d47a1] hover:underline">מדיניות ההחזרים</Link>
-                  {" של ClinicFlow."}
-                </span>
-              </label>
-
-              <button
-                onClick={handlePayment}
-                disabled={processing || !termsAccepted}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-bold py-4 rounded-xl hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-lg mb-3"
-              >
-                {processing ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    מעביר לתשלום...
-                  </>
-                ) : (
-                  <>
+                  <button
+                    onClick={handleStartPayment}
+                    disabled={processing || !termsAccepted}
+                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-bold py-4 rounded-xl hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-lg mb-3"
+                  >
                     <Lock className="w-4 h-4" />
                     {`שלם ${planInfo.price}`}
-                  </>
-                )}
-              </button>
-              <p className="text-center text-xs text-[#6b7c93]">מוגן על ידי AllPay • תשלום מאובטח SSL</p>
-            </div>
+                  </button>
+                  <p className="text-center text-xs text-[#6b7c93]">תשלום מאובטח SSL</p>
+                </div>
+              </>
+            ) : (
+              /* Hosted Fields: AllPay iframe */
+              <>
+                <div className="flex-1 flex flex-col">
+                  <h3 className="text-lg font-bold text-[#1a2332] mb-4">הזן פרטי תשלום</h3>
+                  <iframe
+                    id="allpay-iframe"
+                    src={paymentUrl}
+                    allow="payment *"
+                    className="flex-1 w-full min-h-[400px] border-0 rounded-xl"
+                  />
+                </div>
+
+                <button
+                  onClick={() => {
+                    // @ts-ignore
+                    if (window.__allpayInstance) window.__allpayInstance.pay();
+                  }}
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-bold py-4 rounded-xl hover:shadow-lg transition text-lg mt-4"
+                >
+                  <Lock className="w-4 h-4" />
+                  {`שלם ${planInfo.price}`}
+                </button>
+                <p className="text-center text-xs text-[#6b7c93] mt-2">מוגן על ידי AllPay • תשלום מאובטח SSL</p>
+              </>
+            )}
           </div>
         </motion.div>
       </div>
