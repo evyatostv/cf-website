@@ -84,8 +84,8 @@ export function ThankYouPage() {
               </div>
             )}
             <div className="flex justify-between text-sm">
-              <span className="text-[#6b7c93]">מזהה הזמנה</span>
-              <span className="font-mono text-xs text-[#1a2332] truncate max-w-[180px]">{orderId}</span>
+              <span className="text-[#6b7c93]">חבילה</span>
+              <span className="font-medium text-[#1a2332]">{plan}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-[#6b7c93]">סטטוס</span>
