@@ -140,6 +140,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
+    console.log('Webhook received:', JSON.stringify(body));
 
     // Verify signature — use the data exactly as received
     const expectedSign = await computeSign(body, ALLPAY_KEY);
@@ -147,9 +148,11 @@ Deno.serve(async (req) => {
       console.error('Webhook signature mismatch', {
         received: body.sign,
         expected: expectedSign,
+        payload: body,
       });
       return new Response('Invalid signature', { status: 403 });
     }
+    console.log('Signature verified OK');
 
     // Only process successful payments
     if (body.status !== 1 && body.status !== '1') {
