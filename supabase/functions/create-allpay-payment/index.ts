@@ -161,8 +161,10 @@ Deno.serve(async (req) => {
       webhook_url: webhookUrl,
       success_url: `${SITE_URL}/#/thank-you?plan=${plan}`,
       backlink_url: `${SITE_URL}/#/pricing`,
-      client_name: user.user_metadata?.full_name || user.email || 'Customer',
-      client_email: user.email || 'no-email@clinic-flow.co.il',
+      client_name: user.user_metadata?.full_name || (user.email?.split('@')[0]) || 'Customer',
+      client_email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email || '')
+        ? user.email
+        : 'no-email@clinic-flow.co.il',
       show_bit: 'true',
       show_applepay: 'true',
       inst: '3',
@@ -180,6 +182,8 @@ Deno.serve(async (req) => {
     };
 
     paymentParams.sign = await computeSign(paymentParams, ALLPAY_KEY);
+
+    console.log('AllPay request payload:', JSON.stringify(paymentParams));
 
     const allpayRes = await fetch(
       'https://allpay.to/app/?show=getpayment&mode=api11',
