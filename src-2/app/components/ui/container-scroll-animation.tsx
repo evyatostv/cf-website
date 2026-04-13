@@ -19,7 +19,7 @@ export const ContainerScroll = ({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const scaleDimensions = () => (isMobile ? [0.95, 1] : [1.05, 1]);
+  const scaleDimensions = () => (isMobile ? [0.75, 0.85] : [1.05, 1]);
 
   const springConfig = { stiffness: 120, damping: 25, mass: 0.8 };
 
