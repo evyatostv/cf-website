@@ -11,7 +11,7 @@ export function AboutPage() {
           transition={{ duration: 0.6 }}
           className="text-center mb-20"
         >
-          <h1 className="text-5xl md:text-6xl font-bold text-[#1a2332] mb-6">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-[#1a2332] mb-6">
             המשימה שלנו
             <br />
             <span className="bg-gradient-to-r from-[#0d47a1] to-[#00838f] bg-clip-text text-transparent">
@@ -25,7 +25,7 @@ export function AboutPage() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-12 mb-20">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -97,7 +97,7 @@ export function AboutPage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="bg-gradient-to-br from-[#0d47a1] to-[#00838f] rounded-3xl p-12 text-center text-white"
+          className="bg-gradient-to-br from-[#0d47a1] to-[#00838f] rounded-3xl p-6 sm:p-12 text-center text-white"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">הצטרפו למהפכת הפרטיות הרפואית</h2>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">

@@ -20,7 +20,7 @@ export function BlogPage() {
             <span className="inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-[#7a9db8] mb-4">
               מרכז הידע
             </span>
-            <h1 className="text-3xl font-bold text-white mb-3">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">
               הבלוג של ClinicFlow
             </h1>
             <p className="text-[#7a9db8] text-base max-w-xl">
@@ -53,7 +53,7 @@ export function BlogPage() {
                   className="transition-transform duration-500 group-hover:scale-105"
                 />
               </div>
-              <div className="flex flex-col justify-center p-8 gap-4">
+              <div className="flex flex-col justify-center p-5 sm:p-8 gap-4">
                 <span
                   className="inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1 text-xs font-medium text-white"
                   style={{ background: categoryColors[featured.category] ?? '#0d47a1' }}

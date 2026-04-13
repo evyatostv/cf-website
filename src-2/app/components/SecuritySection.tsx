@@ -66,7 +66,7 @@ export function SecuritySection() {
             <Lock className="w-4 h-4 text-[#0d47a1]" />
             <span className="text-sm font-medium text-[#0d47a1]">אבטחה ופרטיות</span>
           </div>
-          <h2 className="text-5xl md:text-6xl font-bold text-[#1a2332] mb-6 leading-tight">
+          <h2 className="text-3xl sm:text-5xl md:text-6xl font-bold text-[#1a2332] mb-6 leading-tight">
             הנתונים שלך
             <br />
             <span className="bg-gradient-to-r from-[#0d47a1] to-[#00838f] bg-clip-text text-transparent">
@@ -90,9 +90,9 @@ export function SecuritySection() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-20 bg-white rounded-3xl p-12 border border-[#e1e6ec] shadow-lg"
+          className="mt-12 sm:mt-20 bg-white rounded-3xl p-6 sm:p-12 border border-[#e1e6ec] shadow-lg"
         >
-          <div className="flex items-center justify-center gap-12 flex-wrap">
+          <div className="flex items-center justify-center gap-6 sm:gap-12 flex-wrap">
             <div className="text-center">
               <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#0d47a1] to-[#00838f] flex items-center justify-center mb-4 mx-auto shadow-lg">
                 <Database className="w-12 h-12 text-white" />

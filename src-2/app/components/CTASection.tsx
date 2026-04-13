@@ -21,7 +21,7 @@ export function CTASection() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
           transition={{ duration: 0.6 }}
-          className="relative bg-gradient-to-br from-[#0d47a1] to-[#00838f] rounded-[2.5rem] p-12 md:p-16 overflow-hidden shadow-2xl"
+          className="relative bg-gradient-to-br from-[#0d47a1] to-[#00838f] rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-10 md:p-16 overflow-hidden shadow-2xl"
         >
           {/* Background decoration */}
           <div className="absolute inset-0 overflow-hidden opacity-10">
@@ -34,7 +34,7 @@ export function CTASection() {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ delay: 0.2, duration: 0.6 }}
-              className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight"
+              className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight"
             >
               מוכנים להתחיל?
             </motion.h2>
@@ -43,7 +43,7 @@ export function CTASection() {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="text-xl md:text-2xl text-[#b8d4e6] mb-10 max-w-2xl mx-auto leading-relaxed"
+              className="text-base sm:text-xl md:text-2xl text-[#b8d4e6] mb-6 sm:mb-10 max-w-2xl mx-auto leading-relaxed"
             >
               בחרו באבטחה ובפרטיות מוחלטת לקליניקה שלכם
             </motion.p>
@@ -53,12 +53,12 @@ export function CTASection() {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ delay: 0.4, duration: 0.6 }}
-              className="inline-grid grid-cols-2 gap-x-24 gap-y-6 mx-auto mb-10"
+              className="inline-grid grid-cols-1 sm:grid-cols-2 gap-x-8 sm:gap-x-16 md:gap-x-24 gap-y-4 sm:gap-y-6 mx-auto mb-8 sm:mb-10"
             >
               {checkmarks.map((item, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <CheckCircle2 className="w-7 h-7 text-[#b8d4e6] flex-shrink-0" />
-                  <span className="text-white text-xl font-medium">{item}</span>
+                  <span className="text-white text-base sm:text-xl font-medium">{item}</span>
                 </div>
               ))}
             </motion.div>

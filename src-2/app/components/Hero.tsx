@@ -61,18 +61,18 @@ export function Hero() {
             transition={{ delay: 0.3, duration: 0.6 }}
             className="mb-2"
           >
-            <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold text-[#1a2332] leading-[1.1] tracking-tight mb-4">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-[#1a2332] leading-[1.1] tracking-tight mb-4">
               מערכת ניהול
             </h1>
 
             {/* Morphing profession text */}
-            <div className="relative h-36 md:h-40 lg:h-44 flex items-end justify-center pb-2 mt-8">
+            <div className="relative h-20 sm:h-28 md:h-40 lg:h-44 flex items-end justify-center pb-2 mt-4 sm:mt-8">
               <GooeyText
                 texts={professions}
                 morphTime={0.6}
                 cooldownTime={1.25}
                 className="w-full h-full"
-                textClassName="text-6xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-[#0d47a1] to-[#00838f] bg-clip-text text-transparent whitespace-nowrap"
+                textClassName="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-[#0d47a1] to-[#00838f] bg-clip-text text-transparent whitespace-nowrap"
               />
             </div>
           </motion.div>
@@ -82,7 +82,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className="text-xl md:text-2xl text-[#6b7c93] mb-12 max-w-3xl mx-auto leading-relaxed"
+            className="text-base sm:text-lg md:text-2xl text-[#6b7c93] mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-2"
           >
             תיק רפואי דיגיטלי שנשאר אצלך בלבד — ללא שרתים חיצוניים, ללא מנוי חודשי.
             <br />
@@ -123,7 +123,7 @@ export function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7, duration: 0.6 }}
-            className="mt-16 flex items-center justify-center gap-8 flex-wrap"
+            className="mt-10 sm:mt-16 flex items-center justify-center gap-4 sm:gap-8 flex-wrap"
           >
             <div className="flex items-center gap-2 text-[#6b7c93]">
               <ShieldCheck className="w-5 h-5 text-[#00838f]" />

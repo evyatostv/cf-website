@@ -47,7 +47,7 @@ export function ContactPage() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h1 className="text-5xl md:text-6xl font-bold text-[#1a2332] mb-6">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-[#1a2332] mb-6">
             בוא נדבר
             <br />
             <span className="bg-gradient-to-r from-[#0d47a1] to-[#00838f] bg-clip-text text-transparent">
@@ -59,13 +59,13 @@ export function ContactPage() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-12 max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="bg-white rounded-3xl p-8 border border-[#e1e6ec] mb-8">
+            <div className="bg-white rounded-3xl p-5 sm:p-8 border border-[#e1e6ec] mb-8">
               <h2 className="text-2xl font-bold text-[#1a2332] mb-6">צור קשר</h2>
 
               <div className="space-y-6">
@@ -92,7 +92,7 @@ export function ContactPage() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-[#0d47a1] to-[#00838f] rounded-3xl p-8 text-white">
+            <div className="bg-gradient-to-br from-[#0d47a1] to-[#00838f] rounded-3xl p-5 sm:p-8 text-white">
               <h3 className="text-2xl font-bold mb-4">שעות פעילות</h3>
               <div className="space-y-2 text-white/90">
                 <p>ראשון - חמישי: 9:00 - 18:00</p>
@@ -106,7 +106,7 @@ export function ContactPage() {
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="bg-white rounded-3xl p-8 border border-[#e1e6ec]"
+            className="bg-white rounded-3xl p-5 sm:p-8 border border-[#e1e6ec]"
           >
             <h2 className="text-2xl font-bold text-[#1a2332] mb-6">שלח הודעה</h2>
 

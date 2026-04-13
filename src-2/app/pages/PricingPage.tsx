@@ -127,7 +127,7 @@ export function PricingPage() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h1 className="text-5xl md:text-6xl font-bold text-[#1a2332] mb-6">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-[#1a2332] mb-6">
             בחרו את החבילה
             <br />
             <span className="bg-gradient-to-r from-[#0d47a1] to-[#00838f] bg-clip-text text-transparent">
@@ -142,14 +142,14 @@ export function PricingPage() {
         </motion.div>
 
         {/* Regular 3 Plans */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-6xl mx-auto mb-12">
           {regularPlans.map((plan, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className={`relative bg-white rounded-3xl p-8 border-2 flex flex-col ${
+              className={`relative bg-white rounded-3xl p-5 sm:p-8 border-2 flex flex-col ${
                 plan.popular ? "border-[#0d47a1] shadow-xl shadow-[#0d47a1]/10" : "border-[#e1e6ec]"
               }`}
             >

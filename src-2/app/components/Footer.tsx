@@ -3,17 +3,17 @@ import { Link } from "react-router";
 
 export function Footer() {
   return (
-    <footer className="bg-[#1a2332] text-white py-24 relative overflow-hidden">
+    <footer className="bg-[#1a2332] text-white py-12 sm:py-24 relative overflow-hidden">
       {/* Subtle top border */}
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
       <div className="container mx-auto px-6 max-w-7xl relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-16 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 sm:gap-16 mb-8 sm:mb-16">
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0d47a1] to-[#00838f]" />
-              <span className="text-3xl font-bold">Clinic Flow</span>
+              <span className="text-2xl sm:text-3xl font-bold">Clinic Flow</span>
             </div>
             <p className="text-[#b8d4e6] leading-relaxed max-w-md">
               מערכת ניהול חולים אופליין מתקדמת לרופאים שמעריכים פרטיות,
