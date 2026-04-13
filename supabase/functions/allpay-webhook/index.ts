@@ -153,17 +153,31 @@ Deno.serve(async (req) => {
     const body = await req.json();
     console.log('Webhook received:', JSON.stringify(body));
 
-    // Verify signature — use the data exactly as received
-    const expectedSign = await computeSign(body, ALLPAY_KEY);
-    if (body.sign !== expectedSign) {
-      console.error('Webhook signature mismatch', {
-        received: body.sign,
-        expected: expectedSign,
-        payload: body,
-      });
-      return new Response('Invalid signature', { status: 403 });
+    // Verify payment authenticity by calling AllPay's paymentstatus API
+    // with our own signature (which we know works — we sign requests the same way).
+    const ALLPAY_LOGIN = Deno.env.get('ALLPAY_LOGIN')!;
+    const statusParams: Record<string, unknown> = {
+      login: ALLPAY_LOGIN,
+      order_id: body.order_id,
+    };
+    statusParams.sign = await computeSign(statusParams, ALLPAY_KEY);
+
+    const statusRes = await fetch(
+      'https://allpay.to/app/?show=paymentstatus&mode=api11',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(statusParams),
+      },
+    );
+    const statusData = await statusRes.json();
+    console.log('Payment status verification:', JSON.stringify(statusData));
+
+    if (!statusRes.ok || statusData.status !== 1) {
+      console.error('Payment not verified as successful:', statusData);
+      return new Response('Payment not confirmed', { status: 403 });
     }
-    console.log('Signature verified OK');
+    console.log('Payment verified OK via status API');
 
     // Only process successful payments
     if (body.status !== 1 && body.status !== '1') {
