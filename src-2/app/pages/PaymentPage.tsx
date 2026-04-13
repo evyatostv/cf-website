@@ -317,7 +317,30 @@ export function PaymentPage() {
                   <Lock className="w-4 h-4" />
                   {`שלם ${planInfo.price}`}
                 </button>
-                <p className="text-center text-xs text-[#6b7c93] mt-2">תשלום מאובטח SSL</p>
+
+                {/* Alternative payment methods — redirect to AllPay full page */}
+                <div className="flex items-center gap-2 my-3">
+                  <div className="flex-1 h-px bg-[#e1e6ec]" />
+                  <span className="text-xs text-[#6b7c93]">או</span>
+                  <div className="flex-1 h-px bg-[#e1e6ec]" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => { window.location.href = paymentUrl; }}
+                    className="flex items-center justify-center gap-2 bg-[#03353b] hover:bg-[#024047] text-white font-medium py-3 rounded-xl transition text-sm"
+                  >
+                    <img src="https://allpay.to/hfields/bit-cyan.svg" alt="Bit" className="h-4" />
+                    <span>שלם עם Bit</span>
+                  </button>
+                  <button
+                    onClick={() => { window.location.href = paymentUrl; }}
+                    className="flex items-center justify-center gap-2 bg-black hover:bg-gray-900 text-white font-medium py-3 rounded-xl transition text-sm"
+                  >
+                    <img src="https://allpay.to/hfields/apple-pay.svg" alt="Apple Pay" className="h-4" />
+                  </button>
+                </div>
+                <p className="text-center text-[10px] text-[#6b7c93] mt-3">תשלום מאובטח SSL</p>
               </>
             )}
           </div>
