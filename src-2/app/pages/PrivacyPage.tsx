@@ -33,7 +33,7 @@ export function PrivacyPage() {
                 <ul className="list-disc list-inside space-y-1 text-[#4a5568]">
                   <li>כתובת דוא״ל — לצורך ניהול חשבון, אספקת רישיון, ותמיכה</li>
                   <li>שם מלא (אם סופק) — לצורך זיהוי ותקשורת</li>
-                  <li>פרטי תשלום — מנוהלים על ידי Stripe בלבד; ClinicFlow לא שומרת פרטי כרטיס אשראי</li>
+                  <li>פרטי תשלום — מנוהלים על ידי AllPay (ספק סליקה ישראלי מורשה) בלבד; ClinicFlow לא שומרת ולא רואה פרטי כרטיס אשראי</li>
                 </ul>
               </div>
               <div>
@@ -59,7 +59,7 @@ export function PrivacyPage() {
             <h2 className="text-2xl font-semibold mb-3">4. עם מי משותפים הנתונים</h2>
             <ul className="list-disc list-inside space-y-2 text-[#4a5568]">
               <li><strong>ספק בסיס הנתונים</strong> — לניהול נתוני הרישיון והחשבון (שרתים ב-EU/US)</li>
-              <li><strong>Stripe</strong> — עיבוד תשלומים; בכפוף למדיניות הפרטיות של Stripe</li>
+              <li><strong>AllPay</strong> — סליקת תשלומים (Visa, Mastercard, AmEx, Bit, Apple Pay); AllPay מקבלת פרטי כרטיס אשראי, שם לקוח, אימייל, סכום, ומזהה הזמנה. בכפוף למדיניות הפרטיות של AllPay (<a href="https://www.allpay.co.il" target="_blank" rel="noopener noreferrer" className="text-[#0d47a1] hover:underline">allpay.co.il</a>)</li>
               <li><strong>ספק אחסון האתר</strong> — אחסון האתר ואנליטיקה אנונימית</li>
               <li>לצרכי שיווק — ייתכן שחלק מהנתונים והמידע ישמשו לצרכי שיווק. לא מועבר מידע אישי מזהה לצדדים שלישיים לצרכים אלה</li>
             </ul>
@@ -83,8 +83,7 @@ export function PrivacyPage() {
             <p className="text-[#4a5568] mt-3">לפניות בנושא פרטיות:</p>
             <ul className="list-none space-y-1 text-[#4a5568] mt-1">
               <li>דוא״ל: <a href="mailto:contact@clinic-flow.co.il" className="text-[#0d47a1] hover:underline">contact@clinic-flow.co.il</a></li>
-              <li>טלפון: <a href="tel:+972501234567" className="text-[#0d47a1] hover:underline">050-123-4567</a></li>
-              <li>כתובת: תל אביב, ישראל</li>
+              <li>כתובת: ישראל</li>
             </ul>
           </section>
 

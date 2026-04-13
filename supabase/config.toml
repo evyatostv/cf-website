@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.notify-contact]
 verify_jwt = false
+
+[functions.download-installer]
+verify_jwt = true

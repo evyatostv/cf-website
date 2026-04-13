@@ -1,7 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
-import { getUserAccess, UserAccess, PLAN_LABELS } from '@/lib/supabase';
+import { getUserAccess, UserAccess, PLAN_LABELS, supabase } from '@/lib/supabase';
+
+type DownloadOs = 'win' | 'mac' | 'linux';
+
+function detectOs(): DownloadOs {
+  const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+  if (/Mac/i.test(ua)) return 'mac';
+  if (/Linux/i.test(ua)) return 'linux';
+  return 'win';
+}
 import { motion } from 'motion/react';
 import {
   Download, LogOut, Clock, CheckCircle2, XCircle, AlertCircle,
@@ -38,6 +47,26 @@ export function DashboardPage() {
   const { user, loading, signOut } = useAuth();
   const [access, setAccess] = useState<UserAccess | null | undefined>(undefined);
   const [showChangelog, setShowChangelog] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
+  const handleDownload = async () => {
+    setDownloadError(null);
+    setDownloading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('download-installer', {
+        body: { os: detectOs() },
+      });
+      if (error) throw error;
+      if (!data?.downloadUrl) throw new Error('לא התקבל קישור להורדה');
+      window.location.href = data.downloadUrl;
+    } catch (err: any) {
+      console.error('download failed:', err);
+      setDownloadError(err?.message || 'ההורדה נכשלה. נסה/י שוב.');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   useEffect(() => {
     if (!loading && !user) { navigate('/login'); return; }
@@ -168,15 +197,17 @@ export function DashboardPage() {
                         </div>
                       </div>
 
-                      <a
-                        href="https://github.com/evyatostv/ClinicFlow/releases/latest"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white px-6 py-3.5 rounded-xl hover:shadow-lg transition w-full font-medium"
+                      <button
+                        onClick={handleDownload}
+                        disabled={downloading}
+                        className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white px-6 py-3.5 rounded-xl hover:shadow-lg transition w-full font-medium disabled:opacity-60 disabled:cursor-not-allowed"
                       >
                         <Download className="w-5 h-5" />
-                        הורד את האפליקציה (Windows / macOS)
-                      </a>
+                        {downloading ? 'מכין הורדה...' : 'הורד את האפליקציה (Windows / macOS)'}
+                      </button>
+                      {downloadError && (
+                        <p className="mt-2 text-xs text-red-600 text-center">{downloadError}</p>
+                      )}
 
                     </div>
                   )}
