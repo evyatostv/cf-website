@@ -279,8 +279,12 @@ export function PaymentPage() {
                     <img src="https://allpay.to/hfields/visa.svg" alt="Visa" className="h-6 rounded-[5px]" />
                     <img src="https://allpay.to/hfields/mastercard.svg" alt="Mastercard" className="h-6 rounded-[5px]" />
                     <img src="https://allpay.to/hfields/amex.svg" alt="AmEx" className="h-6 rounded-[5px]" />
-                    <img src="https://allpay.to/hfields/apple-pay.svg" alt="Apple Pay" className="h-6 bg-black rounded-[5px] px-1" />
-                    <img src="https://allpay.to/hfields/bit-cyan.svg" alt="Bit" className="h-6 bg-[#03353b] rounded-[5px] px-1" />
+                    <div className="h-6 bg-black rounded-[5px] px-1.5 flex items-center">
+                      <img src="https://allpay.to/hfields/apple-pay.svg" alt="Apple Pay" className="h-3" />
+                    </div>
+                    <div className="h-6 bg-[#03353b] rounded-[5px] px-1.5 flex items-center">
+                      <img src="https://allpay.to/hfields/bit-cyan.svg" alt="Bit" className="h-3" />
+                    </div>
                   </div>
 
                   {/* Trust badge */}
