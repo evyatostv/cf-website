@@ -43,39 +43,40 @@ function getCorsHeaders(req: Request) {
  * 5. Append API key at end (preceded by colon)
  * 6. SHA256 hash the result
  */
+/**
+ * AllPay signature — follows the official Node.js example exactly:
+ * 1. Remove `sign`, skip empty values
+ * 2. Sort keys alphabetically
+ * 3. For each value: if string and non-empty → push to chunks; if array → iterate items, sort item keys, push string values
+ * 4. Join chunks with ":", append API key, SHA256
+ */
 async function computeSign(params: Record<string, unknown>, apiKey: string): Promise<string> {
-  function extractSortedValues(obj: unknown): string[] {
-    if (Array.isArray(obj)) {
-      const values: string[] = [];
-      for (const item of obj) {
-        values.push(...extractSortedValues(item));
+  const chunks: string[] = [];
+
+  const sortedKeys = Object.keys(params).filter(k => k !== 'sign').sort();
+
+  for (const key of sortedKeys) {
+    const value = params[key];
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (typeof item === 'object' && item !== null) {
+          const sortedItemKeys = Object.keys(item).sort();
+          for (const name of sortedItemKeys) {
+            const val = (item as Record<string, unknown>)[name];
+            if (typeof val === 'string' && val.trim() !== '') {
+              chunks.push(val);
+            }
+          }
+        }
       }
-      return values;
+    } else if (typeof value === 'string' && value.trim() !== '') {
+      chunks.push(value);
     }
-    if (obj !== null && typeof obj === 'object') {
-      const values: string[] = [];
-      const sortedKeys = Object.keys(obj as Record<string, unknown>).sort();
-      for (const key of sortedKeys) {
-        const val = (obj as Record<string, unknown>)[key];
-        if (val === '' || val === null || val === undefined) continue;
-        values.push(...extractSortedValues(val));
-      }
-      return values;
-    }
-    return [String(obj)];
   }
 
-  // Remove sign, exclude empty values
-  const filtered: Record<string, unknown> = {};
-  for (const [key, val] of Object.entries(params)) {
-    if (key === 'sign') continue;
-    if (val === '' || val === null || val === undefined) continue;
-    filtered[key] = val;
-  }
-
-  const values = extractSortedValues(filtered);
-  values.push(apiKey);
-  const signString = values.join(':');
+  chunks.push(apiKey);
+  const signString = chunks.join(':');
 
   const encoder = new TextEncoder();
   const encoded = encoder.encode(signString);
@@ -162,18 +163,18 @@ Deno.serve(async (req) => {
       backlink_url: `${SITE_URL}/#/pricing`,
       client_name: user.user_metadata?.full_name || '',
       client_email: user.email || '',
-      show_bit: true,
-      show_applepay: true,
-      inst: 3,
-      inst_fixed: 0,
+      show_bit: 'true',
+      show_applepay: 'true',
+      inst: '3',
+      inst_fixed: '0',
       add_field_1: user.id,
       add_field_2: plan,
       items: [
         {
           name: PLAN_NAMES[plan],
-          price: price,
-          qty: 1,
-          vat: 1,
+          price: String(price),
+          qty: '1',
+          vat: '1',
         },
       ],
     };

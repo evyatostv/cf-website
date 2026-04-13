@@ -17,38 +17,37 @@ const PLAN_AMOUNTS: Record<string, number> = {
  * AllPay signature verification — same algorithm as request signing.
  * Applied exactly on the data received from AllPay, without type transformations.
  */
+/**
+ * AllPay signature verification — same algorithm as the official Node.js example.
+ * Applied exactly on webhook data as received, without type transformations.
+ */
 async function computeSign(params: Record<string, unknown>, apiKey: string): Promise<string> {
-  function extractSortedValues(obj: unknown): string[] {
-    if (Array.isArray(obj)) {
-      const values: string[] = [];
-      for (const item of obj) {
-        values.push(...extractSortedValues(item));
+  const chunks: string[] = [];
+
+  const sortedKeys = Object.keys(params).filter(k => k !== 'sign').sort();
+
+  for (const key of sortedKeys) {
+    const value = params[key];
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (typeof item === 'object' && item !== null) {
+          const sortedItemKeys = Object.keys(item).sort();
+          for (const name of sortedItemKeys) {
+            const val = (item as Record<string, unknown>)[name];
+            if (typeof val === 'string' && val.trim() !== '') {
+              chunks.push(val);
+            }
+          }
+        }
       }
-      return values;
+    } else if (typeof value === 'string' && value.trim() !== '') {
+      chunks.push(value);
     }
-    if (obj !== null && typeof obj === 'object') {
-      const values: string[] = [];
-      const sortedKeys = Object.keys(obj as Record<string, unknown>).sort();
-      for (const key of sortedKeys) {
-        const val = (obj as Record<string, unknown>)[key];
-        if (val === '' || val === null || val === undefined) continue;
-        values.push(...extractSortedValues(val));
-      }
-      return values;
-    }
-    return [String(obj)];
   }
 
-  const filtered: Record<string, unknown> = {};
-  for (const [key, val] of Object.entries(params)) {
-    if (key === 'sign') continue;
-    if (val === '' || val === null || val === undefined) continue;
-    filtered[key] = val;
-  }
-
-  const values = extractSortedValues(filtered);
-  values.push(apiKey);
-  const signString = values.join(':');
+  chunks.push(apiKey);
+  const signString = chunks.join(':');
 
   const encoder = new TextEncoder();
   const encoded = encoder.encode(signString);
