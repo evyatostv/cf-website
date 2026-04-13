@@ -19,7 +19,7 @@ export const ContainerScroll = ({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const scaleDimensions = () => (isMobile ? [0.7, 0.9] : [1.05, 1]);
+  const scaleDimensions = () => (isMobile ? [0.95, 1] : [1.05, 1]);
 
   const springConfig = { stiffness: 120, damping: 25, mass: 0.8 };
 
@@ -74,25 +74,13 @@ export const Card = ({
           boxShadow:
             "0 0 #0000004d, 0 9px 20px #0000004a, 0 37px 37px #00000042, 0 84px 50px #00000026, 0 149px 60px #0000000a, 0 233px 65px #00000003",
         }}
-        className="h-[30rem] md:h-[40rem] w-full border-4 border-[#6C6C6C] p-2 md:p-6 bg-[#222222] rounded-t-[30px] md:rounded-[30px] shadow-2xl"
+        className="h-[24rem] sm:h-[30rem] md:h-[40rem] w-full border-4 border-[#6C6C6C] p-2 md:p-6 bg-[#222222] rounded-t-[20px] sm:rounded-t-[30px] md:rounded-[30px] shadow-2xl"
       >
         <div className="h-full w-full overflow-hidden rounded-2xl bg-gray-100 dark:bg-zinc-900 md:rounded-2xl md:p-4">
           {children}
         </div>
       </motion.div>
 
-      {/* Laptop base — visible on mobile only */}
-      <div className="md:hidden">
-        {/* Hinge */}
-        <div className="mx-auto w-[90%] h-[6px] bg-gradient-to-b from-[#4a4a4a] to-[#333] rounded-b-sm" />
-        {/* Keyboard base */}
-        <div className="mx-auto w-[105%] -ml-[2.5%] h-[14px] bg-gradient-to-b from-[#c0c0c0] to-[#a8a8a8] rounded-b-lg shadow-md relative">
-          {/* Trackpad indicator */}
-          <div className="absolute top-[3px] left-1/2 -translate-x-1/2 w-[60px] h-[4px] bg-[#b0b0b0] rounded-full" />
-        </div>
-        {/* Bottom edge */}
-        <div className="mx-auto w-[108%] -ml-[4%] h-[3px] bg-[#888] rounded-b-xl" />
-      </div>
     </div>
   );
 };
