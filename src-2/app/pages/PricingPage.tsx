@@ -104,17 +104,17 @@ export function PricingPage() {
         return { label: "✓ החבילה שלך", disabled: true, style: "bg-green-50 text-green-700 border border-green-200 cursor-default" };
       }
       if (thisIdx > currentIdx) {
-        return { label: "שדרג לחבילה זו", disabled: false, isUpgrade: true, style: isPopular ? "bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white hover:shadow-lg hover:shadow-[#0d47a1]/30" : "bg-[#f5f7f9] text-[#1a2332] hover:bg-[#e8f4f8] border border-[#d1dbe5] hover:border-[#0d47a1]" };
+        return { label: "שדרג לחבילה זו", disabled: false, isUpgrade: true, style: isPopular ? "bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white shadow-lg shadow-[#0d47a1]/25 hover:shadow-xl hover:shadow-[#0d47a1]/40 hover:-translate-y-0.5" : "bg-white text-[#0d47a1] border-2 border-[#0d47a1] shadow-md hover:bg-[#0d47a1] hover:text-white hover:shadow-lg hover:-translate-y-0.5" };
       }
-      return { label: "חבילה נמוכה יותר", disabled: true, style: "bg-[#f5f7f9] text-[#6b7c93] border border-[#e1e6ec] cursor-default" };
+      return { label: "חבילה נמוכה יותר", disabled: true, style: "bg-[#f5f7f9] text-[#6b7c93] border border-[#e1e6ec] cursor-not-allowed" };
     }
     return {
       label: "התחילו עכשיו",
       disabled: false,
       isUpgrade: false,
       style: isPopular
-        ? "bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white hover:shadow-lg hover:shadow-[#0d47a1]/30"
-        : "bg-[#f5f7f9] text-[#1a2332] hover:bg-[#e8f4f8] border border-[#d1dbe5] hover:border-[#0d47a1]"
+        ? "bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white shadow-lg shadow-[#0d47a1]/25 hover:shadow-xl hover:shadow-[#0d47a1]/40 hover:-translate-y-0.5"
+        : "bg-white text-[#0d47a1] border-2 border-[#0d47a1] shadow-md hover:bg-[#0d47a1] hover:text-white hover:shadow-lg hover:-translate-y-0.5"
     };
   }
 
@@ -198,7 +198,7 @@ export function PricingPage() {
                 ) : (
                   <Link
                     to={`/payment?plan=${plan.slug}${btn.isUpgrade ? '&upgrade=true' : ''}`}
-                    className={`block w-full py-4 rounded-xl text-center font-medium transition-all active:scale-95 ${btn.style}`}
+                    className={`block w-full py-4 rounded-xl text-center font-semibold cursor-pointer transition-all duration-200 active:scale-95 active:translate-y-0 ${btn.style}`}
                   >
                     {btn.label}
                   </Link>
