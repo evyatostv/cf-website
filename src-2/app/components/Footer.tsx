@@ -1,5 +1,4 @@
 import { Heart } from "lucide-react";
-import { Link } from "react-router";
 
 export function Footer() {
   return (
@@ -26,29 +25,29 @@ export function Footer() {
             <h4 className="text-xl font-semibold mb-6">קישורים</h4>
             <ul className="space-y-4">
               <li>
-                <Link to="/blog" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="/#/blog" className="text-[#b8d4e6] hover:text-white transition-colors">
                   בלוג
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/about" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="/#/about" className="text-[#b8d4e6] hover:text-white transition-colors">
                   אודות
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/features" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="/#/features" className="text-[#b8d4e6] hover:text-white transition-colors">
                   יכולות
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/pricing" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="/#/pricing" className="text-[#b8d4e6] hover:text-white transition-colors">
                   מחירים
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/contact" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="/#/contact" className="text-[#b8d4e6] hover:text-white transition-colors">
                   תמיכה
-                </Link>
+                </a>
               </li>
             </ul>
           </div>
@@ -58,24 +57,24 @@ export function Footer() {
             <h4 className="text-xl font-semibold mb-6">מדיניות</h4>
             <ul className="space-y-4">
               <li>
-                <Link to="/terms" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="/#/terms" className="text-[#b8d4e6] hover:text-white transition-colors">
                   תנאי שימוש
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/privacy" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="/#/privacy" className="text-[#b8d4e6] hover:text-white transition-colors">
                   מדיניות פרטיות
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/disclaimer" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="/#/disclaimer" className="text-[#b8d4e6] hover:text-white transition-colors">
                   הסרת אחריות
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/refund" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="/#/refund" className="text-[#b8d4e6] hover:text-white transition-colors">
                   מדיניות החזרים
-                </Link>
+                </a>
               </li>
             </ul>
           </div>
