@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { checkRateLimit, tooManyResponse } from '../_shared/rate-limit.ts';
 
 const ALLPAY_LOGIN = Deno.env.get('ALLPAY_LOGIN')!;
 const ALLPAY_KEY = Deno.env.get('ALLPAY_KEY')!;
@@ -91,6 +92,12 @@ Deno.serve(async (req) => {
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
+  }
+
+  // Rate limit by client IP: 10 requests / minute
+  const rl = await checkRateLimit(req, { name: 'create-allpay-payment', max: 10, windowSec: 60 });
+  if (!rl.ok) {
+    return tooManyResponse(rl.retryAfter, corsHeaders);
   }
 
   const authHeader = req.headers.get('Authorization');
