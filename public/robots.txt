@@ -1,4 +1,13 @@
 User-agent: *
 Allow: /
 
+# Keep app & auth pages out of the index — focus crawl budget on marketing pages
+Disallow: /login
+Disallow: /signup
+Disallow: /dashboard
+Disallow: /payment
+Disallow: /thank-you
+Disallow: /calendar
+Disallow: /reset-password
+
 Sitemap: https://clinic-flow.co.il/sitemap.xml

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { createHashRouter } from "react-router";
+import { createBrowserRouter } from "react-router";
 import { Layout } from "@/app/components/Layout";
 
 const HomePage = lazy(() => import("@/app/pages/HomePage").then(m => ({ default: m.HomePage })));
@@ -20,6 +20,7 @@ const RefundPage = lazy(() => import("@/app/pages/RefundPage").then(m => ({ defa
 const BlogPage = lazy(() => import("@/app/pages/BlogPage").then(m => ({ default: m.BlogPage })));
 const BlogPostPage = lazy(() => import("@/app/pages/BlogPostPage").then(m => ({ default: m.BlogPostPage })));
 const ResetPasswordPage = lazy(() => import("@/app/pages/ResetPasswordPage").then(m => ({ default: m.ResetPasswordPage })));
+const NotFoundPage = lazy(() => import("@/app/pages/NotFoundPage").then(m => ({ default: m.NotFoundPage })));
 
 const PageLoader = () => (
   <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -28,7 +29,7 @@ const PageLoader = () => (
   </div>
 );
 
-export const router = createHashRouter([
+export const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
@@ -51,6 +52,7 @@ export const router = createHashRouter([
       { path: "blog", element: <Suspense fallback={<PageLoader />}><BlogPage /></Suspense> },
       { path: "blog/:slug", element: <Suspense fallback={<PageLoader />}><BlogPostPage /></Suspense> },
       { path: "reset-password", element: <Suspense fallback={<PageLoader />}><ResetPasswordPage /></Suspense> },
+      { path: "*", element: <Suspense fallback={<PageLoader />}><NotFoundPage /></Suspense> },
     ],
   },
 ]);

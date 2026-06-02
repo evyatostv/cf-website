@@ -1,0 +1,15 @@
+{
+  "name": "ClinicFlow",
+  "short_name": "ClinicFlow",
+  "description": "תוכנה לניהול מרפאה פרטית — תיק רפואי דיגיטלי אופליין",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0d47a1",
+  "lang": "he",
+  "dir": "rtl",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

@@ -25,27 +25,27 @@ export function Footer() {
             <h4 className="text-xl font-semibold mb-6">קישורים</h4>
             <ul className="space-y-4">
               <li>
-                <a href="/#/blog" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="/blog" className="text-[#b8d4e6] hover:text-white transition-colors">
                   בלוג
                 </a>
               </li>
               <li>
-                <a href="/#/about" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="/about" className="text-[#b8d4e6] hover:text-white transition-colors">
                   אודות
                 </a>
               </li>
               <li>
-                <a href="/#/features" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="/features" className="text-[#b8d4e6] hover:text-white transition-colors">
                   יכולות
                 </a>
               </li>
               <li>
-                <a href="/#/pricing" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="/pricing" className="text-[#b8d4e6] hover:text-white transition-colors">
                   מחירים
                 </a>
               </li>
               <li>
-                <a href="/#/contact" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="/contact" className="text-[#b8d4e6] hover:text-white transition-colors">
                   תמיכה
                 </a>
               </li>
@@ -57,22 +57,22 @@ export function Footer() {
             <h4 className="text-xl font-semibold mb-6">מדיניות</h4>
             <ul className="space-y-4">
               <li>
-                <a href="/#/terms" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="/terms" className="text-[#b8d4e6] hover:text-white transition-colors">
                   תנאי שימוש
                 </a>
               </li>
               <li>
-                <a href="/#/privacy" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="/privacy" className="text-[#b8d4e6] hover:text-white transition-colors">
                   מדיניות פרטיות
                 </a>
               </li>
               <li>
-                <a href="/#/disclaimer" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="/disclaimer" className="text-[#b8d4e6] hover:text-white transition-colors">
                   הסרת אחריות
                 </a>
               </li>
               <li>
-                <a href="/#/refund" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="/refund" className="text-[#b8d4e6] hover:text-white transition-colors">
                   מדיניות החזרים
                 </a>
               </li>
@@ -84,7 +84,7 @@ export function Footer() {
             <h4 className="text-xl font-semibold mb-6">צור קשר</h4>
             <ul className="space-y-4">
               <li>
-                <a href="mailto:contact@clinic-flow.co.il" className="text-[#b8d4e6] hover:text-white transition-colors">
+                <a href="mailto:contact@clinic-flow.co.il" className="text-[#b8d4e6] hover:text-white transition-colors break-all">
                   contact@clinic-flow.co.il
                 </a>
               </li>

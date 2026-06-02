@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0d47a1" />
     <title>ClinicFlow — תוכנה לניהול מרפאה פרטית | תיק רפואי דיגיטלי אופליין</title>
     <meta name="description" content="תוכנה לניהול מרפאה פרטית לרופאים בישראל. תיק רפואי דיגיטלי, ניהול תורים, מסמכים, חשבוניות וקבלות — הכל אופליין על המחשב שלך. ללא מנוי חודשי, תשלום חד-פעמי. מערכת ניהול קליניקה מאובטחת ללא ענן." />
     <meta name="keywords" content="תוכנה לניהול מרפאה, תוכנה לניהול קליניקה, מערכת ניהול מרפאה פרטית, תוכנה לרופא פרטי, תיק רפואי דיגיטלי, ניהול תורים למרפאה, ניהול מטופלים, תוכנה רפואית אופליין, מערכת תורים לרופא, חשבוניות למרפאה, תוכנה לרופא ללא ענן, מערכת רפואית ללא אינטרנט, תוכנה רפואית ללא מנוי חודשי, ClinicFlow, clinic flow, רופא פרטי ישראל, ניהול קליניקה, תוכנת מרפאה" />
@@ -25,6 +28,61 @@
     <meta name="twitter:title" content="ClinicFlow — תוכנת ניהול מרפאה פרטית" />
     <meta name="twitter:description" content="תוכנת ניהול מרפאה אופליין לרופאים פרטיים. תיק רפואי, יומן, מסמכים, חשבוניות — הכל מאובטח על המחשב שלך." />
     <meta name="twitter:image" content="https://clinic-flow.co.il/og-image.png" />
+
+    <!-- Legacy hash-router URLs (/#/path) → clean URLs, runs before the SPA mounts -->
+    <script>
+      (function () {
+        var h = window.location.hash;
+        if (h.indexOf("#/") === 0) {
+          window.location.replace(h.substring(1) + window.location.search);
+        }
+      })();
+    </script>
+
+    <!-- Structured data: tells Google ClinicFlow is clinic-management software -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://clinic-flow.co.il/#organization",
+          "name": "ClinicFlow",
+          "url": "https://clinic-flow.co.il",
+          "logo": "https://clinic-flow.co.il/og-image.png",
+          "email": "info@clinic-flow.co.il",
+          "areaServed": "IL",
+          "description": "תוכנה לניהול מרפאה וקליניקה פרטית — אופליין, ללא ענן, תשלום חד-פעמי."
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://clinic-flow.co.il/#website",
+          "url": "https://clinic-flow.co.il",
+          "name": "ClinicFlow",
+          "inLanguage": "he-IL",
+          "publisher": { "@id": "https://clinic-flow.co.il/#organization" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "ClinicFlow",
+          "operatingSystem": "Windows, macOS",
+          "applicationCategory": "BusinessApplication",
+          "inLanguage": "he-IL",
+          "url": "https://clinic-flow.co.il",
+          "description": "מערכת לניהול קליניקה ומרפאה פרטית: יומן תורים, תיק רפואי דיגיטלי, מסמכים, חשבוניות וקבלות — הכל מאוחסן ומוצפן על המחשב שלך, עובד גם ללא אינטרנט, בתשלום חד-פעמי ללא מנוי חודשי.",
+          "featureList": "ניהול תורים, תיק רפואי דיגיטלי, חשבוניות וקבלות, אחסון מקומי מוצפן, עבודה אופליין ללא ענן",
+          "publisher": { "@id": "https://clinic-flow.co.il/#organization" },
+          "offers": {
+            "@type": "AggregateOffer",
+            "priceCurrency": "ILS",
+            "lowPrice": "759",
+            "highPrice": "1299",
+            "offerCount": "3"
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
