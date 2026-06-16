@@ -1,9 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { checkRateLimit, tooManyResponse } from "../_shared/rate-limit.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
 const NOTIFY_EMAIL = Deno.env.get("NOTIFY_EMAIL") || "contact@clinic-flow.co.il";
 
 serve(async (req) => {
+  // Rate limit by client IP: 5 requests / minute (this function has no CORS headers)
+  const rl = await checkRateLimit(req, { name: "notify-contact", max: 5, windowSec: 60 });
+  if (!rl.ok) {
+    return tooManyResponse(rl.retryAfter, {});
+  }
+
   // This function is called by a Supabase Database Webhook on INSERT into contact_messages
   const payload = await req.json();
   const record = payload.record;
