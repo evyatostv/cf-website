@@ -11,7 +11,7 @@
   </defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
   <rect x="60" y="520" width="120" height="4" rx="2" fill="url(#accent)"/>
-  <rect x="60" y="60" width="56" height="56" rx="14" fill="url(#accent)"/>
+  <svg x="60" y="60" width="56" height="56" viewBox="0 0 24 24"><rect width="24" height="24" rx="5.4" fill="#2756A6"/><svg x="4.5" y="4.5" width="15" height="15" viewBox="0 0 24 24"><path d="M4.5 16.5 C4.5 10 10 6 14.5 8 C18.5 9.8 19 14.5 15.5 16 C13.2 17 11 15.6 11.8 13.2" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></svg>
   <text x="130" y="100" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#ffffff">ClinicFlow</text>
   <text x="1140" y="100" font-family="Arial, sans-serif" font-size="18" fill="rgba(255,255,255,0.4)" text-anchor="end">clinic-flow.co.il</text>
   <text x="600" y="280" font-family="Arial, sans-serif" font-size="52" font-weight="700" fill="#ffffff" text-anchor="middle" direction="rtl">תוכנת ניהול מרפאה פרטית</text>

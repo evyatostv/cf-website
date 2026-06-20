@@ -53,12 +53,27 @@ export function Navigation() {
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
-              <motion.div
+              <motion.svg
                 whileHover={{ rotate: 360 }}
                 transition={{ duration: 0.6 }}
-                className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0d47a1] to-[#00838f]"
-              />
-              <span className={`text-xl font-bold transition-colors ${scrolled ? "text-[#1a2332]" : "text-white"}`}>Clinic Flow</span>
+                viewBox="0 0 24 24"
+                className="w-10 h-10 rounded-xl"
+                role="img"
+                aria-label="ClinicFlow"
+              >
+                <rect width="24" height="24" rx="5.4" fill="#2756A6" />
+                <svg x="4.5" y="4.5" width="15" height="15" viewBox="0 0 24 24">
+                  <path
+                    d="M4.5 16.5 C4.5 10 10 6 14.5 8 C18.5 9.8 19 14.5 15.5 16 C13.2 17 11 15.6 11.8 13.2"
+                    fill="none"
+                    stroke="#FFFFFF"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </motion.svg>
+              <span className={`text-xl font-bold transition-colors ${scrolled ? "text-[#1a2332]" : "text-white"}`}>ClinicFlow</span>
             </Link>
 
             {/* Desktop nav links */}
