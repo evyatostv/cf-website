@@ -49,6 +49,16 @@ export function Footer() {
                   תמיכה
                 </a>
               </li>
+              <li>
+                <a
+                  href="https://docs.clinic-flow.co.il"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#b8d4e6] hover:text-white transition-colors"
+                >
+                  מרכז מידע
+                </a>
+              </li>
             </ul>
           </div>
 
