@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Clinic Flow — OG image (1200×630)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0}
+  body{background:#6b7280;display:grid;place-items:center;min-height:100vh;font-family:'Heebo',sans-serif}
+  /* Exact OG canvas — screenshot this element at 1200×630 (or 2400×1260 @2x) */
+  .og{
+    width:1200px;height:630px;position:relative;overflow:hidden;
+    background:linear-gradient(135deg,#0d47a1 0%,#0a5e87 52%,#00838f 100%);
+    color:#fff;display:flex;flex-direction:column;justify-content:center;
+    padding:0 96px;direction:rtl;
+  }
+  .og::before{content:"";position:absolute;width:640px;height:640px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.16),transparent 64%);top:-220px;inset-inline-end:-160px}
+  .og::after{content:"";position:absolute;width:520px;height:520px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.10),transparent 66%);bottom:-200px;inset-inline-start:-120px}
+  .badge{display:inline-flex;align-items:center;gap:12px;align-self:flex-start;
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);
+    padding:12px 24px;border-radius:999px;font-size:24px;font-weight:500;backdrop-filter:blur(6px);position:relative}
+  .badge .dot{width:13px;height:13px;border-radius:50%;background:#7ce0e8;box-shadow:0 0 0 6px rgba(124,224,232,.25)}
+  .wm{position:relative;font-size:108px;font-weight:700;letter-spacing:-.02em;margin-top:34px;display:flex;align-items:center;gap:26px}
+  .wm svg{width:96px;height:96px;flex:0 0 auto}
+  .tag{position:relative;margin-top:26px;font-size:40px;font-weight:600;color:rgba(255,255,255,.92)}
+  .sub{position:relative;margin-top:14px;font-size:27px;font-weight:400;color:rgba(255,255,255,.78);max-width:760px;line-height:1.5}
+  .url{position:absolute;bottom:48px;inset-inline-start:96px;font-size:24px;font-weight:500;color:rgba(255,255,255,.7);direction:ltr}
+</style>
+</head>
+<body>
+  <div class="og" id="og">
+    <span class="badge"><span class="dot"></span> בבנייה — בקרוב</span>
+    <div class="wm">
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M3 17.5h5.2l2.4-7.4a1.1 1.1 0 0 1 2.09-.03l4.2 12.1a1.1 1.1 0 0 0 2.07.05l2.2-6.05a1.1 1.1 0 0 1 1.03-.72H29"
+          stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Clinic Flow
+    </div>
+    <div class="tag">פחות ניירת. יותר רפואה.</div>
+    <div class="sub">תוכנת ניהול קליניקה אופליין — הנתונים נשארים אצלכם, מוצפנים מקצה לקצה.</div>
+    <div class="url">clinic-flow.co.il</div>
+  </div>
+</body>
+</html>

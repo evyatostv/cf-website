@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router";
 import { Navigation } from "@/app/components/Navigation";
 import { Footer } from "@/app/components/Footer";
+import { CookieBanner } from "@/app/components/CookieBanner";
 import { useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 
@@ -30,6 +31,7 @@ export function Layout() {
         </motion.div>
       </AnimatePresence>
       <Footer />
+      <CookieBanner />
     </div>
   );
 }

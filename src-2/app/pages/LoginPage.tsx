@@ -49,41 +49,49 @@ export function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#1a2332] mb-2">
+              <label htmlFor="login-email" className="block text-sm font-medium text-[#1a2332] mb-2">
                 דוא"ל
               </label>
               <input
+                id="login-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-[#e1e6ec] rounded-lg focus:outline-none focus:border-[#0d47a1] transition"
+                autoComplete="email"
+                inputMode="email"
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck={false}
+                className="w-full px-4 py-3 text-base border border-[#e1e6ec] rounded-lg focus:outline-none focus:border-[#0d47a1] focus:ring-2 focus:ring-[#0d47a1]/20 transition"
                 placeholder="your@email.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#1a2332] mb-2">
+              <label htmlFor="login-password" className="block text-sm font-medium text-[#1a2332] mb-2">
                 סיסמה
               </label>
               <PasswordInput
+                id="login-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete="current-password"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-medium py-3 rounded-lg hover:shadow-lg transition disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-medium py-3.5 rounded-lg hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed min-h-[48px]"
             >
               {loading ? 'כניסה...' : 'כנס'}
             </button>
           </form>
 
           <div className="mt-4 text-center">
-            <Link to="/reset-password" className="text-sm text-[#6b7c93] hover:text-[#0d47a1] transition">
+            <Link to="/reset-password" className="text-sm font-medium text-[#0d47a1] hover:underline transition">
               שכחתי סיסמה
             </Link>
           </div>

@@ -31,9 +31,9 @@ const professions = [
 export function Hero() {
   return (
     <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-white via-[#f8fafb] to-[#f0f4f7]">
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 right-1/4 w-96 h-96 bg-[#0d47a1]/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-1/4 w-96 h-96 bg-[#00838f]/5 rounded-full blur-3xl" />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+        <div className="absolute top-20 right-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-[#0d47a1]/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 left-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-[#00838f]/5 rounded-full blur-3xl" />
       </div>
 
       <div className="relative z-10 container mx-auto px-6 max-w-6xl">
@@ -61,18 +61,18 @@ export function Hero() {
             transition={{ delay: 0.3, duration: 0.6 }}
             className="mb-2"
           >
-            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-[#1a2332] leading-[1.1] tracking-tight mb-4">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-[#1a2332] leading-[1.1] tracking-tight mb-4 px-2">
               פחות ניירת. יותר רפואה.
             </h1>
 
             {/* Morphing profession text */}
-            <div className="relative h-20 sm:h-28 md:h-40 lg:h-44 flex items-end justify-center pb-2 mt-4 sm:mt-8">
+            <div className="relative h-16 sm:h-28 md:h-40 lg:h-44 flex items-end justify-center pb-2 mt-4 sm:mt-8">
               <GooeyText
                 texts={professions}
                 morphTime={0.6}
                 cooldownTime={1.25}
                 className="w-full h-full"
-                textClassName="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-[#0d47a1] to-[#00838f] bg-clip-text text-transparent whitespace-nowrap"
+                textClassName="text-2xl sm:text-5xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-[#0d47a1] to-[#00838f] bg-clip-text text-transparent whitespace-nowrap"
               />
             </div>
           </motion.div>

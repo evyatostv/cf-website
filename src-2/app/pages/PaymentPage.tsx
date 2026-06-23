@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
 import { motion } from 'motion/react';
-import { AlertCircle, Shield, ArrowLeft, Check, Lock } from 'lucide-react';
-import { supabase, logPolicyAcceptance } from '@/lib/supabase';
+import { AlertCircle, Shield, ArrowLeft, Check, Lock, Loader2 } from 'lucide-react';
+import { supabase, logPolicyAcceptance, SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase';
 
 const PLAN_INFO: Record<string, { name: string; price: string; amount: number; features: string[] }> = {
   basic: {
@@ -69,13 +69,13 @@ export function PaymentPage() {
       }
 
       const res = await fetch(
-        'https://dmuwxydmuylcbhcoagri.supabase.co/functions/v1/create-allpay-payment',
+        `${SUPABASE_URL}/functions/v1/create-allpay-payment`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtdXd4eWRtdXlsY2JoY29hZ3JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MjAyMDYsImV4cCI6MjA4NDk5NjIwNn0.GETQeDKZk9FV41B7HCN95guPEkyWhJSQ8VYb_SNGfWY',
+            'apikey': SUPABASE_ANON_KEY,
           },
           body: JSON.stringify({ plan, isUpgrade }),
         }
@@ -214,10 +214,20 @@ export function PaymentPage() {
               <button
                 onClick={handlePayment}
                 disabled={processing || !termsAccepted}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-bold py-4 rounded-xl hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-lg mb-3"
+                aria-busy={processing}
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-bold py-4 rounded-xl hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed text-lg mb-3 min-h-[56px]"
               >
-                <Lock className="w-4 h-4" />
-                {`שלם ${planInfo.price}`}
+                {processing ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    מעבד תשלום...
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4" />
+                    {`שלם ${planInfo.price}`}
+                  </>
+                )}
               </button>
 
               {/* Payment methods */}

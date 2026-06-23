@@ -35,6 +35,14 @@ export function Navigation() {
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
+  // Close drawer on Escape
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMobileOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mobileOpen]);
+
   const navigate = useNavigate();
   const isHome = location.pathname === "/";
   const isActive = (path: string) => location.pathname === path;
@@ -114,8 +122,10 @@ export function Navigation() {
             {/* Mobile hamburger */}
             <button
               onClick={() => setMobileOpen((o) => !o)}
-              className="md:hidden flex flex-col justify-center items-center w-10 h-10 gap-1.5 rounded-xl hover:bg-[#f5f7f9] transition-colors"
+              className="md:hidden flex flex-col justify-center items-center w-12 h-12 gap-1.5 rounded-xl hover:bg-[#f5f7f9] transition-colors"
               aria-label={mobileOpen ? "סגור תפריט" : "פתח תפריט"}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-drawer"
             >
               <motion.span
                 animate={mobileOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
@@ -156,11 +166,15 @@ export function Navigation() {
             {/* Drawer panel */}
             <motion.div
               key="drawer"
+              id="mobile-drawer"
+              role="dialog"
+              aria-modal="true"
+              aria-label="תפריט ראשי"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 300 }}
-              className="fixed top-0 right-0 bottom-0 z-50 w-72 bg-white shadow-2xl md:hidden flex flex-col pt-24 pb-8 px-6"
+              className="fixed top-0 right-0 bottom-0 z-50 w-[min(86vw,20rem)] bg-white shadow-2xl md:hidden flex flex-col pt-24 pb-8 px-6 overflow-y-auto"
             >
               {/* Nav links */}
               <nav className="flex flex-col gap-1 flex-1">
