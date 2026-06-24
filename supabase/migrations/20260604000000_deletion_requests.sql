@@ -40,7 +40,12 @@ create policy "deletion_requests own insert"
 
 drop policy if exists "deletion_requests own update" on public.deletion_requests;
 create policy "deletion_requests own update"
-  on public.deletion_requests for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+  on public.deletion_requests for update
+  -- Users may only act on their own *pending* request (i.e. cancel it). They may
+  -- never write status='completed' or revive a finished/canceled request — only
+  -- the service_role (process-deletions, which bypasses RLS) does that.
+  using (auth.uid() = user_id and status = 'pending')
+  with check (auth.uid() = user_id and status in ('pending', 'canceled'));
 
 -- Immutable audit log of completed erasures. No FK to auth.users (must survive
 -- the user's deletion); stores a one-way hash of the email, never the raw value.
