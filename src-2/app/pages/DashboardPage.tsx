@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
 import { getUserAccess, UserAccess, PLAN_LABELS, supabase } from '@/lib/supabase';
+import { DeleteAccountSection } from '@/app/components/DeleteAccountSection';
 
 type DownloadOs = 'win' | 'mac' | 'linux';
 
@@ -410,6 +411,11 @@ export function DashboardPage() {
                 </div>
               </motion.div>
             </div>
+          </div>
+
+          {/* Account data deletion */}
+          <div className="mt-6">
+            <DeleteAccountSection />
           </div>
         </motion.div>
       </div>

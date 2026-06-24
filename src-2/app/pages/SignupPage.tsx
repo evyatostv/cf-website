@@ -130,73 +130,88 @@ export function SignupPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#1a2332] mb-2">
+              <label htmlFor="signup-name" className="block text-sm font-medium text-[#1a2332] mb-2">
                 שם מלא
               </label>
               <input
+                id="signup-name"
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-[#e1e6ec] rounded-lg focus:outline-none focus:border-[#0d47a1] transition"
+                autoComplete="name"
+                className="w-full px-4 py-3 text-base border border-[#e1e6ec] rounded-lg focus:outline-none focus:border-[#0d47a1] focus:ring-2 focus:ring-[#0d47a1]/20 transition"
                 placeholder="שם מלא"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#1a2332] mb-2">
+              <label htmlFor="signup-phone" className="block text-sm font-medium text-[#1a2332] mb-2">
                 מספר טלפון
               </label>
               <input
+                id="signup-phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-[#e1e6ec] rounded-lg focus:outline-none focus:border-[#0d47a1] transition"
+                autoComplete="tel"
+                inputMode="tel"
+                className="w-full px-4 py-3 text-base border border-[#e1e6ec] rounded-lg focus:outline-none focus:border-[#0d47a1] focus:ring-2 focus:ring-[#0d47a1]/20 transition"
                 placeholder="05X-XXX-XXXX"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#1a2332] mb-2">
+              <label htmlFor="signup-email" className="block text-sm font-medium text-[#1a2332] mb-2">
                 דוא"ל
               </label>
               <input
+                id="signup-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-[#e1e6ec] rounded-lg focus:outline-none focus:border-[#0d47a1] transition"
+                autoComplete="email"
+                inputMode="email"
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck={false}
+                className="w-full px-4 py-3 text-base border border-[#e1e6ec] rounded-lg focus:outline-none focus:border-[#0d47a1] focus:ring-2 focus:ring-[#0d47a1]/20 transition"
                 placeholder="your@email.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#1a2332] mb-2">
+              <label htmlFor="signup-password" className="block text-sm font-medium text-[#1a2332] mb-2">
                 סיסמה
               </label>
               <PasswordInput
+                id="signup-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete="new-password"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#1a2332] mb-2">
+              <label htmlFor="signup-password-confirm" className="block text-sm font-medium text-[#1a2332] mb-2">
                 אימות סיסמה
               </label>
               <PasswordInput
+                id="signup-password-confirm"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                autoComplete="new-password"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-medium py-3 rounded-lg hover:shadow-lg transition disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-medium py-3.5 rounded-lg hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed min-h-[48px]"
             >
               {loading ? 'יוצר חשבון...' : 'הרשם'}
             </button>

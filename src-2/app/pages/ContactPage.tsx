@@ -112,48 +112,60 @@ export function ContactPage() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-[#1a2332] mb-2">שם מלא</label>
+                <label htmlFor="contact-name" className="block text-[#1a2332] mb-2">שם מלא</label>
                 <input
+                  id="contact-name"
                   type="text"
                   required
+                  autoComplete="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-3 bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all"
+                  className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all"
                   placeholder="הכנס את שמך"
                 />
               </div>
 
               <div>
-                <label className="block text-[#1a2332] mb-2">אימייל</label>
+                <label htmlFor="contact-email" className="block text-[#1a2332] mb-2">אימייל</label>
                 <input
+                  id="contact-email"
                   type="email"
                   required
+                  autoComplete="email"
+                  inputMode="email"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-3 bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all"
+                  className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all"
                   placeholder="your@email.com"
                 />
               </div>
 
               <div>
-                <label className="block text-[#1a2332] mb-2">טלפון</label>
+                <label htmlFor="contact-phone" className="block text-[#1a2332] mb-2">טלפון</label>
                 <input
+                  id="contact-phone"
                   type="tel"
+                  autoComplete="tel"
+                  inputMode="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-4 py-3 bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all"
+                  className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all"
                   placeholder="050-1234567"
                 />
               </div>
 
               <div>
-                <label className="block text-[#1a2332] mb-2">הודעה</label>
+                <label htmlFor="contact-message" className="block text-[#1a2332] mb-2">הודעה</label>
                 <textarea
+                  id="contact-message"
                   required
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  rows={5}
-                  className="w-full px-4 py-3 bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all resize-none"
+                  rows={4}
+                  className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all resize-y min-h-[120px] sm:min-h-[150px]"
                   placeholder="ספר לנו איך נוכל לעזור..."
                 />
               </div>

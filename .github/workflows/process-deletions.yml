@@ -1,0 +1,21 @@
+name: Process Account Deletions
+
+# Runs the process-deletions edge function once a day. It erases data for any
+# account-deletion requests whose 7-day grace period has elapsed.
+on:
+  schedule:
+    - cron: '0 3 * * *' # daily at 03:00 UTC
+  workflow_dispatch:
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Invoke process-deletions edge function
+        run: |
+          curl -fsS -X POST \
+            "https://dmuwxydmuylcbhcoagri.supabase.co/functions/v1/process-deletions" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            -w "process-deletions: %{http_code}\n"
