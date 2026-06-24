@@ -51,7 +51,7 @@ const features: { icon: React.ElementType; title: string; description: string; p
   {
     icon: FileText,
     title: "חוות דעת מקצועיות",
-    plan: "premium",
+    plan: "full",
     description: "חוות דעת מפורטות עם תבניות לכל סוג מסמך. עריכת סעיפים, חתימה, ייצוא PDF. בדיוק מה שביטוח ותביעות צריכים לראות.",
   },
   {
@@ -130,22 +130,13 @@ export function FeaturesPage() {
                 </div>
                 <h3 className="text-xl font-semibold text-[#1a2332] mb-3">{feature.title}</h3>
                 <p className="text-[#6b7c93] leading-relaxed flex-grow">{feature.description}</p>
-                {isLocked && feature.plan !== "premium" && (
+                {isLocked && (
                   <Link
                     to="/pricing"
                     className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-[#0d47a1] hover:text-[#00838f] transition-colors"
                   >
                     <ArrowUpCircle className="w-4 h-4" />
                     זמין בחבילות מתקדמות
-                  </Link>
-                )}
-                {isLocked && feature.plan === "premium" && (
-                  <Link
-                    to="/contact"
-                    className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-[#0d47a1] hover:text-[#00838f] transition-colors"
-                  >
-                    <ArrowUpCircle className="w-4 h-4" />
-                    צרו קשר לפרטים
                   </Link>
                 )}
               </motion.div>

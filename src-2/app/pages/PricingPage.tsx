@@ -6,7 +6,12 @@ import { PremiumContactForm } from "../components/PremiumContactForm";
 import { useAuth } from "@/lib/auth-context";
 import { getUserAccess } from "@/lib/supabase";
 
-const PLAN_ORDER = ['basic', 'professional', 'full', 'premium'];
+const PLAN_ORDER = ['basic', 'professional', 'full'];
+
+// Legacy 'premium' plans are treated as 'full' (premium was merged into full).
+function normalizePlan(plan: string | null): string | null {
+  return plan === 'premium' ? 'full' : plan;
+}
 
 const regularPlans = [
   {
@@ -20,6 +25,7 @@ const regularPlans = [
       "יצירת מסמכי PDF",
       "ניהול יומן פגישות (לוח שנה יומי/שבועי/חודשי)",
       "ניהול חולים ורקע רפואי",
+      "יצירת מסמכים מותאמים נוספים",
     ],
   },
   {
@@ -51,32 +57,31 @@ const regularPlans = [
       "הנפקת חשבוניות",
       "קבלה וחשבונית משולבת",
       "עקבוי שיטות תשלום וסוגי שירותים",
+      "חוות דעת מקצועיות (Medical Opinions) עם חתימה",
+      "יצירת מסמכים מותאמים נוספים",
     ],
   },
 ];
 
-const premiumPlan = {
-  name: "חבילת פרימיום",
+const enterprisePlan = {
+  name: "פתרון ארגוני",
   price: null,
   period: "צור קשר",
-  description: "לקליניקות גדולות ורשתות עם צרכים מיוחדים",
+  description: "לקליניקות גדולות, רשתות ומערכות מורכבות בהתאמה אישית",
   newFeatures: [
     "כל מה שבחבילת הניהול המלאה +",
-    "מסמכים מותאמים אישית (תבניות לפי מטפל/ת)",
-    "חוות דעת מקצועיות (Medical Opinions) עם חתימה",
-    "יצירת מסמכים מותאמים נוספים",
-    "תמיכה ריבוי רופאים במערכת",
-    "ניהול פרופיל מטפל/ת מתקדם",
+    "פריסה והטמעה מותאמת לארגון",
+    "אינטגרציות מותאמות למערכות קיימות",
+    "ייצוא נתונים דרך API",
+    "מיתוג ועיצוב מותאמים (לוגו וזיהוי חזותי)",
+    "ליווי ותמיכה בעדיפות",
   ],
 };
 
-const premiumAddOns = [
+const enterpriseAddOns = [
   "העלאת לוגו וזיהוי חזותי",
   "התאמה אישית של שוליים במסמכים",
   "סידור מנוודה גרור ושחרור",
-  "הגדרות מתקדמות ותצוגה מותאמת",
-  "ניהול ריאקוורי וחזרה לגיבוי",
-  "תמיכה ריבוי תפקידים בחשבון",
   "אפליקציה לנייד",
   "אינטגרציות מותאמות",
   "ייצוא נתונים API",
@@ -91,7 +96,7 @@ export function PricingPage() {
   useEffect(() => {
     if (user) {
       getUserAccess(user.id).then(access => {
-        if (access?.is_active) setUserPlan(access.plan);
+        if (access?.is_active) setUserPlan(normalizePlan(access.plan));
       });
     }
   }, [user]);
@@ -208,7 +213,7 @@ export function PricingPage() {
           ))}
         </div>
 
-        {/* Premium Plan - Full Width */}
+        {/* Enterprise Plan - Full Width (contact only) */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -218,11 +223,11 @@ export function PricingPage() {
           <div className="bg-white rounded-3xl p-6 md:p-8 border-2 border-[#0d47a1] shadow-xl shadow-[#0d47a1]/10 flex flex-col lg:flex-row gap-8">
             {/* Plan Details - Left Side */}
             <div className="flex-grow">
-              <h3 className="text-3xl font-bold text-[#1a2332] mb-2">{premiumPlan.name}</h3>
-              <p className="text-[#6b7c93] mb-6 text-lg">{premiumPlan.description}</p>
+              <h3 className="text-3xl font-bold text-[#1a2332] mb-2">{enterprisePlan.name}</h3>
+              <p className="text-[#6b7c93] mb-6 text-lg">{enterprisePlan.description}</p>
 
               <ul className="space-y-4 mb-6">
-                {premiumPlan.newFeatures.map((feature, i) => (
+                {enterprisePlan.newFeatures.map((feature, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <Check className="w-5 h-5 text-[#00838f] flex-shrink-0 mt-0.5" />
                     <span className="text-[#1a2332]">{feature}</span>
@@ -252,7 +257,7 @@ export function PricingPage() {
                   className="mb-6"
                 >
                   <ul className="space-y-3 mb-3">
-                    {premiumAddOns.map((addon, i) => (
+                    {enterpriseAddOns.map((addon, i) => (
                       <li key={i} className="flex items-start gap-3">
                         <span className="text-[#0d47a1] font-bold text-lg">+</span>
                         <span className="text-[#1a2332] font-medium">{addon}</span>

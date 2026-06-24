@@ -48,7 +48,7 @@ export function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-3">3. חבילות ותכונות</h2>
             <p className="text-[#4a5568] leading-relaxed mb-3">
-              ClinicFlow מוצעת במספר חבילות: בסיסית, מקצועית, ניהול מלאה, ופרימיום.
+              ClinicFlow מוצעת במספר חבילות: בסיסית, מקצועית, וניהול מלאה, וכן פתרון ארגוני בהתאמה אישית.
               כל חבילה כוללת סט שונה של תכונות. רכישת חבילה מקנה גישה לתכונות של אותה חבילה בלבד.
             </p>
             <p className="text-[#4a5568] leading-relaxed">

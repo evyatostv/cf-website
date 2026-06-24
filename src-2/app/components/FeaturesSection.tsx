@@ -110,7 +110,7 @@ export function FeaturesSection() {
         </motion.div>
 
         <p className="text-sm text-[#6b7c93] text-center mb-10 bg-[#f5f7f9] rounded-xl px-6 py-3 max-w-2xl mx-auto border border-[#e1e6ec]">
-          * זמינות הפיצ'רים תלויה בחבילה הנרכשת. חלק מהיכולות זמינות בחבילות המקצועית, המלאה, או הפרימיום בלבד.{" "}
+          * זמינות הפיצ'רים תלויה בחבילה הנרכשת. חלק מהיכולות זמינות בחבילות המקצועית או המלאה בלבד.{" "}
           <Link to="/pricing" className="text-[#0d47a1] font-medium hover:underline">ראו עמוד התמחור לפירוט מלא.</Link>
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
