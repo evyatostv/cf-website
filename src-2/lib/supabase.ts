@@ -1,13 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) || '';
+const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY as string) || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY env vars');
+  // Do NOT hard-throw at import time — supabase.ts is imported eagerly (auth
+  // provider), so throwing here white-screens the ENTIRE site. Warn instead and
+  // fall back to a syntactically-valid placeholder so createClient() doesn't throw;
+  // Supabase-backed features (login, lead form) then fail gracefully at call time
+  // until VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY are set in the host env.
+  console.error(
+    'Supabase env vars missing (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY). ' +
+    'Auth and the lead form will not work until they are configured in Vercel.'
+  );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-anon-key'
+);
 export const SUPABASE_URL = supabaseUrl;
 export const SUPABASE_ANON_KEY = supabaseAnonKey;
 
