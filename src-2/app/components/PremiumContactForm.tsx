@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Mail, Phone, User, Building2 } from 'lucide-react';
+import { submitLead } from '@/lib/leads';
 
 export function PremiumContactForm() {
   const [formData, setFormData] = useState({
@@ -11,6 +12,7 @@ export function PremiumContactForm() {
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -23,14 +25,25 @@ export function PremiumContactForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
-    // Simulate form submission
-    setTimeout(() => {
-      setLoading(false);
-      setSuccess(true);
-      setFormData({ name: '', email: '', phone: '', clinicName: '', message: '' });
-      setTimeout(() => setSuccess(false), 3000);
-    }, 1000);
+    const res = await submitLead({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      clinicName: formData.clinicName,
+      message: formData.message,
+      source: 'homepage-lead-form',
+    });
+
+    setLoading(false);
+    if (!res.ok) {
+      setError(res.error || 'שגיאה בשליחה. נסו שוב מאוחר יותר.');
+      return;
+    }
+    setSuccess(true);
+    setFormData({ name: '', email: '', phone: '', clinicName: '', message: '' });
+    setTimeout(() => setSuccess(false), 5000);
   };
 
   return (
@@ -42,7 +55,13 @@ export function PremiumContactForm() {
 
       {success && (
         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-green-600 text-sm">✓ התקבלנו את פרטיך בהצלחה!</p>
+          <p className="text-green-600 text-sm">✓ קיבלנו את פרטיך! ניצור איתך קשר בקרוב.</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-600 text-sm">{error}</p>
         </div>
       )}
 

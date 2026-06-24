@@ -29,6 +29,20 @@
     <meta name="twitter:description" content="תוכנת ניהול מרפאה אופליין לרופאים פרטיים. תיק רפואי, יומן, מסמכים, חשבוניות — הכל מאובטח על המחשב שלך." />
     <meta name="twitter:image" content="https://clinic-flow.co.il/og-image.png" />
 
+    <!-- Site lock (pre-launch): every route except /soon is gated. Locked
+         visitors are bounced to the splash before the SPA mounts (no flash).
+         The splash logo unlocks the site by setting localStorage.cf_unlocked.
+         Remove this block (and the soon.html door) at public launch. -->
+    <script>
+      (function () {
+        try {
+          if (localStorage.getItem("cf_unlocked") !== "1") {
+            window.location.replace("/soon");
+          }
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- Legacy hash-router URLs (/#/path) → clean URLs, runs before the SPA mounts -->
     <script>
       (function () {

@@ -15,7 +15,7 @@ export function CTASection() {
   ];
 
   return (
-    <section id="cta" className="py-32 bg-gradient-to-b from-[#f8fafb] to-white relative overflow-hidden">
+    <section id="cta" className="py-32 bg-white relative overflow-hidden">
       <div className="container mx-auto px-6 max-w-5xl" ref={ref}>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -23,12 +23,6 @@ export function CTASection() {
           transition={{ duration: 0.6 }}
           className="relative bg-gradient-to-br from-[#0d47a1] to-[#00838f] rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-10 md:p-16 overflow-hidden shadow-2xl"
         >
-          {/* Background decoration */}
-          <div className="absolute inset-0 overflow-hidden opacity-10">
-            <div className="absolute -top-20 -right-20 w-64 h-64 bg-white rounded-full blur-3xl" />
-            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-white rounded-full blur-3xl" />
-          </div>
-
           <div className="relative z-10 text-center">
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
@@ -45,7 +39,7 @@ export function CTASection() {
               transition={{ delay: 0.3, duration: 0.6 }}
               className="text-base sm:text-xl md:text-2xl text-[#b8d4e6] mb-6 sm:mb-10 max-w-2xl mx-auto leading-relaxed"
             >
-              בחרו באבטחה ובפרטיות מוחלטת לקליניקה שלכם
+              שלמו פעם אחת, התקינו, והתחילו לעבוד. המידע נשאר על המחשב שלכם.
             </motion.p>
 
             {/* Checkmarks */}
@@ -87,7 +81,7 @@ export function CTASection() {
                   whileTap={{ scale: 0.98 }}
                   className="w-full px-10 py-5 bg-white/10 backdrop-blur-sm text-white rounded-2xl border-2 border-white/30 hover:bg-white/20 transition-all duration-300 text-lg font-medium"
                 >
-                  דבר עם מומחה
+                  דברו איתנו
                 </motion.button>
               </Link>
             </motion.div>

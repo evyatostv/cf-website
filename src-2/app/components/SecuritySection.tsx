@@ -15,7 +15,7 @@ const SecurityFeature = ({ icon: Icon, title, description, delay }: any) => {
       className="group relative bg-white rounded-3xl p-8 border border-[#e1e6ec] hover:border-[#0d47a1]/30 hover:shadow-xl hover:shadow-[#0d47a1]/5 transition-all duration-300"
     >
       <div className="flex flex-col items-center text-center">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0d47a1]/10 to-[#00838f]/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+        <div className="w-16 h-16 rounded-2xl bg-[#e8f4f8] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
           <Icon className="w-8 h-8 text-[#0d47a1]" />
         </div>
         <h3 className="text-2xl font-semibold text-[#1a2332] mb-3">{title}</h3>
@@ -53,7 +53,7 @@ export function SecuritySection() {
   ];
 
   return (
-    <section id="security" className="py-32 bg-gradient-to-b from-[#f0f4f7] to-white relative overflow-hidden">
+    <section id="security" className="py-32 bg-[#f5f7f9] relative overflow-hidden">
 
       <div className="container mx-auto px-6 max-w-7xl" ref={ref}>
         <motion.div
@@ -69,7 +69,7 @@ export function SecuritySection() {
           <h2 className="text-3xl sm:text-5xl md:text-6xl font-bold text-[#1a2332] mb-6 leading-tight">
             הנתונים שלך
             <br />
-            <span className="bg-gradient-to-r from-[#0d47a1] to-[#00838f] bg-clip-text text-transparent">
+            <span className="text-[#0d47a1]">
               נשארים אצלך
             </span>
           </h2>
@@ -81,7 +81,7 @@ export function SecuritySection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => (
-            <SecurityFeature key={index} {...feature} delay={index * 0.1} />
+            <SecurityFeature key={index} {...feature} delay={0} />
           ))}
         </div>
 
@@ -94,7 +94,7 @@ export function SecuritySection() {
         >
           <div className="flex items-center justify-center gap-6 sm:gap-12 flex-wrap">
             <div className="text-center">
-              <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#0d47a1] to-[#00838f] flex items-center justify-center mb-4 mx-auto shadow-lg">
+              <div className="w-24 h-24 rounded-2xl bg-[#0d47a1] flex items-center justify-center mb-4 mx-auto shadow-lg">
                 <Database className="w-12 h-12 text-white" />
               </div>
               <p className="text-lg font-semibold text-[#1a2332]">המחשב שלך</p>

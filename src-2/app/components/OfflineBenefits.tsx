@@ -32,8 +32,8 @@ export function OfflineBenefits() {
   const benefits = [
     {
       icon: Zap,
-      title: "ביצועים מהירים",
-      description: "עבודה מהירה ללא תלות ברשת. אין עיכובים, אין המתנות לטעינת נתונים.",
+      title: "נפתח מיד",
+      description: "כרטיס מטופל נפתח ברגע, גם כשהאינטרנט אצלכם זוחל. שום גלגל טעינה.",
     },
     {
       icon: Wifi,
@@ -42,8 +42,8 @@ export function OfflineBenefits() {
     },
     {
       icon: Shield,
-      title: "אבטחה מוחלטת",
-      description: "אפס סיכון לפריצות סייבר, גניבת מידע או דליפות נתונים דרך הרשת.",
+      title: "אין שרת שאפשר לפרוץ",
+      description: "אין מסד נתונים בענן שמישהו יכול לתקוף מרחוק. המידע יושב על הדיסק שלכם — לא נחשף לרשת.",
     },
     {
       icon: HardDrive,
@@ -54,12 +54,6 @@ export function OfflineBenefits() {
 
   return (
     <section id="offline" className="py-32 bg-gradient-to-br from-[#0d47a1] via-[#0d47a1] to-[#00838f] relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden opacity-10">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl" />
-      </div>
-
       <div className="container mx-auto px-6 max-w-7xl relative z-10" ref={ref}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Left side - Content */}
@@ -79,14 +73,14 @@ export function OfflineBenefits() {
                 <span className="text-[#b8d4e6]">עבודה אופליין</span>
               </h2>
               <p className="text-xl text-[#b8d4e6] mb-12 leading-relaxed">
-                בעידן בו הכל מחובר לאינטרנט, אנחנו מאמינים שנתונים רפואיים
-                צריכים להישאר פרטיים ומאובטחים לחלוטין.
+                הענן מצוין — עד שהאינטרנט נופל באמצע יום עמוס. אצלנו הכל רץ
+                מקומית, אז המרפאה לא נעצרת אף פעם.
               </p>
             </motion.div>
 
             <div className="space-y-8">
               {benefits.map((benefit, index) => (
-                <Benefit key={index} {...benefit} delay={index * 0.1} />
+                <Benefit key={index} {...benefit} delay={0} />
               ))}
             </div>
           </div>
@@ -104,21 +98,9 @@ export function OfflineBenefits() {
                   {/* Computer Icon */}
                   <div className="flex items-center justify-center">
                     <div className="relative">
-                      <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-[#0d47a1] to-[#00838f] flex items-center justify-center shadow-xl">
+                      <div className="w-32 h-32 rounded-3xl bg-[#0d47a1] flex items-center justify-center shadow-xl">
                         <HardDrive className="w-16 h-16 text-white" />
                       </div>
-                      <motion.div
-                        animate={{
-                          scale: [1, 1.2, 1],
-                          opacity: [0.5, 0, 0.5],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        }}
-                        className="absolute inset-0 rounded-3xl bg-[#0d47a1]/30"
-                      />
                     </div>
                   </div>
 

@@ -80,7 +80,7 @@ export function DashboardPage() {
 
   if (loading || access === undefined) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#f5f7f9] to-[#e8f4f8] flex items-center justify-center">
+      <div className="min-h-screen bg-[#f5f7f9] flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#0d47a1]" />
           <p className="mt-4 text-[#6b7c93]">טוען...</p>
@@ -107,7 +107,7 @@ export function DashboardPage() {
   const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'משתמש';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f5f7f9] to-[#e8f4f8] pt-28 pb-20" dir="rtl">
+    <div className="min-h-screen bg-[#f5f7f9] pt-28 pb-20" dir="rtl">
       <div className="container mx-auto px-4 max-w-5xl">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
 

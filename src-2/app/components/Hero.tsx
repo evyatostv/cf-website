@@ -31,11 +31,6 @@ const professions = [
 export function Hero() {
   return (
     <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-white via-[#f8fafb] to-[#f0f4f7]">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-        <div className="absolute top-20 right-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-[#0d47a1]/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-[#00838f]/5 rounded-full blur-3xl" />
-      </div>
-
       <div className="relative z-10 container mx-auto px-6 max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -72,7 +67,7 @@ export function Hero() {
                 morphTime={0.6}
                 cooldownTime={1.25}
                 className="w-full h-full"
-                textClassName="text-2xl sm:text-5xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-[#0d47a1] to-[#00838f] bg-clip-text text-transparent whitespace-nowrap"
+                textClassName="text-2xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-[#0d47a1] whitespace-nowrap"
               />
             </div>
           </motion.div>
@@ -96,16 +91,16 @@ export function Hero() {
             transition={{ delay: 0.5, duration: 0.6 }}
             className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4"
           >
-            <Link to="/pricing">
+            <a href="#lead-form">
               <motion.button
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 className="group relative w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-2xl shadow-lg shadow-[#0d47a1]/20 hover:shadow-xl hover:shadow-[#0d47a1]/30 transition-all duration-300 text-lg font-medium"
               >
-                <span className="relative z-10">התחילו עכשיו</span>
+                <span className="relative z-10">לקבלת הצעה</span>
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#0a3a85] to-[#006d77] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </motion.button>
-            </Link>
+            </a>
 
             <a href="#features">
               <motion.button
@@ -134,7 +129,7 @@ export function Hero() {
               <span className="text-sm">עובד ללא אינטרנט</span>
             </div>
             <div className="flex items-center gap-2 text-[#6b7c93]">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#0d47a1] to-[#00838f]" />
+              <div className="w-5 h-5 rounded-full bg-[#0d47a1]" />
               <span className="text-sm">נתונים אצלך בלבד</span>
             </div>
           </motion.div>

@@ -1,7 +1,8 @@
 import { motion } from "motion/react";
-import { Mail, Phone, Send, CheckCircle } from "lucide-react";
+import { Mail, MessageCircle, Send, CheckCircle } from "lucide-react";
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { submitLead } from "@/lib/leads";
+import { CONTACT_EMAIL, CONTACT_WHATSAPP_URL } from "@/app/config/site";
 
 export function ContactPage() {
   const [formData, setFormData] = useState({
@@ -19,18 +20,18 @@ export function ContactPage() {
     setLoading(true);
     setError("");
 
-    const { error: dbError } = await supabase.from("contact_messages").insert({
+    const res = await submitLead({
       name: formData.name,
       email: formData.email,
-      phone: formData.phone || null,
+      phone: formData.phone,
       message: formData.message,
+      source: "contact-page",
     });
 
     setLoading(false);
 
-    if (dbError) {
-      setError("שגיאה בשליחה. נסה שוב מאוחר יותר.");
-      console.error("Contact form error:", dbError);
+    if (!res.ok) {
+      setError(res.error || "שגיאה בשליחה. נסה שוב מאוחר יותר.");
       return;
     }
 
@@ -50,12 +51,12 @@ export function ContactPage() {
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-[#1a2332] mb-6">
             בוא נדבר
             <br />
-            <span className="bg-gradient-to-r from-[#0d47a1] to-[#00838f] bg-clip-text text-transparent">
+            <span className="text-[#0d47a1]">
               איך נוכל לעזור?
             </span>
           </h1>
           <p className="text-xl text-[#6b7c93] max-w-2xl mx-auto">
-            יש לך שאלות? רוצה לקבוע דמו? אנחנו כאן בשבילך
+            שאלה על האפליקציה, על ההתקנה, או רוצים לראות אותה עובדת? כתבו ונחזור אליכם.
           </p>
         </motion.div>
 
@@ -70,22 +71,22 @@ export function ContactPage() {
 
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0d47a1]/10 to-[#00838f]/10 flex items-center justify-center flex-shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-[#e8f4f8] flex items-center justify-center flex-shrink-0">
                     <Mail className="w-6 h-6 text-[#0d47a1]" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-[#1a2332] mb-1">אימייל</h3>
-                    <p className="text-[#6b7c93]">contact@clinic-flow.co.il</p>
+                    <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#6b7c93] hover:text-[#0d47a1] transition-colors">{CONTACT_EMAIL}</a>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0d47a1]/10 to-[#00838f]/10 flex items-center justify-center flex-shrink-0">
-                    <Phone className="w-6 h-6 text-[#0d47a1]" />
+                  <div className="w-12 h-12 rounded-xl bg-[#e8f4f8] flex items-center justify-center flex-shrink-0">
+                    <MessageCircle className="w-6 h-6 text-[#0d47a1]" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-[#1a2332] mb-1">טלפון</h3>
-                    <p className="text-[#6b7c93]">03-1234567</p>
+                    <h3 className="font-semibold text-[#1a2332] mb-1">WhatsApp</h3>
+                    <a href={CONTACT_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-[#6b7c93] hover:text-[#0d47a1] transition-colors">שלחו לנו הודעה בוואטסאפ</a>
                   </div>
                 </div>
 

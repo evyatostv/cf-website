@@ -135,7 +135,7 @@ export function PricingPage() {
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-[#1a2332] mb-6">
             בחרו את החבילה
             <br />
-            <span className="bg-gradient-to-r from-[#0d47a1] to-[#00838f] bg-clip-text text-transparent">
+            <span className="text-[#0d47a1]">
               המתאימה לכם
             </span>
           </h1>

@@ -12,16 +12,15 @@ export function AboutPage() {
           className="text-center mb-20"
         >
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-[#1a2332] mb-6">
-            המשימה שלנו
+            למה בנינו
             <br />
-            <span className="bg-gradient-to-r from-[#0d47a1] to-[#00838f] bg-clip-text text-transparent">
-              פרטיות מוחלטת
+            <span className="text-[#0d47a1]">
+              מרפאה בלי ענן
             </span>
           </h1>
           <p className="text-xl text-[#6b7c93] max-w-3xl mx-auto leading-relaxed">
-            ב-Clinic Flow אנחנו מאמינים שמידע רפואי צריך להישאר פרטי לחלוטין.
-            בעידן שבו הכל מחובר לענן, אנחנו מציעים פתרון שונה - אבטחה מוחלטת
-            באמצעות אחסון מקומי בלבד.
+            כל מערכת מתחרה שומרת את תיקי המטופלים שלכם על שרת שלה. אנחנו עשינו
+            ההפך: האפליקציה רצה על המחשב שלכם, והמידע לא עוזב אותו.
           </p>
         </motion.div>
 
@@ -33,27 +32,27 @@ export function AboutPage() {
             className="space-y-6"
           >
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0d47a1]/10 to-[#00838f]/10 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-[#e8f4f8] flex items-center justify-center flex-shrink-0">
                 <Shield className="w-6 h-6 text-[#0d47a1]" />
               </div>
               <div>
                 <h3 className="text-2xl font-semibold text-[#1a2332] mb-2">אבטחה ראשונה</h3>
                 <p className="text-[#6b7c93] leading-relaxed">
-                  פיתחנו את המערכת מתוך הבנה עמוקה של חשיבות פרטיות המידע הרפואי.
-                  אין פשרות בנושא אבטחה - הנתונים נשארים אצלכם בלבד.
+                  בנינו את האפליקציה בלי שרת מרכזי בכוונה. אין מקום אחד שאפשר
+                  לפרוץ ולשאוב ממנו תיקים — כל מרפאה מחזיקה את המידע שלה בעצמה.
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0d47a1]/10 to-[#00838f]/10 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-[#e8f4f8] flex items-center justify-center flex-shrink-0">
                 <Users className="w-6 h-6 text-[#0d47a1]" />
               </div>
               <div>
-                <h3 className="text-2xl font-semibold text-[#1a2332] mb-2">מבין רופאים</h3>
+                <h3 className="text-2xl font-semibold text-[#1a2332] mb-2">בנוי לעבודה קלינית</h3>
                 <p className="text-[#6b7c93] leading-relaxed">
-                  הצוות שלנו כולל רופאים ואנשי מקצוע רפואיים שמבינים את הצרכים
-                  האמיתיים של עבודה קלינית יומיומית.
+                  כל שדה בכרטיס המטופל ובתיעוד ה-SOAP תוכנן סביב מה שקורה בפועל
+                  בביקור — לא טופס גנרי.
                 </p>
               </div>
             </div>
@@ -66,27 +65,26 @@ export function AboutPage() {
             className="space-y-6"
           >
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0d47a1]/10 to-[#00838f]/10 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-[#e8f4f8] flex items-center justify-center flex-shrink-0">
                 <Heart className="w-6 h-6 text-[#0d47a1]" />
               </div>
               <div>
                 <h3 className="text-2xl font-semibold text-[#1a2332] mb-2">תמיכה אמיתית</h3>
                 <p className="text-[#6b7c93] leading-relaxed">
-                  אנחנו כאן כדי לעזור. הצוות שלנו זמין לכל שאלה ובעיה,
-                  עם תמיכה טכנית מקצועית ואכפתית.
+                  שאלה על התקנה, גיבוי או מסמך שלא יוצא כמו שצריך? עונים בעברית, ישירות.
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0d47a1]/10 to-[#00838f]/10 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-[#e8f4f8] flex items-center justify-center flex-shrink-0">
                 <Target className="w-6 h-6 text-[#0d47a1]" />
               </div>
               <div>
                 <h3 className="text-2xl font-semibold text-[#1a2332] mb-2">שיפור מתמיד</h3>
                 <p className="text-[#6b7c93] leading-relaxed">
-                  אנחנו מקשיבים למשוב מהרופאים ומשפרים את המערכת באופן קבוע.
-                  כל עדכון מביא יכולות חדשות ושיפורים.
+                  הרבה מהפיצ'רים נולדו מבקשה של משתמש. מבקשים תבנית מסמך חדשה או
+                  שדה שחסר — לרוב זה נכנס בעדכון הבא.
                 </p>
               </div>
             </div>
@@ -99,9 +97,9 @@ export function AboutPage() {
           transition={{ duration: 0.6, delay: 0.6 }}
           className="bg-gradient-to-br from-[#0d47a1] to-[#00838f] rounded-3xl p-6 sm:p-12 text-center text-white"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">הצטרפו למהפכת הפרטיות הרפואית</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">המידע של המטופלים שלכם — לא צריך לצאת מהמחשב</h2>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            מאות רופאים כבר בחרו באבטחה ובפרטיות. הצטרפו אליהם היום.
+            אתם לא צריכים ענן כדי לנהל מרפאה. כל מה שצריך רץ על המחשב שלכם — נסו, יש 30 יום להחזר כספי.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a

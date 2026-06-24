@@ -61,11 +61,9 @@ export function Navigation() {
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
-              <motion.svg
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.6 }}
+              <svg
                 viewBox="0 0 24 24"
-                className="w-10 h-10 rounded-xl"
+                className="w-10 h-10 rounded-xl transition-transform group-hover:scale-105"
                 role="img"
                 aria-label="ClinicFlow"
               >
@@ -80,7 +78,7 @@ export function Navigation() {
                     strokeLinejoin="round"
                   />
                 </svg>
-              </motion.svg>
+              </svg>
               <span className={`text-xl font-bold transition-colors ${scrolled ? "text-[#1a2332]" : "text-white"}`}>ClinicFlow</span>
             </Link>
 

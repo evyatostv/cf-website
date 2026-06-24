@@ -28,7 +28,7 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0d47a1] to-[#00838f] flex items-center justify-center pt-20 pb-20">
+    <div className="min-h-screen bg-[#f5f7f9] flex items-center justify-center pt-20 pb-20">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

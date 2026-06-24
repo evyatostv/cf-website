@@ -114,7 +114,7 @@ export function PaymentPage() {
   if (loading || !user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f5f7f9] to-[#e8f4f8] pt-32 pb-20" dir="rtl">
+    <div className="min-h-screen bg-[#f5f7f9] pt-32 pb-20" dir="rtl">
       <div className="container mx-auto px-4 max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

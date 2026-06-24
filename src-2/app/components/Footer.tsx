@@ -1,4 +1,5 @@
 import { Heart } from "lucide-react";
+import { CONTACT_EMAIL, CONTACT_WHATSAPP_URL } from "@/app/config/site";
 
 export function Footer() {
   return (
@@ -11,7 +12,7 @@ export function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0d47a1] to-[#00838f]" />
+              <div className="w-10 h-10 rounded-xl bg-[#0d47a1]" />
               <span className="text-2xl sm:text-3xl font-bold">Clinic Flow</span>
             </div>
             <p className="text-[#b8d4e6] leading-relaxed max-w-md">
@@ -94,13 +95,13 @@ export function Footer() {
             <h4 className="text-xl font-semibold mb-6">צור קשר</h4>
             <ul className="space-y-4">
               <li>
-                <a href="mailto:contact@clinic-flow.co.il" className="text-[#b8d4e6] hover:text-white transition-colors break-all">
-                  contact@clinic-flow.co.il
+                <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#b8d4e6] hover:text-white transition-colors break-all">
+                  {CONTACT_EMAIL}
                 </a>
               </li>
               <li>
-                <a href="tel:+972501234567" className="text-[#b8d4e6] hover:text-white transition-colors">
-                  050-123-4567
+                <a href={CONTACT_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  WhatsApp
                 </a>
               </li>
               <li className="text-[#b8d4e6] text-sm">
