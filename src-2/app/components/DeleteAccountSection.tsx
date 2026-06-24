@@ -23,9 +23,11 @@ export function DeleteAccountSection() {
   const [error, setError] = useState<string | null>(null);
 
   async function loadPending() {
+    if (!user?.id) { setRequest(null); return; }
     const { data } = await supabase
       .from('deletion_requests')
       .select('*')
+      .eq('user_id', user.id)
       .eq('status', 'pending')
       .maybeSingle();
     setRequest((data as DeletionRequest) ?? null);

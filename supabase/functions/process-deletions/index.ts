@@ -65,10 +65,13 @@ serve(async (req) => {
       await admin.from("contact_messages").delete().eq("email", email);
 
       // 2) Anonymize records we must retain (accounting / consent / logs).
-      //    Done BEFORE deleting the auth user to avoid FK violations.
+      //    Done BEFORE deleting the auth user to avoid FK violations (user_id
+      //    is nulled here so deleteUser() below can't be blocked by an FK).
       await admin.from("purchases").update({ user_id: null, email: REDACTED }).eq("user_id", uid);
       await admin.from("download_log").update({ user_id: null, email: REDACTED }).eq("user_id", uid);
-      await admin.from("policy_acceptances").update({ user_email: REDACTED }).eq("user_id", uid);
+      // Null user_id too (not just the email): otherwise a RESTRICT/NO ACTION FK
+      // from policy_acceptances -> auth.users would make deleteUser() fail below.
+      await admin.from("policy_acceptances").update({ user_id: null, user_email: REDACTED }).eq("user_id", uid);
 
       // 3) Append to the immutable audit log (one-way hash only).
       await admin.from("deletion_log").insert({
@@ -77,14 +80,18 @@ serve(async (req) => {
         completed_at: new Date().toISOString(),
       });
 
-      // 4) Mark complete, then delete the auth login. Deleting the user cascades
-      //    the deletion_requests row and SET NULLs policy_acceptances.user_id.
+      // 4) Delete the auth login LAST. If it fails, the row stays 'pending' and
+      //    the job retries it next run (steps 1-3 are safe to repeat). On
+      //    success the FK `on delete cascade` removes the deletion_requests row
+      //    automatically, so the "completed" update below is best-effort and
+      //    typically a no-op (the audit entry in step 3 is the durable record).
+      const { error: delErr } = await admin.auth.admin.deleteUser(uid);
+      if (delErr) throw delErr;
+
       await admin.from("deletion_requests").update({
         status: "completed",
         completed_at: new Date().toISOString(),
       }).eq("id", r.id);
-      const { error: delErr } = await admin.auth.admin.deleteUser(uid);
-      if (delErr) throw delErr;
 
       results.push({ id: r.id, ok: true });
     } catch (e) {
