@@ -9,7 +9,7 @@ const NAV_LINKS = [
   { to: "/features", label: "יכולות" },
   { to: "/pricing", label: "מחירים" },
   { to: "/about", label: "אודות" },
-  { to: "/contact", label: "צור קשר" },
+  { to: "/contact", label: "צור/י קשר" },
 ];
 
 export function Navigation() {
@@ -79,7 +79,7 @@ export function Navigation() {
                   />
                 </svg>
               </svg>
-              <span className={`text-xl font-bold transition-colors ${scrolled ? "text-[#1a2332]" : "text-white"}`}>ClinicFlow</span>
+              <span className="text-xl font-bold transition-colors text-[#1a2332]">ClinicFlow</span>
             </Link>
 
             {/* Desktop nav links */}
@@ -109,9 +109,7 @@ export function Navigation() {
                 <>
                   <Link
                     to="/login"
-                    className={`px-6 py-2.5 rounded-xl transition-all font-medium ${
-                      scrolled ? "text-[#0d47a1] hover:bg-[#f5f7f9]" : "text-white hover:bg-white/10"
-                    }`}
+                    className="px-6 py-2.5 rounded-xl transition-all font-medium text-[#0d47a1] hover:bg-[#f5f7f9]"
                   >
                     כניסה
                   </Link>
@@ -136,24 +134,24 @@ export function Navigation() {
             <button
               onClick={() => setMobileOpen((o) => !o)}
               className="md:hidden flex flex-col justify-center items-center w-12 h-12 gap-1.5 rounded-xl hover:bg-[#f5f7f9] transition-colors"
-              aria-label={mobileOpen ? "סגור תפריט" : "פתח תפריט"}
+              aria-label={mobileOpen ? "סגור/י תפריט" : "פתח/י תפריט"}
               aria-expanded={mobileOpen}
               aria-controls="mobile-drawer"
             >
               <motion.span
                 animate={mobileOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
                 transition={{ duration: 0.25 }}
-                className={`block w-5 h-0.5 rounded-full ${scrolled ? "bg-[#1a2332]" : "bg-white"}`}
+                className={`block w-5 h-0.5 rounded-full bg-[#1a2332]`}
               />
               <motion.span
                 animate={mobileOpen ? { opacity: 0 } : { opacity: 1 }}
                 transition={{ duration: 0.15 }}
-                className={`block w-5 h-0.5 rounded-full ${scrolled ? "bg-[#1a2332]" : "bg-white"}`}
+                className={`block w-5 h-0.5 rounded-full bg-[#1a2332]`}
               />
               <motion.span
                 animate={mobileOpen ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }}
                 transition={{ duration: 0.25 }}
-                className={`block w-5 h-0.5 rounded-full ${scrolled ? "bg-[#1a2332]" : "bg-white"}`}
+                className={`block w-5 h-0.5 rounded-full bg-[#1a2332]`}
               />
             </button>
           </div>

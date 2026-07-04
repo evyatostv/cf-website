@@ -7,7 +7,7 @@ export function DisclaimerPage() {
 
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-10">
           <p className="text-amber-800 font-semibold leading-relaxed">
-            מסמך זה מגדיר את גבולות האחריות של ClinicFlow ביחס לנתונים המנוהלים על ידי המשתמש. קרא אותו בעיון לפני השימוש בתוכנה.
+            מסמך זה מגדיר את גבולות האחריות של ClinicFlow ביחס לנתונים המנוהלים על ידי המשתמש. קרא/י אותו בעיון לפני השימוש בתוכנה.
           </p>
         </div>
 

@@ -12,8 +12,20 @@ export function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-[#0d47a1]" />
-              <span className="text-2xl sm:text-3xl font-bold">Clinic Flow</span>
+              <svg viewBox="0 0 24 24" className="w-10 h-10 rounded-xl" role="img" aria-label="ClinicFlow">
+                <rect width="24" height="24" rx="5.4" fill="#2756A6" />
+                <svg x="4.5" y="4.5" width="15" height="15" viewBox="0 0 24 24">
+                  <path
+                    d="M4.5 16.5 C4.5 10 10 6 14.5 8 C18.5 9.8 19 14.5 15.5 16 C13.2 17 11 15.6 11.8 13.2"
+                    fill="none"
+                    stroke="#FFFFFF"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </svg>
+              <span className="text-2xl sm:text-3xl font-bold">ClinicFlow</span>
             </div>
             <p className="text-[#b8d4e6] leading-relaxed max-w-md">
               מערכת ניהול חולים אופליין מתקדמת לרופאים שמעריכים פרטיות,
@@ -92,7 +104,7 @@ export function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="text-xl font-semibold mb-6">צור קשר</h4>
+            <h4 className="text-xl font-semibold mb-6">צור/י קשר</h4>
             <ul className="space-y-4">
               <li>
                 <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#b8d4e6] hover:text-white transition-colors break-all">
@@ -120,7 +132,7 @@ export function Footer() {
               לרופאים בישראל
             </p>
             <p className="text-sm text-[#b8d4e6]">
-              © 2026 Clinic Flow. כל הזכויות שמורות.
+              © 2026 ClinicFlow. כל הזכויות שמורות.
             </p>
           </div>
         </div>

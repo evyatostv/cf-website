@@ -1,11 +1,17 @@
-import { useState } from 'react';
-import { Link } from 'react-router';
+import { useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router';
 import { supabase } from '@/lib/supabase';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { motion } from 'motion/react';
 import { PasswordInput } from '@/app/components/ui/password-input';
+import { PasswordStrength } from '@/app/components/ui/password-strength';
+import { evaluatePassword } from '@/lib/password';
+import { GoogleSignInButton } from '@/app/components/GoogleSignInButton';
+import { Captcha, CaptchaHandle } from '@/app/components/Captcha';
+import { mapAuthError } from '@/lib/auth-errors';
 
 export function SignupPage() {
+  const navigate = useNavigate();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -14,34 +20,38 @@ export function SignupPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState('');
+  const captchaRef = useRef<CaptchaHandle>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
+    setSubmitted(true);
 
     // Rate limiting: max 5 signup attempts per minute per IP/email
     if (!checkRateLimit(`signup_${email}`, 5, 60)) {
-      setError('ניסיונות רבים מדי. אנא נסה שוב בעוד דקה.');
+      setError('ניסיונות רבים מדי. אנא נסה/י שוב בעוד דקה.');
       return;
     }
 
     if (!fullName.trim()) {
-      setError('נא הזן שם מלא');
+      setError('נא הזן/י שם מלא');
       return;
     }
 
     if (!phone.trim()) {
-      setError('נא הזן מספר טלפון');
+      setError('נא הזן/י מספר טלפון');
+      return;
+    }
+
+    if (!evaluatePassword(password).valid) {
+      setError('הסיסמה עדיין לא עומדת בדרישות. יש להשלים את הסעיפים המסומנים.');
       return;
     }
 
     if (password !== confirmPassword) {
       setError('הסיסמאות אינן תואמות');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('הסיסמה חייבת להיות באורך 6 תווים לפחות');
       return;
     }
 
@@ -56,24 +66,29 @@ export function SignupPage() {
             full_name: fullName,
             phone: phone,
           },
+          captchaToken: captchaToken || undefined,
         },
       });
 
       if (signUpError) {
-        if (signUpError.message.includes('already registered')) {
-          setError('כתובת האימייל הזו כבר רשומה. נסה/י להתחבר.');
-        } else {
-          setError(signUpError.message || 'שגיאה בהרשמה');
-        }
+        setError(mapAuthError(signUpError));
         return;
       }
       if (!data.user) throw new Error('Signup failed');
 
+      // If a session was returned (email confirmation disabled), go straight to
+      // the onboarding step. Otherwise show the "confirm your email" success
+      // screen — onboarding then runs on first login (LoginPage guard).
+      if (data.session) {
+        navigate('/complete-profile');
+        return;
+      }
       setSuccess(true);
     } catch (err: any) {
-      setError(err.message || 'שגיאה בהרשמה');
+      setError(mapAuthError(err));
     } finally {
       setLoading(false);
+      captchaRef.current?.reset(); // tokens are single-use
     }
   };
 
@@ -92,16 +107,18 @@ export function SignupPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-[#1a2332] mb-3">ברוכים הבאים, {fullName}!</h1>
-          <p className="text-[#6b7c93] mb-2">החשבון שלך נוצר בהצלחה.</p>
+          <h1 className="text-2xl font-bold text-[#1a2332] mb-3">כמעט שם, {fullName}!</h1>
+          <p className="text-[#6b7c93] mb-2">
+            שלחנו קישור אימות לכתובת <strong className="text-[#1a2332]">{email}</strong>.
+          </p>
           <p className="text-[#6b7c93] mb-6">
-            לאחר אישור הרכישה תוכל/י להיכנס לדשבורד ולהוריד את האפליקציה.
+            לחצו על הקישור שבמייל כדי להשלים את יצירת החשבון. אם המייל לא הגיע תוך כמה דקות, בדקו גם בתיקיית הספאם.
           </p>
           <Link
             to="/login"
             className="inline-block bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white px-8 py-3 rounded-lg hover:shadow-lg transition font-medium"
           >
-            כניסה לדשבורד
+            כבר אימתתי — כניסה
           </Link>
         </motion.div>
       </div>
@@ -114,12 +131,12 @@ export function SignupPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-md"
+        className="w-full max-w-2xl"
       >
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-[#1a2332] mb-2">הרשמה</h1>
-            <p className="text-[#6b7c93]">צור חשבון חדש כדי להתחיל</p>
+            <p className="text-[#6b7c93]">צור/י חשבון חדש כדי להתחיל</p>
           </div>
 
           {error && (
@@ -128,7 +145,7 @@ export function SignupPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
             <div>
               <label htmlFor="signup-name" className="block text-sm font-medium text-[#1a2332] mb-2">
                 שם מלא
@@ -162,7 +179,7 @@ export function SignupPage() {
               />
             </div>
 
-            <div>
+            <div className="md:col-span-2">
               <label htmlFor="signup-email" className="block text-sm font-medium text-[#1a2332] mb-2">
                 דוא"ל
               </label>
@@ -189,9 +206,13 @@ export function SignupPage() {
               <PasswordInput
                 id="signup-password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (submitted) setSubmitted(false);
+                }}
                 required
                 autoComplete="new-password"
+                capsWarning
               />
             </div>
 
@@ -205,23 +226,44 @@ export function SignupPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 autoComplete="new-password"
+                capsWarning
               />
+              {confirmPassword.length > 0 && (
+                <p
+                  dir="rtl"
+                  aria-live="polite"
+                  className="mt-2 text-[13px] font-medium"
+                  style={{ color: confirmPassword === password ? '#1b7a3d' : '#8a5a00' }}
+                >
+                  {confirmPassword === password ? 'מצוין, הסיסמאות זהות ✓' : 'הסיסמאות עדיין לא זהות — בדקו שוב.'}
+                </p>
+              )}
+            </div>
+
+            <div className="md:col-span-2">
+              <PasswordStrength value={password} submitted={submitted} />
+            </div>
+
+            <div className="md:col-span-2">
+              <Captcha ref={captchaRef} onVerify={setCaptchaToken} />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-medium py-3.5 rounded-lg hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed min-h-[48px]"
+              className="md:col-span-2 w-full bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-medium py-3.5 rounded-lg hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed min-h-[48px]"
             >
-              {loading ? 'יוצר חשבון...' : 'הרשם'}
+              {loading ? 'יוצר/ת חשבון...' : 'הירשם/י'}
             </button>
           </form>
+
+          <GoogleSignInButton label="הרשמה עם Google" onError={setError} />
 
           <div className="mt-6 text-center">
             <p className="text-[#6b7c93]">
               יש לך כבר חשבון?{' '}
               <Link to="/login" className="text-[#0d47a1] font-medium hover:underline">
-                כנס כאן
+                כנס/י כאן
               </Link>
             </p>
           </div>

@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClinicFlow · תבניות אימייל — תצוגה מקדימה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#0d47a1; --logo:#2756A6; --teal:#00838f; --text:#1a2332; --muted:#6b7c93;
+    --border:#e1e6ec; --bg:#f8fafb; --card:#fff; --accent:#e8f4f8; --radius:14px;
+    --success:#0f7b4f; --success-s:#e7f6ee; --warn:#b45309; --warn-s:#fdf2e3; --danger:#c0362c; --danger-s:#fbecea;
+    --grad:linear-gradient(90deg,#0d47a1 0%,#00838f 100%);
+    --font:'Heebo',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:var(--font);background:#eef2f6;color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
+  /* Page shell */
+  .top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);
+       border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:18px}
+  .brand .wm{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .brand .l{font-weight:500}
+  .top h1{font-size:14px;font-weight:600;color:var(--muted);margin:0}
+  .spacer{flex:1}
+  .seg{display:inline-flex;background:#eef2f6;border:1px solid var(--border);border-radius:999px;padding:3px}
+  .seg button{border:0;background:transparent;font-family:var(--font);font-size:13px;font-weight:600;color:var(--muted);
+       padding:6px 14px;border-radius:999px;cursor:pointer}
+  .seg button.on{background:#fff;color:var(--primary);box-shadow:0 1px 3px rgba(16,40,80,.12)}
+  .count{font-size:12.5px;color:var(--muted);font-weight:600}
+  .layout{display:grid;grid-template-columns:250px 1fr;gap:0;align-items:start}
+  /* TOC */
+  .toc{position:sticky;top:57px;align-self:start;height:calc(100vh - 57px);overflow:auto;
+       border-inline-start:1px solid var(--border);padding:18px 16px 60px;background:#fff}
+  .toc .grp{font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--primary);text-transform:uppercase;
+       margin:18px 0 7px;padding-inline-start:4px}
+  .toc a{display:flex;gap:9px;align-items:baseline;text-decoration:none;color:var(--text);font-size:13.5px;
+       padding:6px 8px;border-radius:8px;transition:background .12s}
+  .toc a:hover{background:var(--accent)}
+  .toc a .n{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;min-width:18px}
+  /* Feed */
+  .feed{padding:34px 28px 90px;display:flex;flex-direction:column;align-items:center;gap:40px}
+  .item{width:100%;max-width:760px}
+  .meta{max-width:600px;margin:0 auto 12px;padding:0 4px}
+  .meta .tag{display:inline-block;font-size:11px;font-weight:700;color:var(--primary);background:var(--accent);
+       border:1px solid var(--border);border-radius:999px;padding:3px 10px;margin-inline-end:8px}
+  .meta .tag.unsub{color:var(--warn);background:var(--warn-s)}
+  .meta .file{font-family:'SFMono-Regular',Consolas,Menlo,monospace;font-size:12px;color:var(--muted)}
+  .meta .subj{font-size:15px;font-weight:700;margin:8px 0 2px}
+  .meta .subj .k{color:var(--muted);font-weight:600}
+  .meta .pre{font-size:12.5px;color:var(--muted)}
+  .meta .from{font-size:12px;color:var(--muted);margin-top:3px}
+  /* Email canvas */
+  .mail{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:24px 12px;
+       box-shadow:0 10px 40px -22px rgba(16,40,80,.4)}
+  .env{max-width:600px;margin:0 auto}
+  .m-head{padding:2px 6px 0}
+  .m-logo{display:inline-flex;align-items:center;gap:11px}
+  .m-logo svg{display:block}
+  .m-wm{font-size:30px;letter-spacing:-.7px;line-height:1;background:var(--grad);
+       -webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap}
+  .m-wm .l{font-weight:500}.m-wm .f{font-weight:800}
+  .m-rule{height:3px;background:var(--grad);border-radius:3px;margin:14px 6px 18px}
+  .m-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .m-pad{padding:30px 34px}
+  .eyebrow{font-size:13px;font-weight:600;color:var(--primary);margin:0 0 6px}
+  .m-h1{font-size:23px;font-weight:700;line-height:1.35;margin:0 0 14px}
+  .m-p{font-size:15.5px;line-height:1.75;margin:0 0 15px}
+  .m-p strong{font-weight:700}
+  .m-note{font-size:13px;color:var(--muted);line-height:1.65;margin:0 0 8px}
+  .m-cta{text-align:center;margin:6px 0 20px}
+  .m-cta a{display:inline-block;background:var(--grad);color:#fff;font-weight:700;font-size:15.5px;
+       text-decoration:none;border-radius:var(--radius);padding:13px 32px}
+  .keybox{background:var(--accent);border:1px solid var(--border);border-radius:var(--radius);
+       padding:16px 20px;margin:2px 0 20px;text-align:center}
+  .keybox .kl{font-size:12.5px;font-weight:600;color:var(--primary);margin:0 0 7px}
+  .keybox .kv{font-family:'SFMono-Regular',Consolas,Menlo,monospace;font-size:21px;font-weight:700;
+       letter-spacing:2px;direction:ltr}
+  .receipt{border:1px solid var(--border);border-radius:var(--radius);padding:2px 18px;margin:2px 0 20px}
+  .rrow{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid var(--border)}
+  .rrow:last-child{border-bottom:0}
+  .rrow .rl{font-size:14.5px;color:var(--muted)}
+  .rrow .rv{font-size:14.5px;font-weight:500;direction:ltr}
+  .rrow.strong .rv{font-size:16.5px;font-weight:700;color:var(--primary)}
+  .callout{border-radius:11px;padding:13px 17px;margin:2px 0 20px;border-inline-start:3px solid var(--primary);background:var(--accent)}
+  .callout.success{border-color:var(--success);background:var(--success-s)}
+  .callout.warn{border-color:var(--warn);background:var(--warn-s)}
+  .callout.danger{border-color:var(--danger);background:var(--danger-s)}
+  .callout .ct{font-size:14.5px;font-weight:700;margin:0 0 3px}
+  .callout.success .ct{color:var(--success)}.callout.warn .ct{color:var(--warn)}.callout.danger .ct{color:var(--danger)}.callout .ct{color:var(--primary)}
+  .callout .cb{font-size:14.5px;line-height:1.6;margin:0}
+  .steps{margin:2px 0 18px}
+  .step{display:flex;gap:11px;margin-bottom:11px}
+  .step .sn{flex:none;width:26px;height:26px;line-height:26px;text-align:center;border-radius:999px;
+       background:var(--primary);color:#fff;font-size:13.5px;font-weight:700}
+  .step .sc{font-size:14.5px;line-height:1.55;padding-top:2px}
+  .chips{margin:0 0 14px}
+  .chip{display:inline-block;background:var(--accent);color:var(--primary);border:1px solid var(--border);
+       border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600;margin-inline-start:6px}
+  .linkfb{font-size:12.5px;color:var(--muted);text-align:center;margin:0 0 16px;word-break:break-all}
+  .linkfb a{color:var(--primary);direction:ltr}
+  .m-foot{max-width:600px;margin:0 auto;padding:18px 24px 4px;text-align:center}
+  .m-foot .fn{font-weight:600;font-size:13px;margin:0 0 5px}
+  .m-foot p{font-size:12.5px;color:var(--muted);margin:0 0 8px}
+  .m-foot a{color:var(--primary);text-decoration:none}
+  .m-foot .unsub{border-top:1px solid var(--border);padding-top:11px;margin-top:6px}
+  .m-foot .unsub a{color:var(--muted);text-decoration:underline}
+  .m-foot .cp{font-size:11.5px;margin-top:8px}
+  /* mobile-width mode */
+  body.mob .env,body.mob .m-foot{max-width:390px}
+  body.mob .m-pad{padding:24px 20px}
+  body.mob .m-h1{font-size:21px}
+  @media(max-width:900px){ .layout{grid-template-columns:1fr} .toc{display:none} }
+</style>
+</head>
+<body>
+  <div class="top">
+    <span class="brand"><svg width="26" height="26" viewBox="0 0 24 24"><path d="M4.5 16.5 C4.5 10 10 6 14.5 8 C18.5 9.8 19 14.5 15.5 16 C13.2 17 11 15.6 11.8 13.2" fill="none" stroke="#2756A6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="wm"><span class="l">Clinic</span>Flow</span></span>
+    <h1>תבניות אימייל טרנזקציוני · Resend + React Email</h1>
+    <span class="spacer"></span>
+    <span class="count" id="count"></span>
+    <span class="seg"><button id="bDesk" class="on" onclick="setW('desk')">דסקטופ</button><button id="bMob" onclick="setW('mob')">מובייל</button></span>
+  </div>
+  <div class="layout">
+    <nav class="toc" id="toc"></nav>
+    <main class="feed" id="feed"></main>
+  </div>
+
+<script>
+/* ── The 21 templates: authoritative Hebrew copy (mirrors the .tsx set) ── */
+const LOGO_URL = "public/logo/cf-lockup-horizontal.png";
+const GROUPS = {
+  A:"A · חשבון ואימות", B:"B · רכישה ורישוי", C:"C · מחזור ניסיון", D:"D · תחזוקה וחידוש", E:"E · תמיכה ומכירות"
+};
+const FROM = "ClinicFlow &lt;info@clinic-flow.co.il&gt;";
+const EM = [
+/* 1 */{g:"A",id:1,file:"confirm-email.tsx",subj:"אימות כתובת האימייל שלך ב-ClinicFlow",pre:"עוד לחיצה אחת ונסיים את ההרשמה שלך.",unsub:false,eyebrow:"אימות חשבון",h1:"נותר רק לאמת את האימייל",body:[
+  {t:"p",h:"תודה שנרשמת ל-ClinicFlow. כדי להשלים את יצירת החשבון ולהבטיח שנוכל להגיע אליך, נאמת את כתובת האימייל שלך."},
+  {t:"cta",l:"אימות כתובת האימייל",href:"{{ .ConfirmationURL }}"},
+  {t:"linkfb",l:"או העתק את הקישור הזה לדפדפן:",href:"{{ .ConfirmationURL }}"},
+  {t:"note",h:"אם לא נרשמת ל-ClinicFlow, אפשר להתעלם מהמייל הזה — לא נוצר עבורך חשבון."}
+]},
+/* 2 */{g:"A",id:2,file:"magic-link.tsx",subj:"קוד הכניסה שלך ל-ClinicFlow",pre:"קוד חד-פעמי לכניסה לחשבון שלך.",unsub:false,eyebrow:"כניסה מאובטחת",h1:"קוד הכניסה החד-פעמי שלך",body:[
+  {t:"p",h:"הזן את הקוד הבא כדי להיכנס לחשבון ClinicFlow שלך. הקוד תקף ל-10 דקות."},
+  {t:"key",l:"קוד כניסה",v:"{{ .Token }}"},
+  {t:"p",h:"או פשוט לחץ לכניסה מיידית:"},
+  {t:"cta",l:"כניסה לחשבון",href:"{{ .ConfirmationURL }}"},
+  {t:"note",h:"לא ביקשת להתחבר? התעלם מהמייל — אף אחד לא נכנס ללא הקוד הזה."}
+]},
+/* 3 */{g:"A",id:3,file:"reset-password.tsx",subj:"איפוס הסיסמה שלך ב-ClinicFlow",pre:"קיבלנו בקשה לאיפוס הסיסמה שלך.",unsub:false,eyebrow:"אבטחת חשבון",h1:"איפוס סיסמה",body:[
+  {t:"p",h:"קיבלנו בקשה לאיפוס הסיסמה של חשבונך. לחץ על הכפתור כדי לבחור סיסמה חדשה. הקישור תקף לשעה אחת."},
+  {t:"cta",l:"בחירת סיסמה חדשה",href:"{{ .ConfirmationURL }}"},
+  {t:"linkfb",l:"או העתק קישור זה:",href:"{{ .ConfirmationURL }}"},
+  {t:"note",h:"אם לא ביקשת לאפס סיסמה, אין צורך לעשות דבר — הסיסמה הנוכחית נשארת בתוקף."}
+]},
+/* 4 */{g:"A",id:4,file:"change-email.tsx",subj:"אישור שינוי כתובת האימייל",pre:"אשרו את כתובת האימייל החדשה לחשבון שלך.",unsub:false,eyebrow:"עדכון חשבון",h1:"אישור כתובת אימייל חדשה",body:[
+  {t:"p",h:"התקבלה בקשה לעדכן את כתובת האימייל בחשבון שלך אל <strong>newapp@clinic-flow.co.il</strong>. אשר את השינוי כדי להחיל אותו."},
+  {t:"cta",l:"אישור הכתובת החדשה",href:"{{ .ConfirmationURL }}"},
+  {t:"note",h:"אם לא ביקשת את השינוי, השב למייל הזה מיד — נשמור על החשבון שלך."}
+]},
+/* 5 */{g:"A",id:5,file:"welcome.tsx",subj:"ברוכים הבאים ל-ClinicFlow",pre:"החשבון שלך מוכן. הנה מה שחשוב לדעת.",unsub:false,eyebrow:"החשבון שלך מוכן",h1:"ברוכים הבאים ל-ClinicFlow, ד״ר שרון לוי",body:[
+  {t:"p",h:"שמחים שהצטרפת. ClinicFlow היא תוכנת ניהול קליניקה שנבנתה סביב עיקרון אחד: <strong>המידע שלך שייך לך בלבד</strong>."},
+  {t:"chips",items:["עובד לגמרי אופליין","רישיון חד-פעמי","תואם תיקון 13"]},
+  {t:"callout",tone:"success",title:"הנתונים נשארים אצלך",body:"התוכנה רצה על המחשב שלך. פרטי המטופלים לא עולים לענן ולא עוזבים את המכשיר — לעולם."},
+  {t:"p",h:"מכאן אפשר להוריד את האפליקציה, להפעיל את הרישיון ולהתחיל לנהל את הקליניקה תוך דקות."},
+  {t:"cta",l:"להורדת האפליקציה",href:"https://clinic-flow.co.il/download"},
+  {t:"note",h:"יש שאלה? פשוט השב למייל הזה — אנחנו כאן."}
+]},
+/* 6 */{g:"B",id:6,file:"order-confirmation.tsx",subj:"אישור הרכישה שלך ב-ClinicFlow",pre:"תודה על הרכישה — הנה סיכום ההזמנה שלך.",unsub:false,eyebrow:"אישור הזמנה",h1:"תודה על הרכישה 🎉",body:[
+  {t:"p",h:"קיבלנו את התשלום שלך. הנה סיכום ההזמנה. מפתח הרישיון והוראות ההפעלה נשלחים במייל נפרד — הוא בדרך אליך עכשיו."},
+  {t:"receipt",rows:[["תוכנית","ClinicFlow Full"],["סוג רישיון","תשלום חד-פעמי"],["מספר הזמנה","CF-10428"],["סכום לפני מע״מ","₪1,196"],["מע״מ (18%)","₪215"],["סה״כ ששולם","₪1,411",true]]},
+  {t:"chips",items:["תואם תיקון 13","ללא מנוי חודשי"]},
+  {t:"note",h:"חשבונית מס/קבלה רשמית תישלח בנפרד או זמינה להורדה מאזור החשבון."},
+  {t:"cta",l:"צפייה בהזמנה",href:"https://clinic-flow.co.il/account/orders"}
+]},
+/* 7 */{g:"B",id:7,file:"license-delivery.tsx",subj:"מפתח הרישיון שלך ל-ClinicFlow מוכן",pre:"מפתח הרישיון + הפעלה ב-3 שלבים, גם ללא אינטרנט.",unsub:false,star:true,eyebrow:"הרישיון שלך מוכן",h1:"ClinicFlow מוכנה להפעלה 🎉",body:[
+  {t:"p",h:"תודה על הרכישה. להלן מפתח הרישיון שלך לתוכנית <strong>ClinicFlow Full</strong>. שמור את המייל — המפתח מאפשר הפעלה מלאה, <strong>גם ללא חיבור לאינטרנט</strong>."},
+  {t:"key",l:"מפתח הרישיון שלך",v:"CF-FULL-7Q2M-4K9X-A1D3"},
+  {t:"p",h:"<strong>הפעלה ב-3 שלבים:</strong>"},
+  {t:"steps",items:["הורד והתקן את ClinicFlow למחשב שלך מקישור ההורדה למטה.","פתח את האפליקציה ובחר ״הפעלת רישיון״ במסך הפתיחה.","הדבק את המפתח שלמעלה ולחץ ״הפעל״. זהו — הקליניקה שלך מוכנה."]},
+  {t:"cta",l:"הורדה והתקנה",href:"https://clinic-flow.co.il/download"},
+  {t:"callout",tone:"success",title:"עובד גם בלי אינטרנט",body:"אם המחשב לא מחובר לרשת, בחר ״הפעלה לא-מקוונת״ והזן את המפתח ידנית. הרישיון נשמר על המחשב שלך."},
+  {t:"chips",items:["תואם תיקון 13","רישיון חד-פעמי"]},
+  {t:"note",h:"צריך להעביר את הרישיון למחשב אחר בעתיד? אפשר להפעיל מחדש בקלות. לכל שאלה — השב למייל הזה."}
+]},
+/* 8 */{g:"B",id:8,file:"upgrade-confirmation.tsx",subj:"שדרוג התוכנית שלך אושר",pre:"שילמת רק את ההפרש — הנה הפירוט.",unsub:false,eyebrow:"אישור שדרוג",h1:"השדרוג הושלם",body:[
+  {t:"p",h:"שדרגת בהצלחה מ-<strong>ClinicFlow Pro</strong> ל-<strong>ClinicFlow Full</strong>. כמו שהובטח — שילמת רק את ההפרש, בזיכוי מלא של מה ששילמת קודם."},
+  {t:"receipt",rows:[["תוכנית קודמת","ClinicFlow Pro"],["תוכנית חדשה","ClinicFlow Full"],["זיכוי על התוכנית הקודמת","−₪690"],["הפרש ששולם","₪721",true]]},
+  {t:"p",h:"כל התכונות הנוספות כבר פעילות ברישיון הקיים שלך — אין צורך להזין מפתח חדש."},
+  {t:"cta",l:"מה חדש בתוכנית Full",href:"https://clinic-flow.co.il/whats-new"}
+]},
+/* 9 */{g:"B",id:9,file:"payment-failed.tsx",subj:"התשלום לא הושלם — נדרשת פעולה",pre:"לא הצלחנו לחייב את אמצעי התשלום. אפשר לנסות שוב.",unsub:false,eyebrow:"נדרשת פעולה",h1:"התשלום לא הושלם",body:[
+  {t:"callout",tone:"warn",title:"החיוב נכשל",body:"לא הצלחנו לחייב את אמצעי התשלום עבור ClinicFlow Full (₪1,411). ייתכן שהכרטיס פג תוקף או שלא אושר."},
+  {t:"p",h:"אין צורך לדאוג — לא בוצע חיוב וההזמנה שמורה. אפשר לעדכן את אמצעי התשלום ולנסות שוב בלחיצה אחת."},
+  {t:"cta",l:"עדכון תשלום וניסיון חוזר",href:"https://clinic-flow.co.il/checkout/retry"},
+  {t:"note",h:"נתקלת בבעיה? השב למייל ונשמח לעזור להשלים את הרכישה."}
+]},
+/* 10 */{g:"B",id:10,file:"refund-confirmation.tsx",subj:"אישור החזר כספי מ-ClinicFlow",pre:"ההחזר שלך עובד — הנה הפרטים.",unsub:false,eyebrow:"אישור החזר",h1:"אישור החזר כספי",body:[
+  {t:"p",h:"עיבדנו את ההחזר הכספי עבור הרכישה שלך. הסכום יופיע באמצעי התשלום המקורי תוך 5–10 ימי עסקים, בהתאם לחברת האשראי."},
+  {t:"receipt",rows:[["תוכנית","ClinicFlow Full"],["מספר החזר","RF-20915"],["סכום שהוחזר","₪1,411",true]]},
+  {t:"note",h:"אם ההחזר לא יופיע תוך 10 ימי עסקים, השב למייל הזה ונבדוק עבורך."}
+]},
+/* 11 */{g:"B",id:11,file:"device-reactivation.tsx",subj:"הרישיון הופעל מחדש במכשיר חדש",pre:"הפעלת את ClinicFlow במחשב חדש — אישור אבטחה.",unsub:false,eyebrow:"התראת אבטחה",h1:"הרישיון הופעל במכשיר חדש",body:[
+  {t:"p",h:"הרישיון שלך הופעל בהצלחה במחשב חדש. שולחים אישור כדי שתמיד תדע מה קורה עם הרישיון שלך."},
+  {t:"receipt",rows:[["מכשיר","MacBook Pro · שרון"],["תאריך הפעלה","2 ביולי 2026, 14:32"],["מפתח רישיון","CF-FULL-••••-A1D3"]]},
+  {t:"callout",tone:"info",title:"זה היית אתה?",body:"אם כן — אין צורך לעשות דבר. אם לא זיהית את ההפעלה הזו, השב למייל מיד ונאבטח את הרישיון שלך."}
+]},
+/* 12 */{g:"C",id:12,file:"trial-started.tsx",subj:"תקופת הניסיון שלך ב-ClinicFlow התחילה",pre:"14 יום להתרשם, בלי כרטיס אשראי.",unsub:true,eyebrow:"הניסיון התחיל",h1:"14 יום להכיר את ClinicFlow",body:[
+  {t:"p",h:"תקופת הניסיון שלך התחילה — <strong>14 יום מלאים, ללא צורך בכרטיס אשראי</strong>. כל התכונות פתוחות, וכל מה שתזין נשמר על המחשב שלך."},
+  {t:"callout",tone:"success",title:"הנתונים שלך אצלך מהרגע הראשון",body:"ClinicFlow עובדת אופליין. גם בזמן הניסיון, פרטי המטופלים לא עוזבים את המחשב."},
+  {t:"p",h:"הניסיון פעיל עד <strong>16 ביולי 2026</strong>. הדרך הכי טובה להתרשם — לנהל יום עבודה אמיתי בתוכנה."},
+  {t:"cta",l:"פתיחת האפליקציה",href:"https://clinic-flow.co.il/download"}
+]},
+/* 13 */{g:"C",id:13,file:"trial-ending.tsx",subj:"הניסיון שלך מסתיים בקרוב",pre:"נותרו לך עוד כמה ימים — כדאי לשמור על הרצף.",unsub:true,eyebrow:"תזכורת ניסיון",h1:"נותרו לך 3 ימים בניסיון",body:[
+  {t:"p",h:"תקופת הניסיון שלך ב-ClinicFlow מסתיימת ב-<strong>16 ביולי 2026</strong>. אם התוכנה מתאימה לך, זה הזמן לעבור לרישיון קבוע ולשמור על רצף העבודה."},
+  {t:"callout",tone:"info",title:"רישיון חד-פעמי, בלי מנוי",body:"תשלום אחד והתוכנה שלך לתמיד. בלי חיובים חודשיים, בלי הפתעות."},
+  {t:"cta",l:"מעבר לרישיון מלא",href:"https://clinic-flow.co.il/pricing"},
+  {t:"note",h:"גם אם הניסיון יסתיים — הנתונים שהזנת יישמרו במלואם."}
+]},
+/* 14 */{g:"C",id:14,file:"trial-ended.tsx",subj:"הניסיון הסתיים — הנתונים שלך נשמרו",pre:"האפליקציה עברה למצב קריאה בלבד. הנתונים שלך שמורים.",unsub:true,eyebrow:"הניסיון הסתיים",h1:"הניסיון הסתיים — הכול נשמר",body:[
+  {t:"p",h:"תקופת הניסיון הסתיימה. ClinicFlow עברה ל<strong>מצב קריאה בלבד</strong> — עדיין אפשר לצפות בכל המידע, אבל לא להוסיף או לערוך."},
+  {t:"callout",tone:"success",title:"שום דבר לא נמחק",body:"כל המטופלים, הביקורים והמסמכים שהזנת שמורים על המחשב שלך. רכישת רישיון פותחת מחדש את מלוא התכונות — בדיוק מאיפה שעצרת."},
+  {t:"cta",l:"הפעלת התוכנה עם רישיון",href:"https://clinic-flow.co.il/pricing"}
+]},
+/* 15 */{g:"C",id:15,file:"win-back.tsx",subj:"הנתונים שלך עדיין כאן, מחכים לך",pre:"שום דבר לא נמחק — אפשר להמשיך בדיוק מאיפה שעצרת.",unsub:true,eyebrow:"נשמח לראותך שוב",h1:"הנתונים שלך עדיין כאן",body:[
+  {t:"p",h:"עבר קצת זמן מאז שהתנסית ב-ClinicFlow. רצינו רק להזכיר: <strong>כל מה שהזנת עדיין שמור על המחשב שלך</strong>, ואפשר להמשיך בכל רגע."},
+  {t:"p",h:"אם משהו חסר לך בתוכנה או לא היה ברור — נשמח לשמוע. תשובה למייל הזה מגיעה ישירות אלינו."},
+  {t:"cta",l:"חזרה ל-ClinicFlow",href:"https://clinic-flow.co.il/pricing"}
+]},
+/* 16 */{g:"D",id:16,file:"renewal-upcoming.tsx",subj:"חידוש תקופת העדכונים שלך מתקרב",pre:"העדכונים ותאימות תיקון 13 — כדי שהכל יישאר עדכני.",unsub:true,eyebrow:"חידוש עדכונים",h1:"תקופת העדכונים שלך מתקרבת לסיום",body:[
+  {t:"p",h:"תקופת העדכונים והתאימות השנתית שלך תסתיים ב-<strong>1 באוגוסט 2026</strong>. חידוש שומר על התוכנה מעודכנת — כולל פורמטי חשבונית מס ותאימות שוטפת ל<strong>תיקון 13</strong>."},
+  {t:"callout",tone:"info",title:"התוכנה תמשיך לעבוד בכל מקרה",body:"גם בלי חידוש — ClinicFlow ממשיכה לעבוד אופליין, ללא הגבלה. החידוש נועד רק לעדכונים ולתאימות רגולטורית חדשה."},
+  {t:"receipt",rows:[["תוכנית","ClinicFlow Full"],["חידוש עד","1 באוגוסט 2026"],["עלות שנתית","₪149"]]},
+  {t:"cta",l:"חידוש תקופת העדכונים",href:"https://clinic-flow.co.il/account/renew"}
+]},
+/* 17 */{g:"D",id:17,file:"renewal-confirmation.tsx",subj:"חידוש העדכונים אושר — תודה",pre:"תקופת עדכונים חדשה נפתחה. הנה הקבלה.",unsub:false,eyebrow:"אישור חידוש",h1:"תקופת העדכונים חודשה",body:[
+  {t:"p",h:"תודה על החידוש. תקופת העדכונים והתאימות שלך פעילה כעת לשנה נוספת — נמשיך לעדכן את התוכנה ולשמור על תאימות תיקון 13."},
+  {t:"receipt",rows:[["תוכנית","ClinicFlow Full"],["תקופת עדכונים חדשה עד","1 באוגוסט 2027"],["סכום ששולם","₪149",true]]},
+  {t:"note",h:"חשבונית מס/קבלה זמינה להורדה מאזור החשבון."}
+]},
+/* 18 */{g:"D",id:18,file:"updates-lapsed.tsx",subj:"תקופת העדכונים הסתיימה — האפליקציה ממשיכה לעבוד",pre:"התוכנה ממשיכה לעבוד לתמיד. רק העדכונים החדשים מושהים.",unsub:true,eyebrow:"עדכונים",h1:"תקופת העדכונים הסתיימה",body:[
+  {t:"callout",tone:"success",title:"התוכנה שלך ממשיכה לעבוד — לתמיד",body:"הרישיון שלך הוא חד-פעמי. סיום תקופת העדכונים לא משפיע על השימוש: כל התכונות והנתונים ממשיכים לעבוד כרגיל, אופליין."},
+  {t:"p",h:"מה שמושהה הוא רק <strong>עדכוני גרסה חדשים</strong> ותאימות לרגולציה עתידית. חידוש מפעיל אותם מחדש מיד."},
+  {t:"cta",l:"חידוש כדי לחדש עדכונים",href:"https://clinic-flow.co.il/account/renew"}
+]},
+/* 19 */{g:"E",id:19,file:"contact-received.tsx",subj:"קיבלנו את פנייתך — נחזור אליך בהקדם",pre:"הפנייה שלך התקבלה. נענה בדרך כלל תוך יום עסקים.",unsub:false,eyebrow:"קיבלנו את פנייתך",h1:"תודה שפנית אלינו",body:[
+  {t:"p",h:"שלום שרון, קיבלנו את הפנייה שלך ונחזור אליך בהקדם — בדרך כלל תוך <strong>יום עסקים אחד</strong>."},
+  {t:"callout",tone:"info",title:"פנייה מס׳ SUP-4471",body:"״שלום, אשמח לדעת אם אפשר לייבא רשומות מטופלים מתוכנה קיימת…״"},
+  {t:"note",h:"אין צורך לענות למייל הזה — זו הודעת אישור אוטומטית. נחזור אליך מכתובת אמיתית."}
+]},
+/* 20 */{g:"E",id:20,file:"sales-response.tsx",subj:"מענה לפנייתך לגבי ClinicFlow Premium",pre:"תודה על ההתעניינות — הנה המידע שביקשת.",unsub:false,eyebrow:"תוכנית Premium",h1:"תודה על ההתעניינות ב-Premium",body:[
+  {t:"p",h:"שלום שרון, תודה על הפנייה. ClinicFlow Premium מיועדת לאנשי מקצוע שצריכים יכולות מתקדמות — לצד אותה התחייבות לפרטיות ולעבודה אופליין."},
+  {t:"p",h:"התוכנית כוללת חוות דעת משפטיות, יומן מקצועי מורחב, גיבויים מוצפנים מתקדמים ותמיכה בעדיפות."},
+  {t:"cta",l:"תיאום שיחה קצרה",href:"https://clinic-flow.co.il/premium"},
+  {t:"note",h:"אפשר פשוט להשיב למייל הזה עם כל שאלה — אשמח לעזור. — יעל, צוות ClinicFlow"}
+]},
+/* 21 */{g:"E",id:21,file:"policy-update.tsx",subj:"עדכון במדיניות ובתנאי השימוש",pre:"עדכנו את התנאים ומדיניות הפרטיות. הנה מה שהשתנה.",unsub:true,eyebrow:"עדכון מדיניות",h1:"עדכנו את התנאים ומדיניות הפרטיות",body:[
+  {t:"p",h:"עדכנו את תנאי השימוש ומדיניות הפרטיות של ClinicFlow. השינויים נכנסים לתוקף ב-<strong>1 באוגוסט 2026</strong>."},
+  {t:"p",h:"עיקרי העדכון: הבהרות לגבי אחסון מקומי של נתונים, ניסוח מעודכן בהתאם לתיקון 13, ופרטי יצירת קשר לממונה הגנת הפרטיות. <strong>העיקרון לא השתנה — המידע שלך נשאר על המחשב שלך.</strong>"},
+  {t:"cta",l:"קריאת התנאים המעודכנים",href:"https://clinic-flow.co.il/terms"},
+  {t:"linkfb",l:"מדיניות הפרטיות:",href:"https://clinic-flow.co.il/privacy"}
+]},
+];
+
+/* ── renderers ── */
+const logoSVG = `<span class="m-logo"><svg width="34" height="34" viewBox="0 0 24 24"><path d="M4.5 16.5 C4.5 10 10 6 14.5 8 C18.5 9.8 19 14.5 15.5 16 C13.2 17 11 15.6 11.8 13.2" fill="none" stroke="#2756A6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="m-wm"><span class="l">Clinic</span><span class="f">Flow</span></span></span>`;
+
+function block(b){
+  switch(b.t){
+    case "p": return `<p class="m-p">${b.h}</p>`;
+    case "note": return `<p class="m-note">${b.h}</p>`;
+    case "cta": return `<div class="m-cta"><a href="#">${b.l}</a></div>`;
+    case "key": return `<div class="keybox"><div class="kl">${b.l}</div><div class="kv">${b.v}</div></div>`;
+    case "linkfb": return `<p class="linkfb">${b.l}<br><a href="#">${b.href}</a></p>`;
+    case "chips": return `<div class="chips">${b.items.map(c=>`<span class="chip">${c}</span>`).join("")}</div>`;
+    case "callout": return `<div class="callout ${b.tone||'info'}">${b.title?`<p class="ct">${b.title}</p>`:""}<p class="cb">${b.body}</p></div>`;
+    case "receipt": return `<div class="receipt">${b.rows.map(r=>`<div class="rrow ${r[2]?'strong':''}"><span class="rl">${r[0]}</span><span class="rv">${r[1]}</span></div>`).join("")}</div>`;
+    case "steps": return `<div class="steps">${b.items.map((it,i)=>`<div class="step"><span class="sn">${i+1}</span><span class="sc">${it}</span></div>`).join("")}</div>`;
+    default: return "";
+  }
+}
+function footer(unsub){
+  return `<div class="m-foot"><p class="fn">ClinicFlow</p>
+   <p>תוכנת ניהול קליניקה שעובדת אופליין — המידע שלך נשאר על המחשב שלך.</p>
+   <p><a href="#">clinic-flow.co.il</a>&nbsp;&nbsp;·&nbsp;&nbsp;<a href="#">info@clinic-flow.co.il</a></p>
+   ${unsub?`<div class="unsub"><p>קיבלת מייל זה כי נרשמת ל-ClinicFlow. <a href="#">להסרה מרשימת התפוצה</a></p></div>`:""}
+   <p class="cp">© 2026 ClinicFlow · כל הזכויות שמורות</p></div>`;
+}
+function card(e){
+  return `<div class="mail"><div class="env"><div class="m-head">${logoSVG}<div class="m-rule"></div></div>
+    <div class="m-card"><div class="m-pad">
+      ${e.eyebrow?`<p class="eyebrow">${e.eyebrow}</p>`:""}
+      <h2 class="m-h1">${e.h1}</h2>
+      ${e.body.map(block).join("")}
+    </div></div></div>
+    ${footer(e.unsub)}</div>`;
+}
+function meta(e){
+  return `<div class="meta">
+    <span class="tag">${e.g} · #${String(e.id).padStart(2,"0")}</span>
+    ${e.unsub?`<span class="tag unsub">דורש הסרה</span>`:""}
+    ${e.star?`<span class="tag" style="background:#fff6e0;color:#9a6b00;border-color:#f0e2bf">⭐ הכי חשוב</span>`:""}
+    <span class="file">emails/${e.file}</span>
+    <div class="subj"><span class="k">נושא:</span> ${e.subj}</div>
+    <div class="pre">📬 ${e.pre}</div>
+    <div class="from">מאת: ${FROM}</div>
+  </div>`;
+}
+
+const feed = document.getElementById("feed");
+feed.innerHTML = EM.map(e=>`<section class="item" id="e${e.id}">${meta(e)}${card(e)}</section>`).join("");
+document.getElementById("count").textContent = EM.length + " תבניות";
+
+// TOC
+const toc = document.getElementById("toc");
+let html="";
+for(const g of Object.keys(GROUPS)){
+  html += `<div class="grp">${GROUPS[g]}</div>`;
+  EM.filter(e=>e.g===g).forEach(e=>{
+    html += `<a href="#e${e.id}"><span class="n">${String(e.id).padStart(2,"0")}</span><span>${e.subj}</span></a>`;
+  });
+}
+toc.innerHTML = html;
+
+function setW(m){
+  document.body.classList.toggle("mob", m==="mob");
+  document.getElementById("bMob").classList.toggle("on", m==="mob");
+  document.getElementById("bDesk").classList.toggle("on", m!=="mob");
+}
+</script>
+</body>
+</html>

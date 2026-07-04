@@ -5,8 +5,15 @@ import { DashboardPreview } from "@/app/components/DashboardPreview";
 import { OfflineBenefits } from "@/app/components/OfflineBenefits";
 import { CTASection } from "@/app/components/CTASection";
 import { PremiumContactForm } from "@/app/components/PremiumContactForm";
+import { useDocumentMeta } from "@/lib/use-document-meta";
 
 export function HomePage() {
+  useDocumentMeta({
+    title: "ClinicFlow — ניהול מרפאה אופליין לרופאים בישראל",
+    description: "מערכת ניהול חולים אופליין לרופאים שמעריכים פרטיות ואבטחה. תשלום חד-פעמי, רישיון לנצח, כל הנתונים במחשב שלך.",
+    canonicalPath: "/",
+  });
+
   return (
     <>
       <Hero />

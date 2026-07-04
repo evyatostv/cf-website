@@ -85,26 +85,26 @@ export function FeaturesSection() {
   ];
 
   return (
-    <section id="features" className="py-32 bg-white relative overflow-hidden">
+    <section id="features" className="py-20 sm:py-32 bg-white relative overflow-hidden">
       <div className="container mx-auto px-6 max-w-7xl" ref={ref}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-20"
+          className="text-center mb-12 sm:mb-20"
         >
           <div className="inline-flex items-center gap-2 bg-[#e8f4f8] rounded-full px-5 py-2 mb-6">
             <BarChart3 className="w-4 h-4 text-[#0d47a1]" />
             <span className="text-sm font-medium text-[#0d47a1]">יכולות המערכת</span>
           </div>
-          <h2 className="text-5xl md:text-6xl font-bold text-[#1a2332] mb-6 leading-tight">
+          <h2 className="text-3xl sm:text-5xl md:text-6xl font-bold text-[#1a2332] mb-6 leading-tight">
             כל מה שצריך
             <br />
             <span className="text-[#0d47a1]">
               במקום אחד
             </span>
           </h2>
-          <p className="text-xl text-[#6b7c93] max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl text-[#6b7c93] max-w-2xl mx-auto leading-relaxed">
             ניהול מטופלים, תורים, מסמכים וחשבוניות — במקום אחד, על המחשב שלכם, בלי מנוי חודשי.
           </p>
         </motion.div>
@@ -124,7 +124,7 @@ export function FeaturesSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-16 text-center"
+          className="mt-12 sm:mt-16 text-center"
         >
           <div className="inline-flex flex-col sm:flex-row items-center gap-4 bg-white rounded-3xl p-8 border border-[#e1e6ec] shadow-lg">
             <div className="text-right">

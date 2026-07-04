@@ -1,13 +1,16 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { motion } from 'motion/react';
 import { supabase } from '@/lib/supabase';
+import { Captcha, CaptchaHandle } from '@/app/components/Captcha';
 
 export function ResetPasswordPage() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState('');
+  const captchaRef = useRef<CaptchaHandle>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,14 +18,16 @@ export function ResetPasswordPage() {
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${window.location.origin}/update-password`,
+        captchaToken: captchaToken || undefined,
       });
       if (error) throw error;
       setSent(true);
     } catch (err: any) {
-      setError(err.message || 'אירעה שגיאה. נסה שוב.');
+      setError(err.message || 'אירעה שגיאה. נסה/י שוב.');
     } finally {
       setLoading(false);
+      captchaRef.current?.reset(); // tokens are single-use
     }
   };
 
@@ -45,7 +50,7 @@ export function ResetPasswordPage() {
               <h2 className="text-2xl font-bold text-[#1a2332] mb-2">נשלח מייל איפוס</h2>
               <p className="text-[#6b7c93] mb-6">
                 שלחנו לך קישור לאיפוס הסיסמה לכתובת <strong>{email}</strong>.<br />
-                בדוק את תיבת הדואר שלך.
+                בדוק/י את תיבת הדואר שלך.
               </p>
               <Link to="/login" className="text-[#0d47a1] font-medium hover:underline">
                 חזרה לכניסה
@@ -55,7 +60,7 @@ export function ResetPasswordPage() {
             <>
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold text-[#1a2332] mb-2">איפוס סיסמה</h1>
-                <p className="text-[#6b7c93]">הזן את כתובת הדוא"ל שלך ונשלח לך קישור לאיפוס</p>
+                <p className="text-[#6b7c93]">הזן/י את כתובת הדוא"ל שלך ונשלח לך קישור לאיפוס</p>
               </div>
 
               {error && (
@@ -79,12 +84,14 @@ export function ResetPasswordPage() {
                   />
                 </div>
 
+                <Captcha ref={captchaRef} onVerify={setCaptchaToken} />
+
                 <button
                   type="submit"
                   disabled={loading}
                   className="w-full bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-medium py-3 rounded-lg hover:shadow-lg transition disabled:opacity-50"
                 >
-                  {loading ? 'שולח...' : 'שלח קישור לאיפוס'}
+                  {loading ? 'שולח...' : 'שלח/י קישור לאיפוס'}
                 </button>
               </form>
 

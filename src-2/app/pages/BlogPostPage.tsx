@@ -2,10 +2,19 @@ import { useParams, Link } from 'react-router';
 import { motion } from 'motion/react';
 import { ArrowRight, Clock, Calendar, Tag } from 'lucide-react';
 import { blogPosts, categoryColors } from '@/app/data/blog-posts';
+import { useDocumentMeta } from '@/lib/use-document-meta';
 
 export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
   const post = blogPosts.find((p) => p.slug === slug);
+
+  // Per-post SEO: title/description/canonical/og:image from the post itself.
+  useDocumentMeta({
+    title: post ? post.title : 'הפוסט לא נמצא',
+    description: post?.description,
+    canonicalPath: `/blog/${slug ?? ''}`,
+    image: post?.image,
+  });
 
   if (!post) {
     return (

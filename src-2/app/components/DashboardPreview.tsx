@@ -29,7 +29,7 @@ export function DashboardPreview() {
           <div className="h-full overflow-auto bg-[#f5f7f9] rounded-xl">
             <img
               src="/preview/app-home-v2.png"
-              alt="לוח הבקרה של Clinic Flow"
+              alt="לוח הבקרה של ClinicFlow"
               className="w-full h-auto block"
               loading="lazy"
             />

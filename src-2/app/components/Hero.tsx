@@ -36,14 +36,14 @@ export function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center pt-20"
+          className="text-center pt-12 sm:pt-20"
         >
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-[#e1e6ec] rounded-full px-5 py-2.5 shadow-sm mt-16"
+            className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-[#e1e6ec] rounded-full px-5 py-2.5 shadow-sm mt-8 sm:mt-16"
           >
             <WifiOff className="w-4 h-4 text-[#00838f]" />
             <span className="text-sm text-[#1a2332]">מערכת אופליין מלאה</span>
@@ -54,20 +54,20 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="mb-2"
+            className="mt-6 sm:mt-8 mb-2"
           >
-            <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-[#1a2332] leading-[1.1] tracking-tight mb-4 px-2">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-[#1a2332] leading-[1.1] tracking-tight mb-2 sm:mb-4 px-2">
               פחות ניירת. יותר רפואה.
             </h1>
 
             {/* Morphing profession text */}
-            <div className="relative h-16 sm:h-28 md:h-40 lg:h-44 flex items-end justify-center pb-2 mt-4 sm:mt-8">
+            <div className="relative h-14 sm:h-28 md:h-40 lg:h-44 flex items-center sm:items-end justify-center sm:pb-2 mt-3 sm:mt-8">
               <GooeyText
                 texts={professions}
                 morphTime={0.6}
                 cooldownTime={1.25}
                 className="w-full h-full"
-                textClassName="text-2xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-[#0d47a1] whitespace-nowrap"
+                textClassName="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-[#0d47a1] whitespace-nowrap"
               />
             </div>
           </motion.div>

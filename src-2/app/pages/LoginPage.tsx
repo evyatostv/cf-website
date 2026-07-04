@@ -1,29 +1,52 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router';
+import { useRef, useState } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
 import { motion } from 'motion/react';
 import { PasswordInput } from '@/app/components/ui/password-input';
+import { GoogleSignInButton } from '@/app/components/GoogleSignInButton';
+import { Captcha, CaptchaHandle } from '@/app/components/Captcha';
+import { mapAuthError } from '@/lib/auth-errors';
+import { safeRedirect } from '@/lib/safe-redirect';
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showResetHint, setShowResetHint] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState('');
+  const captchaRef = useRef<CaptchaHandle>(null);
+
+  // Where to send the user after login: honour a validated same-origin
+  // ?redirect= (e.g. back to /payment?plan=...), else the normal flow.
+  const redirect = searchParams.get('redirect');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setShowResetHint(false);
     setLoading(true);
 
     try {
-      await signIn(email, password);
-      navigate('/dashboard');
+      const data = await signIn(email, password, captchaToken);
+      // Users who haven't finished onboarding are sent to complete it first.
+      const onboarded = data?.user?.user_metadata?.onboarded;
+      if (redirect) {
+        navigate(safeRedirect(redirect));
+      } else {
+        navigate(onboarded ? '/dashboard' : '/complete-profile');
+      }
     } catch (err: any) {
-      setError(err.message || 'Failed to sign in');
+      setError(mapAuthError(err));
+      // Nudge toward password reset on a credential failure.
+      const s = String(err?.code || err?.message || '').toLowerCase();
+      setShowResetHint(s.includes('invalid') || s.includes('credential') || s.includes('password'));
     } finally {
       setLoading(false);
+      captchaRef.current?.reset(); // tokens are single-use
     }
   };
 
@@ -33,21 +56,29 @@ export function LoginPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-md"
+        className="w-full max-w-xl"
       >
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-[#1a2332] mb-2">כניסה</h1>
-            <p className="text-[#6b7c93]">הזן את פרטיך כדי להיכנס לחשבונך</p>
+            <p className="text-[#6b7c93]">הזן/י את פרטיך כדי להיכנס לחשבונך</p>
           </div>
 
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-red-600 text-sm">{error}</p>
+              {showResetHint && (
+                <p className="text-red-600 text-sm mt-1">
+                  שכחת/ה את הסיסמה?{' '}
+                  <Link to="/reset-password" className="font-medium underline hover:no-underline">
+                    איפוס סיסמה
+                  </Link>
+                </p>
+              )}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
             <div>
               <label htmlFor="login-email" className="block text-sm font-medium text-[#1a2332] mb-2">
                 דוא"ל
@@ -81,14 +112,20 @@ export function LoginPage() {
               />
             </div>
 
+            <div className="md:col-span-2">
+              <Captcha ref={captchaRef} onVerify={setCaptchaToken} />
+            </div>
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-medium py-3.5 rounded-lg hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed min-h-[48px]"
+              className="md:col-span-2 w-full bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-medium py-3.5 rounded-lg hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed min-h-[48px]"
             >
-              {loading ? 'כניסה...' : 'כנס'}
+              {loading ? 'כניסה...' : 'כנס/י'}
             </button>
           </form>
+
+          <GoogleSignInButton label="התחברות עם Google" onError={setError} />
 
           <div className="mt-4 text-center">
             <Link to="/reset-password" className="text-sm font-medium text-[#0d47a1] hover:underline transition">
@@ -100,7 +137,7 @@ export function LoginPage() {
             <p className="text-[#6b7c93]">
               אין לך חשבון?{' '}
               <Link to="/signup" className="text-[#0d47a1] font-medium hover:underline">
-                הירשם עכשיו
+                הירשם/י עכשיו
               </Link>
             </p>
           </div>

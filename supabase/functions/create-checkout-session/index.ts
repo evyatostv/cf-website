@@ -10,13 +10,33 @@ const PRICE_IDS: Record<string, string> = {
   full:         Deno.env.get('STRIPE_PRICE_FULL')!,
 };
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': Deno.env.get('SITE_URL') || '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+// BE-012: use an explicit origin allowlist instead of a wildcard `*` fallback.
+// A `*` here defeats CORS as a defence and (with credentials) is invalid — mirror
+// the allowlist used by the other payment functions.
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://cf-website-flame.vercel.app',
+  'https://clinic-flow.co.il',
+  'https://www.clinic-flow.co.il',
+  Deno.env.get('SITE_URL'),
+].filter(Boolean);
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('Origin') || '';
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]!;
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  };
+}
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -67,8 +87,14 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (err) {
-    console.error('create-checkout-session error:', err.message);
-    return new Response(JSON.stringify({ error: err.message }), {
+    // BE-004: never leak internal error text to the client — log with a
+    // correlation id, return a generic Hebrew message.
+    const correlationId = crypto.randomUUID();
+    console.error(`create-checkout-session error [${correlationId}]:`, err);
+    return new Response(JSON.stringify({
+      error: 'אירעה שגיאה ביצירת התשלום. נסה/י שוב או פנה/י לתמיכה עם מזהה השגיאה.',
+      correlationId,
+    }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

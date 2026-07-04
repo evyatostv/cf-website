@@ -1,7 +1,13 @@
 import { motion } from "motion/react";
 import { Shield, Users, Heart, Target } from "lucide-react";
+import { useDocumentMeta } from "@/lib/use-document-meta";
 
 export function AboutPage() {
+  useDocumentMeta({
+    title: "אודות — ClinicFlow",
+    description: "הסיפור מאחורי ClinicFlow — מערכת ניהול מרפאה אופליין שנבנתה עבור רופאים בישראל שמעריכים פרטיות ושליטה בנתונים.",
+    canonicalPath: "/about",
+  });
   return (
     <div className="pt-32 pb-20">
       <div className="container mx-auto px-6 max-w-7xl">
@@ -106,13 +112,13 @@ export function AboutPage() {
               href="/contact"
               className="px-10 py-4 bg-white text-[#0d47a1] rounded-xl font-semibold hover:shadow-xl transition-all"
             >
-              צור קשר
+              צור/י קשר
             </a>
             <a
               href="/pricing"
               className="px-10 py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl border-2 border-white/30 hover:bg-white/20 transition-all font-medium"
             >
-              ראה מחירים
+              ראה/י מחירים
             </a>
           </div>
         </motion.div>

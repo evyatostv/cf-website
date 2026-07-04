@@ -14,6 +14,7 @@ import {
   ArrowUpCircle,
 } from "lucide-react";
 import { Link } from "react-router";
+import { useDocumentMeta } from "@/lib/use-document-meta";
 
 type PlanTier = "basic" | "professional" | "full" | "premium";
 
@@ -22,31 +23,31 @@ const features: { icon: React.ElementType; title: string; description: string; p
     icon: Users,
     title: "כרטיס מטופל מלא",
     plan: "basic",
-    description: "פתחת ביקור — תוך שלוש שניות אתה רואה אלרגיות, טיפול קבוע, וסיכום הביקור הקודם. בלי לחפש, בלי לשאול, בלי לבזבז זמן.",
+    description: "פתחת/ת ביקור — תוך שלוש שניות את/ה רואה אלרגיות, טיפול קבוע, וסיכום הביקור הקודם. בלי לחפש, בלי לשאול, בלי לבזבז זמן.",
   },
   {
     icon: Calendar,
     title: "יומן תורים",
     plan: "basic",
-    description: "תצוגה יומית, שבועית וחודשית. גרור תור לשעה חדשה — הוא זזה. תזכורות אוטומטיות לפני כל פגישה. פחות ביטולים ב-50%.",
+    description: "תצוגה יומית, שבועית וחודשית. גרור/י תור לשעה חדשה — הוא זזה. תזכורות אוטומטיות לפני כל פגישה. פחות ביטולים ב-50%.",
   },
   {
     icon: FileText,
     title: "תיעוד ביקורים",
     plan: "basic",
-    description: "שדות SOAP מסודרים לפי הסדר שאתה עובד בו. משפטים מוכנים שמקצרים את הכתיבה. מסמך PDF מוכן בשניות בסוף הביקור.",
+    description: "שדות SOAP מסודרים לפי הסדר שאת/ה עובד/ת בו. משפטים מוכנים שמקצרים את הכתיבה. מסמך PDF מוכן בשניות בסוף הביקור.",
   },
   {
     icon: BarChart3,
     title: "דוחות ומעקב",
     plan: "professional",
-    description: "כמה ביקורים עשית החודש? כמה מסמכים? כמה שעות עבדת? הנתונים מחכים לך — בגרף, לא בטבלת אקסל שאתה צריך לבנות לבד.",
+    description: "כמה ביקורים עשית/ת החודש? כמה מסמכים? כמה שעות עבדת/ת? הנתונים מחכים לך — בגרף, לא בטבלת אקסל שאת/ה צריך/ה לבנות לבד.",
   },
   {
     icon: Receipt,
     title: "קבלות וחשבוניות",
     plan: "full",
-    description: "גמרת ביקור? תוציא קבלה ישירות מהמסך — שם המטופל כבר שם. מעקב הכנסות לפי חודש ושנה. מה שהיה לוקח 10 דקות לוקח 30 שניות.",
+    description: "גמרת/ת ביקור? תוציא/י קבלה ישירות מהמסך — שם המטופל כבר שם. מעקב הכנסות לפי חודש ושנה. מה שהיה לוקח 10 דקות לוקח 30 שניות.",
   },
   {
     icon: FileText,
@@ -64,13 +65,13 @@ const features: { icon: React.ElementType; title: string; description: string; p
     icon: Clock,
     title: "גיבוי מוצפן",
     plan: "basic",
-    description: "הגיבוי קורה לבד. אם המחשב שלך מתקלקל, תוך דקות תחזור לעבוד — בלי שתאבד שום דבר. הצפנה עם סיסמה שרק אתה יודע.",
+    description: "הגיבוי קורה לבד. אם המחשב שלך מתקלקל, תוך דקות תחזור/י לעבוד — בלי שתאבד/י שום דבר. הצפנה עם סיסמה שרק את/ה יודע/ת.",
   },
   {
     icon: Shield,
     title: "נעילה אוטומטית",
     plan: "basic",
-    description: "המסך מתעמעם כשאתה עוזב את החדר. PIN לפתיחה. אף אחד לא רואה נתוני מטופלים בלי רשותך — גם לא עם גישה פיזית למחשב.",
+    description: "המסך מתעמעם כשאת/ה עוזב/ת את החדר. PIN לפתיחה. אף אחד לא רואה נתוני מטופלים בלי רשותך — גם לא עם גישה פיזית למחשב.",
   },
   {
     icon: Database,
@@ -93,6 +94,11 @@ const features: { icon: React.ElementType; title: string; description: string; p
 ];
 
 export function FeaturesPage() {
+  useDocumentMeta({
+    title: "יכולות — ClinicFlow",
+    description: "כל היכולות של ClinicFlow: סיכומי ביקור, ניהול חולים, יומן פגישות, מסמכי PDF, דוחות פיננסיים ועוד — הכל אופליין.",
+    canonicalPath: "/features",
+  });
   return (
     <div className="pt-32 pb-20">
       <div className="container mx-auto px-6 max-w-7xl">

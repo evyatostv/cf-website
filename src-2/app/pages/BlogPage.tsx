@@ -3,8 +3,14 @@ import { Link } from 'react-router';
 import { Clock, Calendar, Tag } from 'lucide-react';
 import { LazyImage } from '@/app/components/ui/lazy-image';
 import { blogPosts, categoryColors } from '@/app/data/blog-posts';
+import { useDocumentMeta } from '@/lib/use-document-meta';
 
 export function BlogPage() {
+  useDocumentMeta({
+    title: 'בלוג — ClinicFlow',
+    description: 'מאמרים לרופאים פרטיים: נוכחות דיגיטלית, ניהול מרפאה, פרטיות נתונים רפואיים ועוד.',
+    canonicalPath: '/blog',
+  });
   const [featured, ...rest] = blogPosts;
 
   return (

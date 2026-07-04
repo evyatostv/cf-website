@@ -42,9 +42,9 @@ export function RefundPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-3">4. תהליך הגשת בקשה</h2>
             <ol className="list-decimal list-inside space-y-2 text-[#4a5568]">
-              <li>שלח דוא״ל אל <a href="mailto:contact@clinic-flow.co.il" className="text-[#0d47a1] hover:underline">contact@clinic-flow.co.il</a> עם נושא: "בקשת החזר — [מספר הזמנה]"</li>
-              <li>פרט את הבעיה שנתקלת בה ומה ניסית לפתור</li>
-              <li>צרף צילום מסך של השגיאה (אם רלוונטי)</li>
+              <li>שלח/י דוא״ל אל <a href="mailto:contact@clinic-flow.co.il" className="text-[#0d47a1] hover:underline">contact@clinic-flow.co.il</a> עם נושא: "בקשת החזר — [מספר הזמנה]"</li>
+              <li>פרט/י את הבעיה שנתקלת בה ומה ניסית לפתור</li>
+              <li>צרף/י צילום מסך של השגיאה (אם רלוונטי)</li>
               <li>קבלת אישור בדוא״ל תוך 48 שעות עסקים</li>
               <li>אם הבקשה אושרה — ההחזר יועבר תוך 14 ימי עסקים לכרטיס שבו שולם</li>
             </ol>
@@ -54,7 +54,7 @@ export function RefundPage() {
             <h2 className="text-2xl font-semibold mb-3">5. Chargeback</h2>
             <p className="text-[#4a5568] leading-relaxed">
               פתיחת chargeback ללא פנייה מוקדמת לתמיכה תגרום לביטול מיידי של הרישיון.
-              אנא פנה אלינו תחילה — אנחנו נשתדל לפתור כל בעיה.
+              אנא פנה/י אלינו תחילה — אנחנו נשתדל לפתור כל בעיה.
             </p>
           </section>
 

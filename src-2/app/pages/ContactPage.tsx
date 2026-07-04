@@ -3,40 +3,56 @@ import { Mail, MessageCircle, Send, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import { submitLead } from "@/lib/leads";
 import { CONTACT_EMAIL, CONTACT_WHATSAPP_URL } from "@/app/config/site";
+import { useDocumentMeta } from "@/lib/use-document-meta";
 
 export function ContactPage() {
+  useDocumentMeta({
+    title: "צור קשר — ClinicFlow",
+    description: "שאלות על ClinicFlow, על ההתקנה, או רוצים הדגמה? כתבו לנו ונחזור אליכם.",
+    canonicalPath: "/contact",
+  });
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
+    clinicName: "",
     message: "",
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
+  // Reset the success banner whenever the user starts a fresh submission or edits
+  // a field (WEB-006 — the banner used to persist forever after the first send).
+  const updateField = (field: keyof typeof formData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (success) setSuccess(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setSuccess(false);
 
     const res = await submitLead({
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
       message: formData.message,
+      clinicName: formData.clinicName,
       source: "contact-page",
     });
 
     setLoading(false);
 
     if (!res.ok) {
-      setError(res.error || "שגיאה בשליחה. נסה שוב מאוחר יותר.");
+      setError(res.error || "שגיאה בשליחה. נסה/י שוב מאוחר יותר.");
       return;
     }
 
     setSuccess(true);
-    setFormData({ name: "", email: "", phone: "", message: "" });
+    setFormData({ name: "", email: "", phone: "", clinicName: "", message: "" });
   };
 
   return (
@@ -67,7 +83,7 @@ export function ContactPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <div className="bg-white rounded-3xl p-5 sm:p-8 border border-[#e1e6ec] mb-8">
-              <h2 className="text-2xl font-bold text-[#1a2332] mb-6">צור קשר</h2>
+              <h2 className="text-2xl font-bold text-[#1a2332] mb-6">צור/י קשר</h2>
 
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
@@ -109,7 +125,7 @@ export function ContactPage() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="bg-white rounded-3xl p-5 sm:p-8 border border-[#e1e6ec]"
           >
-            <h2 className="text-2xl font-bold text-[#1a2332] mb-6">שלח הודעה</h2>
+            <h2 className="text-2xl font-bold text-[#1a2332] mb-6">שלח/י הודעה</h2>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
@@ -120,9 +136,9 @@ export function ContactPage() {
                   required
                   autoComplete="name"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) => updateField("name", e.target.value)}
                   className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all"
-                  placeholder="הכנס את שמך"
+                  placeholder="הכנס/י את שמך"
                 />
               </div>
 
@@ -138,7 +154,7 @@ export function ContactPage() {
                   autoCorrect="off"
                   spellCheck={false}
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) => updateField("email", e.target.value)}
                   className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all"
                   placeholder="your@email.com"
                 />
@@ -152,9 +168,22 @@ export function ContactPage() {
                   autoComplete="tel"
                   inputMode="tel"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(e) => updateField("phone", e.target.value)}
                   className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all"
                   placeholder="050-1234567"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="contact-clinic" className="block text-[#1a2332] mb-2">שם המרפאה <span className="text-[#9aa7b8] text-sm font-normal">(לא חובה)</span></label>
+                <input
+                  id="contact-clinic"
+                  type="text"
+                  autoComplete="organization"
+                  value={formData.clinicName}
+                  onChange={(e) => updateField("clinicName", e.target.value)}
+                  className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all"
+                  placeholder="שם המרפאה שלך"
                 />
               </div>
 
@@ -164,10 +193,10 @@ export function ContactPage() {
                   id="contact-message"
                   required
                   value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  onChange={(e) => updateField("message", e.target.value)}
                   rows={4}
                   className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all resize-y min-h-[120px] sm:min-h-[150px]"
-                  placeholder="ספר לנו איך נוכל לעזור..."
+                  placeholder="ספר/י לנו איך נוכל לעזור..."
                 />
               </div>
 
@@ -183,7 +212,7 @@ export function ContactPage() {
                 className="w-full py-4 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-[#0d47a1]/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Send className="w-5 h-5" />
-                {loading ? "שולח..." : "שלח הודעה"}
+                {loading ? "שולח/ת..." : "שלח/י הודעה"}
               </button>
             </form>
 

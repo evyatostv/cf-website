@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/auth-context';
 import { motion } from 'motion/react';
 import { AlertCircle, Shield, ArrowLeft, Check, Lock, Loader2 } from 'lucide-react';
 import { supabase, logPolicyAcceptance, SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase';
+import { mapAuthError } from '@/lib/auth-errors';
 
 const PLAN_INFO: Record<string, { name: string; price: string; amount: number; features: string[] }> = {
   basic: {
@@ -32,6 +33,7 @@ export function PaymentPage() {
   const { user, loading } = useAuth();
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [termsLogged, setTermsLogged] = useState(false);
 
@@ -39,9 +41,24 @@ export function PaymentPage() {
   const isUpgrade = searchParams.get('upgrade') === 'true';
   const planInfo = PLAN_INFO[plan];
 
+  // The checkout URL to return to after (re)login. URL-encode it as a whole so
+  // the nested ?plan=/&upgrade= query survives being a value of ?redirect=.
+  const checkoutPath = `/payment?plan=${encodeURIComponent(plan)}${isUpgrade ? '&upgrade=true' : ''}`;
+  const loginWithRedirect = `/login?redirect=${encodeURIComponent(checkoutPath)}`;
+
   useEffect(() => {
-    if (!loading && !user) navigate('/login?redirect=/payment?plan=' + plan);
-  }, [user, loading, navigate, plan]);
+    if (!loading && !user) navigate(loginWithRedirect);
+  }, [user, loading, navigate, loginWithRedirect]);
+
+  // AllPay can bounce the user back to /payment on a declined/failed charge
+  // (e.g. ?status=failed or ?payment=failed). Surface a Hebrew failure banner
+  // so the return isn't a silent dead-end.
+  useEffect(() => {
+    const status = (searchParams.get('status') || searchParams.get('payment') || '').toLowerCase();
+    if (status === 'failed' || status === 'error' || status === 'declined' || status === 'cancelled' || status === 'canceled') {
+      setError('התשלום לא הושלם או נדחה. ניתן לנסות שוב.');
+    }
+  }, [searchParams]);
 
   const handleTermsChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
@@ -57,13 +74,15 @@ export function PaymentPage() {
 
     setProcessing(true);
     setError('');
+    setSessionExpired(false);
 
     try {
       const { data: refreshData } = await supabase.auth.refreshSession();
       const token = refreshData.session?.access_token;
 
       if (!token) {
-        setError('פג תוקף ההתחברות — אנא התחבר מחדש');
+        setError('פג תוקף ההתחברות — אנא התחבר/י מחדש');
+        setSessionExpired(true);
         setProcessing(false);
         return;
       }
@@ -84,7 +103,10 @@ export function PaymentPage() {
       const data = await res.json();
 
       if (!res.ok || !data.payment_url) {
-        setError(data.error || 'שגיאה ביצירת תשלום');
+        // Edge-function errors may be raw/English — route through the Hebrew map.
+        setError(data.error ? mapAuthError(data.error) : 'שגיאה ביצירת תשלום');
+        // A 401/expired token surfaces here too — offer the re-login CTA.
+        if (res.status === 401) setSessionExpired(true);
         setProcessing(false);
         return;
       }
@@ -92,7 +114,7 @@ export function PaymentPage() {
       // Redirect to AllPay payment page
       window.location.href = data.payment_url;
     } catch (err: any) {
-      setError(err.message || 'שגיאה ביצירת תשלום');
+      setError(mapAuthError(err) || 'שגיאה ביצירת תשלום');
       setProcessing(false);
     }
   };
@@ -104,7 +126,7 @@ export function PaymentPage() {
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-[#1a2332]">חבילה לא נמצאה</h1>
           <Link to="/pricing" className="mt-4 inline-block px-6 py-2.5 bg-[#0d47a1] text-white rounded-xl">
-            חזור לתמחור
+            חזור/י לתמחור
           </Link>
         </div>
       </div>
@@ -162,7 +184,7 @@ export function PaymentPage() {
 
             <div>
               <h3 className="text-lg font-bold text-[#1a2332] mb-2">תשלום מאובטח</h3>
-              <p className="text-sm text-[#6b7c93] mb-6">תועבר לדף תשלום מאובטח להשלמת הרכישה.</p>
+              <p className="text-sm text-[#6b7c93] mb-6">תועבר/י לדף תשלום מאובטח להשלמת הרכישה.</p>
 
               <div className="bg-[#f5f7f9] rounded-xl p-4 mb-5">
                 <p className="text-xs text-[#6b7c93] mb-1">הרכישה תירשם לחשבון</p>
@@ -185,7 +207,17 @@ export function PaymentPage() {
               {error && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-red-600 text-sm">{error}</p>
+                  <div>
+                    <p className="text-red-600 text-sm">{error}</p>
+                    {sessionExpired && (
+                      <Link
+                        to={loginWithRedirect}
+                        className="inline-block mt-1 text-sm font-medium text-[#0d47a1] underline hover:no-underline"
+                      >
+                        התחבר/י מחדש
+                      </Link>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -225,7 +257,7 @@ export function PaymentPage() {
                 ) : (
                   <>
                     <Lock className="w-4 h-4" />
-                    {`שלם ${planInfo.price}`}
+                    {`שלם/י ${planInfo.price}`}
                   </>
                 )}
               </button>

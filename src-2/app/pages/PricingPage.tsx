@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { PremiumContactForm } from "../components/PremiumContactForm";
 import { useAuth } from "@/lib/auth-context";
 import { getUserAccess } from "@/lib/supabase";
+import { useDocumentMeta } from "@/lib/use-document-meta";
 
 const PLAN_ORDER = ['basic', 'professional', 'full'];
 
@@ -66,7 +67,7 @@ const regularPlans = [
 const enterprisePlan = {
   name: "פתרון ארגוני",
   price: null,
-  period: "צור קשר",
+  period: "צור/י קשר",
   description: "לקליניקות גדולות, רשתות ומערכות מורכבות בהתאמה אישית",
   newFeatures: [
     "כל מה שבחבילת הניהול המלאה +",
@@ -89,6 +90,11 @@ const enterpriseAddOns = [
 ];
 
 export function PricingPage() {
+  useDocumentMeta({
+    title: "מחירים — ClinicFlow",
+    description: "תמחור ClinicFlow: תשלום חד-פעמי, רישיון לנצח, ללא מנוי חודשי. בחרו את החבילה שמתאימה למרפאה שלכם.",
+    canonicalPath: "/pricing",
+  });
   const [showAddOns, setShowAddOns] = useState(false);
   const { user } = useAuth();
   const [userPlan, setUserPlan] = useState<string | null>(null);
@@ -109,7 +115,7 @@ export function PricingPage() {
         return { label: "✓ החבילה שלך", disabled: true, style: "bg-green-50 text-green-700 border border-green-200 cursor-default" };
       }
       if (thisIdx > currentIdx) {
-        return { label: "שדרג לחבילה זו", disabled: false, isUpgrade: true, style: isPopular ? "bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white shadow-lg shadow-[#0d47a1]/25 hover:shadow-xl hover:shadow-[#0d47a1]/40 hover:-translate-y-0.5" : "bg-white text-[#0d47a1] border-2 border-[#0d47a1] shadow-md hover:bg-[#0d47a1] hover:text-white hover:shadow-lg hover:-translate-y-0.5" };
+        return { label: "שדרג/י לחבילה זו", disabled: false, isUpgrade: true, style: isPopular ? "bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white shadow-lg shadow-[#0d47a1]/25 hover:shadow-xl hover:shadow-[#0d47a1]/40 hover:-translate-y-0.5" : "bg-white text-[#0d47a1] border-2 border-[#0d47a1] shadow-md hover:bg-[#0d47a1] hover:text-white hover:shadow-lg hover:-translate-y-0.5" };
       }
       return { label: "חבילה נמוכה יותר", disabled: true, style: "bg-[#f5f7f9] text-[#6b7c93] border border-[#e1e6ec] cursor-not-allowed" };
     }
@@ -244,7 +250,7 @@ export function PricingPage() {
                     : "px-4 py-3 rounded-lg border-2 border-[#0d47a1] bg-white text-[#0d47a1] hover:bg-[#f5f7f9] hover:shadow-md active:scale-95"
                 }`}
               >
-                {showAddOns ? "הסתר Add Ons ▲" : "צפה ב- Add Ons ▼"}
+                {showAddOns ? "הסתר/י Add Ons ▲" : "צפה/י ב- Add Ons ▼"}
               </button>
 
               {/* Add-ons List */}

@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react"
+  },
+  "//": "React 18 (matching cf-website/package.json + the `email:dev` authoring toolchain) is resolved from the repo-root node_modules via nodeModulesDir:manual — this guarantees a SINGLE React/react-dom instance shared by the JSX runtime, @react-email/components AND @react-email/render. render@2.0.9 otherwise drags its own react-dom@19 (a second React copy) which either hangs the render or throws 'Objects are not valid as a React child'. The 21 authoring templates in ../../emails/*.tsx use extensionless relative imports (./_layout, ./theme, ./components/ui); Deno resolves those via the sloppy-imports unstable flag declared below, so the test tasks need no extra CLI flag. Bare specifiers (react, react-dom, @react-email/*) resolve straight from node_modules — no import map required.",
+  "nodeModulesDir": "manual",
+  "unstable": ["sloppy-imports"],
+  "tasks": {
+    "render:ping": "deno run -A --config deno.json _shared/emails/ping.test.ts",
+    "test:ping": "deno test -A --no-check --config deno.json _shared/emails/ping.test.ts",
+    "test:emails": "deno test -A --no-check --config deno.json _shared/render-all.test.ts"
+  }
+}

@@ -53,7 +53,7 @@ export function OfflineBenefits() {
   ];
 
   return (
-    <section id="offline" className="py-32 bg-gradient-to-br from-[#0d47a1] via-[#0d47a1] to-[#00838f] relative overflow-hidden">
+    <section id="offline" className="py-20 sm:py-32 bg-gradient-to-br from-[#0d47a1] via-[#0d47a1] to-[#00838f] relative overflow-hidden">
       <div className="container mx-auto px-6 max-w-7xl relative z-10" ref={ref}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Left side - Content */}
@@ -67,12 +67,12 @@ export function OfflineBenefits() {
                 <Shield className="w-4 h-4 text-white" />
                 <span className="text-sm font-medium text-white">למה אופליין?</span>
               </div>
-              <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+              <h2 className="text-3xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
                 היתרונות של
                 <br />
                 <span className="text-[#b8d4e6]">עבודה אופליין</span>
               </h2>
-              <p className="text-xl text-[#b8d4e6] mb-12 leading-relaxed">
+              <p className="text-lg sm:text-xl text-[#b8d4e6] mb-8 sm:mb-12 leading-relaxed">
                 הענן מצוין — עד שהאינטרנט נופל באמצע יום עמוס. אצלנו הכל רץ
                 מקומית, אז המרפאה לא נעצרת אף פעם.
               </p>

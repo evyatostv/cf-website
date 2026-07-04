@@ -101,12 +101,35 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Only apply credit if upgrading (target plan costs more than what they paid)
+    // BE-003: reject same-tier / downgrade repurchases. If the credit they've
+    // already paid is >= the target plan's price, the target is NOT strictly
+    // higher than what they own — there is nothing to charge and re-issuing an
+    // intent would (a) re-grant access for ₪0 and (b) let a client "buy" a plan
+    // they already have. Reject with 400 instead of minting a zero-amount intent.
     if (discountAmount >= PLAN_AMOUNTS[plan]) {
-      discountAmount = 0; // same or lower plan — no discount
+      return new Response(
+        JSON.stringify({
+          error: 'כבר יש ברשותך חבילה זו או חבילה גבוהה יותר — אין אפשרות לשדרג לחבילה זו.',
+          code: 'NOT_AN_UPGRADE',
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
     }
 
-    finalAmount = Math.max(PLAN_AMOUNTS[plan] - discountAmount, 0);
+    finalAmount = PLAN_AMOUNTS[plan] - discountAmount;
+
+    // Defensive: after applying credit the amount must be a positive charge.
+    // (discountAmount < price is guaranteed above, so this is a belt-and-braces
+    // guard against any future change to the credit logic.)
+    if (finalAmount <= 0) {
+      return new Response(
+        JSON.stringify({
+          error: 'לא ניתן ליצור תשלום על סכום אפס. פנה/י לתמיכה אם הבעיה נמשכת.',
+          code: 'INVALID_AMOUNT',
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: finalAmount,
@@ -139,9 +162,16 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   } catch (err) {
-    console.error('create-payment-intent error:', err.message);
+    // BE-004: never leak internal error text (Stripe/DB internals, English) to the
+    // client. Log the full error server-side with a correlation id, return a
+    // generic Hebrew message + the id the user can quote to support.
+    const correlationId = crypto.randomUUID();
+    console.error(`create-payment-intent error [${correlationId}]:`, err);
     return new Response(
-      JSON.stringify({ error: err.message }),
+      JSON.stringify({
+        error: 'אירעה שגיאה ביצירת התשלום. נסה/י שוב או פנה/י לתמיכה עם מזהה השגיאה.',
+        correlationId,
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }

@@ -61,14 +61,23 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { os } = await req.json().catch(() => ({ os: 'win' }));
-    const installerKey = INSTALLER_PATHS[os];
-    if (!installerKey) {
+    // BE-019: validate `os` explicitly. A malformed/empty body must be a 400,
+    // not a silent default to Windows (which could hand a Mac/Linux user the
+    // wrong installer). Parse defensively, then require a known OS key.
+    let os: unknown;
+    try {
+      const parsed = await req.json();
+      os = parsed?.os;
+    } catch {
+      os = undefined;
+    }
+    if (typeof os !== 'string' || !Object.prototype.hasOwnProperty.call(INSTALLER_PATHS, os)) {
       return new Response(
-        JSON.stringify({ error: `Unsupported OS: "${os}"` }),
+        JSON.stringify({ error: 'מערכת הפעלה לא נתמכת. בחר/י Windows, macOS או Linux.', code: 'UNSUPPORTED_OS' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
+    const installerKey = INSTALLER_PATHS[os];
 
     // Check the user has an active license
     const { data: access, error: accessError } = await userClient
@@ -92,6 +101,11 @@ Deno.serve(async (req) => {
       );
     }
 
+    // BE-019 (expiry gating decision): expiry is intentionally enforced ONLY for
+    // trials. Paid plans are perpetual licences (offline, pay-once — see product
+    // model), so a non-trial `expires_at` is not a download gate. If future plans
+    // gain a real subscription expiry, extend this check to those plans too; the
+    // current single-plan check is deliberate, not an oversight.
     if (access.plan === 'trial' && access.expires_at && new Date(access.expires_at) < new Date()) {
       return new Response(
         JSON.stringify({ error: 'Trial expired', code: 'TRIAL_EXPIRED' }),
@@ -141,9 +155,15 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   } catch (err) {
-    console.error('download-installer error:', err.message);
+    // BE-004: never leak internal error text to the client — log with a
+    // correlation id, return a generic Hebrew message.
+    const correlationId = crypto.randomUUID();
+    console.error(`download-installer error [${correlationId}]:`, err);
     return new Response(
-      JSON.stringify({ error: err.message }),
+      JSON.stringify({
+        error: 'אירעה שגיאה ביצירת קישור ההורדה. נסה/י שוב או פנה/י לתמיכה עם מזהה השגיאה.',
+        correlationId,
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }

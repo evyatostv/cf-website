@@ -105,14 +105,14 @@ export function GooeyText({
         <span
           ref={text1Ref}
           className={cn(
-            "absolute inline-block select-none text-center",
+            "absolute inset-0 flex items-center justify-center select-none text-center",
             textClassName
           )}
         />
         <span
           ref={text2Ref}
           className={cn(
-            "absolute inline-block select-none text-center",
+            "absolute inset-0 flex items-center justify-center select-none text-center",
             textClassName
           )}
         />

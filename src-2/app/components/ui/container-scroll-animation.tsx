@@ -23,7 +23,7 @@ export const ContainerScroll = ({
 
   return (
     <div
-      className="h-[60rem] md:h-[80rem] flex items-center justify-center relative p-4 md:p-20"
+      className="h-[42rem] sm:h-[60rem] md:h-[80rem] flex items-center justify-center relative p-4 md:p-20"
       ref={containerRef}
     >
       <div className="py-10 md:py-40 w-full relative" style={{ perspective: "1000px" }}>
@@ -62,7 +62,7 @@ export const Card = ({
         boxShadow:
           "0 0 #0000004d, 0 9px 20px #0000004a, 0 37px 37px #00000042, 0 84px 50px #00000026, 0 149px 60px #0000000a, 0 233px 65px #00000003",
       }}
-      className="max-w-5xl -mt-12 mx-auto w-full aspect-[4/3] border-[12px] border-[#1a1a1a] p-1 sm:p-2 md:p-4 bg-[#1a1a1a] rounded-[20px] sm:rounded-[28px] md:rounded-[36px] shadow-2xl relative"
+      className="max-w-5xl -mt-12 mx-auto w-full aspect-[4/3] border-[8px] sm:border-[12px] border-[#1a1a1a] p-1 sm:p-2 md:p-4 bg-[#1a1a1a] rounded-[20px] sm:rounded-[28px] md:rounded-[36px] shadow-2xl relative"
     >
       {/* Camera dot */}
       <div className="absolute top-[4px] left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-[#333] z-10" />

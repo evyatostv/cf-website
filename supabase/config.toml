@@ -17,3 +17,18 @@ verify_jwt = false
 
 [functions.download-installer]
 verify_jwt = true
+
+[functions.send-welcome]
+verify_jwt = true
+
+[functions.activate-license]
+verify_jwt = true
+
+[functions.process-email-lifecycle]
+verify_jwt = false
+
+# Cron-invoked account erasure. Auth is via the CRON_SECRET header the function
+# checks itself, so the gateway JWT check is disabled (matches the daily
+# GitHub Action, which carries no user JWT).
+[functions.process-deletions]
+verify_jwt = false

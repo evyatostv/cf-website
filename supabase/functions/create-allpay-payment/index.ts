@@ -213,9 +213,15 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   } catch (err) {
-    console.error('create-allpay-payment error:', err.message);
+    // BE-004: never leak internal error text to the client — log with a
+    // correlation id, return a generic Hebrew message.
+    const correlationId = crypto.randomUUID();
+    console.error(`create-allpay-payment error [${correlationId}]:`, err);
     return new Response(
-      JSON.stringify({ error: err.message }),
+      JSON.stringify({
+        error: 'אירעה שגיאה ביצירת התשלום. נסה/י שוב או פנה/י לתמיכה עם מזהה השגיאה.',
+        correlationId,
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }

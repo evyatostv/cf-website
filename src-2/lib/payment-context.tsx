@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState } from 'react';
-import { supabase, recordPurchase } from './supabase';
 
 export interface PlanDetails {
   name: string;
@@ -67,25 +66,19 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
     setPlanDetails(details);
   };
 
-  const processPayment = async (planId: string, email: string, userId: string) => {
-    // This is a placeholder - actual payment processing will happen when you provide the payment page
-    // For now, this creates a fake payment record
-    const plan = PLANS[planId];
-    if (!plan) throw new Error('Invalid plan');
-
-    // Generate a fake payment ID (in production, this comes from payment processor)
-    const fakePaymentId = `PAY_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    setPaymentId(fakePaymentId);
-
-    // Record the purchase
-    const purchase = await recordPurchase(userId, email, planId, plan.price, fakePaymentId);
-
-    if (purchase) {
-      setIsPaymentComplete(true);
-      return { success: true, paymentId: fakePaymentId, purchase };
-    } else {
-      throw new Error('Failed to record purchase');
-    }
+  // SECURITY: this stub previously fabricated a fake payment id and wrote a
+  // `purchases` row client-side, granting a paid plan for free (WEB-002/BE-013).
+  // Real payments now go through the AllPay edge function + verified webhook
+  // (see PaymentPage.tsx). This client can NEVER self-grant access, so the
+  // method is disabled — it throws instead of recording anything.
+  const processPayment = async (
+    _planId: string,
+    _email: string,
+    _userId: string,
+  ): Promise<never> => {
+    throw new Error(
+      'Client-side payment processing is disabled. Payments are handled by the server (AllPay) and confirmed via a verified webhook.',
+    );
   };
 
   return (

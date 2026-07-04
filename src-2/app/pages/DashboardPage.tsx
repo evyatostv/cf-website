@@ -3,6 +3,9 @@ import { useNavigate, Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
 import { getUserAccess, UserAccess, PLAN_LABELS, supabase } from '@/lib/supabase';
 import { DeleteAccountSection } from '@/app/components/DeleteAccountSection';
+import { DataExportSection } from '@/app/components/DataExportSection';
+import { TwoFactorSection } from '@/app/components/TwoFactorSection';
+import { MfaGate } from '@/app/components/MfaGate';
 
 type DownloadOs = 'win' | 'mac' | 'linux';
 
@@ -26,7 +29,7 @@ const CHANGELOG = [
 const RESOURCES = [
   { icon: BookOpen, title: 'מדריך התחלה מהירה', desc: 'כל מה שצריך לדעת להתחיל', href: '/contact', color: '#0d47a1' },
   { icon: MessageCircle, title: 'תמיכה טכנית', desc: 'נענה תוך 24 שעות', href: 'mailto:contact@clinic-flow.co.il', color: '#00838f' },
-  { icon: Star, title: 'שדרוג חבילה', desc: 'גלה את כל היכולות', href: '/pricing', color: '#f59e0b' },
+  { icon: Star, title: 'שדרוג חבילה', desc: 'גלה/י את כל היכולות', href: '/pricing', color: '#f59e0b' },
 ];
 
 const SYSTEM_REQ = [
@@ -96,9 +99,9 @@ export function DashboardPage() {
   const planLabel = access ? PLAN_LABELS[access.plan] ?? access.plan : null;
 
   const UPGRADE_NEXT: Record<string, { label: string; desc: string; features: string[]; to: string; btnLabel: string }> = {
-    trial: { label: 'חבילה בסיסית', desc: 'רכוש רישיון לצמיתות ותמשיך להשתמש ללא הגבלת זמן', features: ['סיכומי ביקור ו-PDF', 'ניהול יומן תורים', 'כרטיס מטופל מלא'], to: '/pricing', btnLabel: 'בחר חבילה' },
-    basic: { label: 'חבילה מקצועית', desc: 'קבל כלים מתקדמים לניתוח הפעילות שלך', features: ['דוחות סטטיסטיים וגרפים', 'יומן אישי ותיוג רשומות', 'הערות דביקות וחיפוש מתקדם'], to: '/payment?plan=professional&upgrade=true', btnLabel: 'שדרג עכשיו' },
-    professional: { label: 'חבילת ניהול מלאה', desc: 'הוסף ניהול כספי מלא לקליניקה שלך', features: ['חשבוניות וקבלות אוטומטיות', 'דוחות הכנסות פיננסיים', 'מעקב שיטות תשלום'], to: '/payment?plan=full&upgrade=true', btnLabel: 'שדרג עכשיו' },
+    trial: { label: 'חבילה בסיסית', desc: 'רכוש/י רישיון לצמיתות ותמשיך/י להשתמש ללא הגבלת זמן', features: ['סיכומי ביקור ו-PDF', 'ניהול יומן תורים', 'כרטיס מטופל מלא'], to: '/pricing', btnLabel: 'בחר/י חבילה' },
+    basic: { label: 'חבילה מקצועית', desc: 'קבל/י כלים מתקדמים לניתוח הפעילות שלך', features: ['דוחות סטטיסטיים וגרפים', 'יומן אישי ותיוג רשומות', 'הערות דביקות וחיפוש מתקדם'], to: '/payment?plan=professional&upgrade=true', btnLabel: 'שדרג/י עכשיו' },
+    professional: { label: 'חבילת ניהול מלאה', desc: 'הוסף/י ניהול כספי מלא לקליניקה שלך', features: ['חשבוניות וקבלות אוטומטיות', 'דוחות הכנסות פיננסיים', 'מעקב שיטות תשלום'], to: '/payment?plan=full&upgrade=true', btnLabel: 'שדרג/י עכשיו' },
   };
   const upgradeNext = access?.plan ? UPGRADE_NEXT[access.plan] : null;
   const trialDaysLeft = access?.plan === 'trial' && access.expires_at && !isTrialExpired
@@ -107,6 +110,7 @@ export function DashboardPage() {
   const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'משתמש';
 
   return (
+    <MfaGate>
     <div className="min-h-screen bg-[#f5f7f9] pt-28 pb-20" dir="rtl">
       <div className="container mx-auto px-4 max-w-5xl">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -127,7 +131,7 @@ export function DashboardPage() {
               className="flex items-center gap-2 px-4 py-2 bg-white text-[#1a2332] rounded-xl hover:bg-[#f5f7f9] transition border border-[#e1e6ec] text-sm"
             >
               <LogOut className="w-4 h-4" />
-              התנתק
+              התנתק/י
             </button>
           </div>
 
@@ -163,7 +167,7 @@ export function DashboardPage() {
                         <AlertCircle className="w-8 h-8 text-red-400" />
                       </div>
                       <h2 className="text-lg font-bold text-[#1a2332] mb-2">תקופת הניסיון הסתיימה</h2>
-                      <p className="text-[#6b7c93] text-sm mb-4">רכוש רישיון כדי להמשיך להשתמש באפליקציה.</p>
+                      <p className="text-[#6b7c93] text-sm mb-4">רכוש/י רישיון כדי להמשיך להשתמש באפליקציה.</p>
                       <Link to="/pricing" className="inline-block bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:shadow-md transition">
                         לבחירת חבילה
                       </Link>
@@ -204,7 +208,7 @@ export function DashboardPage() {
                         className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white px-6 py-3.5 rounded-xl hover:shadow-lg transition w-full font-medium disabled:opacity-60 disabled:cursor-not-allowed"
                       >
                         <Download className="w-5 h-5" />
-                        {downloading ? 'מכין הורדה...' : 'הורד את האפליקציה (Windows / macOS)'}
+                        {downloading ? 'מכין/ה הורדה...' : 'הורד/י את האפליקציה (Windows / macOS)'}
                       </button>
                       {downloadError && (
                         <p className="mt-2 text-xs text-red-600 text-center">{downloadError}</p>
@@ -258,9 +262,9 @@ export function DashboardPage() {
                     </h3>
                     <div className="flex flex-col gap-4">
                       {[
-                        { n: 1, title: 'הורד את הקובץ', desc: 'לחץ על כפתור ההורדה למעלה ושמור את הקובץ' },
-                        { n: 2, title: 'הפעל את ה-Installer', desc: 'פתח את הקובץ שהורדת ועקוב אחרי הוראות ההתקנה' },
-                        { n: 3, title: 'הפעל עם הדוא"ל שלך', desc: 'בפתיחה ראשונה הזן את הדוא"ל והסיסמה שלך מהאתר' },
+                        { n: 1, title: 'הורד/י את הקובץ', desc: 'לחץ/י על כפתור ההורדה למעלה ושמור/י את הקובץ' },
+                        { n: 2, title: 'הפעל/י את ה-Installer', desc: 'פתח/י את הקובץ שהורדת ועקוב/י אחרי הוראות ההתקנה' },
+                        { n: 3, title: 'הפעל/י עם הדוא"ל שלך', desc: 'בפתיחה ראשונה הזן/י את הדוא"ל והסיסמה שלך מהאתר' },
                       ].map(({ n, title, desc }) => (
                         <div key={n} className="flex gap-4 items-start">
                           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0d47a1] to-[#00838f] text-white text-sm font-bold flex items-center justify-center flex-shrink-0">
@@ -413,6 +417,16 @@ export function DashboardPage() {
             </div>
           </div>
 
+          {/* Two-factor authentication */}
+          <div className="mt-6">
+            <TwoFactorSection />
+          </div>
+
+          {/* Download my data */}
+          <div className="mt-6">
+            <DataExportSection />
+          </div>
+
           {/* Account data deletion */}
           <div className="mt-6">
             <DeleteAccountSection />
@@ -420,5 +434,6 @@ export function DashboardPage() {
         </motion.div>
       </div>
     </div>
+    </MfaGate>
   );
 }

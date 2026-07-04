@@ -12,7 +12,6 @@ const SignupPage = lazy(() => import("@/app/pages/SignupPage").then(m => ({ defa
 const DashboardPage = lazy(() => import("@/app/pages/DashboardPage").then(m => ({ default: m.DashboardPage })));
 const PaymentPage = lazy(() => import("@/app/pages/PaymentPage").then(m => ({ default: m.PaymentPage })));
 const ThankYouPage = lazy(() => import("@/app/pages/ThankYouPage").then(m => ({ default: m.ThankYouPage })));
-const CalendarPage = lazy(() => import("@/app/pages/CalendarPage").then(m => ({ default: m.CalendarPage })));
 const TermsPage = lazy(() => import("@/app/pages/TermsPage").then(m => ({ default: m.TermsPage })));
 const PrivacyPage = lazy(() => import("@/app/pages/PrivacyPage").then(m => ({ default: m.PrivacyPage })));
 const DisclaimerPage = lazy(() => import("@/app/pages/DisclaimerPage").then(m => ({ default: m.DisclaimerPage })));
@@ -20,6 +19,8 @@ const RefundPage = lazy(() => import("@/app/pages/RefundPage").then(m => ({ defa
 const BlogPage = lazy(() => import("@/app/pages/BlogPage").then(m => ({ default: m.BlogPage })));
 const BlogPostPage = lazy(() => import("@/app/pages/BlogPostPage").then(m => ({ default: m.BlogPostPage })));
 const ResetPasswordPage = lazy(() => import("@/app/pages/ResetPasswordPage").then(m => ({ default: m.ResetPasswordPage })));
+const UpdatePasswordPage = lazy(() => import("@/app/pages/UpdatePasswordPage").then(m => ({ default: m.UpdatePasswordPage })));
+const CompleteProfilePage = lazy(() => import("@/app/pages/CompleteProfilePage").then(m => ({ default: m.CompleteProfilePage })));
 const NotFoundPage = lazy(() => import("@/app/pages/NotFoundPage").then(m => ({ default: m.NotFoundPage })));
 
 const PageLoader = () => (
@@ -44,7 +45,6 @@ export const router = createBrowserRouter([
       { path: "dashboard", element: <Suspense fallback={<PageLoader />}><DashboardPage /></Suspense> },
       { path: "payment", element: <Suspense fallback={<PageLoader />}><PaymentPage /></Suspense> },
       { path: "thank-you", element: <Suspense fallback={<PageLoader />}><ThankYouPage /></Suspense> },
-      { path: "calendar", element: <Suspense fallback={<PageLoader />}><CalendarPage /></Suspense> },
       { path: "terms", element: <Suspense fallback={<PageLoader />}><TermsPage /></Suspense> },
       { path: "privacy", element: <Suspense fallback={<PageLoader />}><PrivacyPage /></Suspense> },
       { path: "disclaimer", element: <Suspense fallback={<PageLoader />}><DisclaimerPage /></Suspense> },
@@ -52,6 +52,8 @@ export const router = createBrowserRouter([
       { path: "blog", element: <Suspense fallback={<PageLoader />}><BlogPage /></Suspense> },
       { path: "blog/:slug", element: <Suspense fallback={<PageLoader />}><BlogPostPage /></Suspense> },
       { path: "reset-password", element: <Suspense fallback={<PageLoader />}><ResetPasswordPage /></Suspense> },
+      { path: "update-password", element: <Suspense fallback={<PageLoader />}><UpdatePasswordPage /></Suspense> },
+      { path: "complete-profile", element: <Suspense fallback={<PageLoader />}><CompleteProfilePage /></Suspense> },
       { path: "*", element: <Suspense fallback={<PageLoader />}><NotFoundPage /></Suspense> },
     ],
   },

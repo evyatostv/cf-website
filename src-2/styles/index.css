@@ -3,6 +3,11 @@
 @import "./fonts.css";
 @import "./carousel.css";
 
+/* Mobile safety net: never allow horizontal scrolling. The fixed nav and the
+   off-canvas drawer are position:fixed (not sticky), so clipping x-overflow here
+   has no layout side-effects. */
+html { overflow-x: hidden; }
+
 /* Blog post content */
 .blog-content {
   direction: rtl;
@@ -40,9 +45,12 @@
   color: #6b7c93;
 }
 
-/* Smooth scroll behavior */
+/* Smooth scroll behavior + a base background so the overscroll / rubber-band
+   area at the very top (and bottom) shows the site's light background instead
+   of stark white. */
 html {
   scroll-behavior: smooth;
+  background-color: #f5f7f9;
 }
 
 /* Custom scrollbar */
@@ -61,6 +69,16 @@ html {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #00838f;
+}
+
+/* Text selection — match the brand color (#0d47a1) instead of the browser default. */
+::selection {
+  background: rgba(13, 71, 161, 0.18);
+  color: #0d47a1;
+}
+::-moz-selection {
+  background: rgba(13, 71, 161, 0.18);
+  color: #0d47a1;
 }
 
 /* Reviews carousel custom styles */

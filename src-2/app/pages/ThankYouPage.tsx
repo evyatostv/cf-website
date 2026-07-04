@@ -76,19 +76,19 @@ export function ThankYouPage() {
               <ol className="space-y-2.5">
                 <li className="flex gap-2.5 text-sm text-[#1a2332]">
                   <span className="w-5 h-5 rounded-full bg-[#0d47a1] text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">1</span>
-                  <span>המתן 1-2 דקות ולחץ "רענון" — אישור התשלום לוקח לפעמים זמן</span>
+                  <span>המתן/י 1-2 דקות ולחצ/י "רענון" — אישור התשלום לוקח לפעמים זמן</span>
                 </li>
                 <li className="flex gap-2.5 text-sm text-[#1a2332]">
                   <span className="w-5 h-5 rounded-full bg-[#0d47a1] text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">2</span>
-                  <span>בדוק ב-Dashboard אם החבילה שלך פעילה</span>
+                  <span>בדוק/י ב-Dashboard אם החבילה שלך פעילה</span>
                 </li>
                 <li className="flex gap-2.5 text-sm text-[#1a2332]">
                   <span className="w-5 h-5 rounded-full bg-[#0d47a1] text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">3</span>
-                  <span>אם לא חויבת — חזור לעמוד התמחור ונסה שוב</span>
+                  <span>אם לא חויבת — חזור/י לעמוד התמחור ונסה/י שוב</span>
                 </li>
                 <li className="flex gap-2.5 text-sm text-[#1a2332]">
                   <span className="w-5 h-5 rounded-full bg-[#0d47a1] text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">4</span>
-                  <span>אם חויבת אך החבילה לא הופעלה — צור קשר עם התמיכה</span>
+                  <span>אם חויבת אך החבילה לא הופעלה — צור/י קשר עם התמיכה</span>
                 </li>
               </ol>
             </div>
@@ -115,7 +115,7 @@ export function ThankYouPage() {
             </div>
 
             <div className="border-t border-[#e1e6ec] pt-4 text-center">
-              <p className="text-xs text-[#6b7c93] mb-2">זקוק לעזרה?</p>
+              <p className="text-xs text-[#6b7c93] mb-2">זקוק/ה לעזרה?</p>
               <a
                 href="mailto:contact@clinic-flow.co.il?subject=תשלום לא אומת"
                 className="text-sm text-[#0d47a1] font-medium hover:underline"
@@ -123,7 +123,7 @@ export function ThankYouPage() {
                 contact@clinic-flow.co.il
               </a>
               <p className="text-[10px] text-[#6b7c93] mt-2">
-                כלול את הזמן המדויק של הרכישה והאימייל שלך
+                כלול/י את הזמן המדויק של הרכישה והאימייל שלך
               </p>
             </div>
           </div>
@@ -197,8 +197,8 @@ export function ThankYouPage() {
             <h3 className="font-bold text-[#1a2332] text-sm mb-3">הצעדים הבאים:</h3>
             <ol className="space-y-2">
               {[
-                'הורד את יישום ClinicFlow מהכפתור למטה',
-                'פתח את היישום והזן את הדוא"ל וסיסמה שלך',
+                'הורד/י את יישום ClinicFlow מהכפתור למטה',
+                'פתח/י את היישום והזן/י את הדוא"ל וסיסמה שלך',
                 'היישום יופעל אוטומטית עם הרישיון שלך',
               ].map((step, i) => (
                 <li key={i} className="flex gap-2.5 text-sm text-[#1a2332]">
@@ -216,7 +216,7 @@ export function ThankYouPage() {
             className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-bold py-4 rounded-xl hover:shadow-lg transition mb-3"
           >
             <Download className="w-5 h-5" />
-            הורד את האפליקציה (Windows / macOS)
+            הורד/י את האפליקציה (Windows / macOS)
           </a>
 
           <Link
