@@ -10,7 +10,15 @@ const NOTIFY_EMAIL =
   Deno.env.get('NOTIFY_EMAIL') ||
   'evyatar.druyan@gmail.com';
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const EMAIL_RE = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+function isValidEmail(v: string): boolean {
+  const s = (v || '').trim();
+  if (s.length < 5 || s.length > 254) return false; // too short / RFC max length
+  if (/\s/.test(s)) return false;                    // no spaces
+  if (s.includes('..')) return false;                // no consecutive dots
+  if (s.startsWith('.') || s.includes('.@')) return false; // no leading/pre-@ dot
+  return EMAIL_RE.test(s);                            // @ + domain + real TLD (2+ letters)
+}
 
 const ALLOWED_ORIGINS = [
   'http://localhost:5173',
@@ -50,7 +58,7 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const email = String(body?.email ?? '').trim().toLowerCase();
-    if (!EMAIL_RE.test(email)) return json({ error: 'invalid email' }, 400, cors);
+    if (!isValidEmail(email)) return json({ error: 'invalid email' }, 400, cors);
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,

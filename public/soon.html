@@ -657,7 +657,15 @@
   }
 
   /* ---- waitlist form state machine ---- */
-  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  var EMAIL_RE = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  function isValidEmail(v){
+    v = (v || '').trim();
+    if(v.length < 5 || v.length > 254) return false;  /* too short / RFC max length */
+    if(/\s/.test(v)) return false;                    /* no spaces */
+    if(v.indexOf('..') !== -1) return false;          /* no consecutive dots */
+    if(v.charAt(0) === '.' || v.indexOf('.@') !== -1) return false; /* no leading/pre-@ dot */
+    return EMAIL_RE.test(v);                           /* @ + domain + real TLD (2+ letters) */
+  }
 
   function initForm(form){
     var input    = form.querySelector('.email-input');
@@ -682,8 +690,8 @@
       e.preventDefault();
       var val = (input.value || '').trim();
 
-      if(!val){ setError('כתובת אימייל לא תקינה'); input.focus(); return; }
-      if(!EMAIL_RE.test(val)){ setError('כתובת אימייל לא תקינה'); input.focus(); return; }
+      if(!val){ setError('נא להזין כתובת אימייל'); input.focus(); return; }
+      if(!isValidEmail(val)){ setError('כתובת אימייל לא תקינה — נדרש @ ודומיין מלא (למשל name@gmail.com)'); input.focus(); return; }
 
       clearError();
 
