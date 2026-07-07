@@ -32,3 +32,7 @@ verify_jwt = false
 # GitHub Action, which carries no user JWT).
 [functions.process-deletions]
 verify_jwt = false
+
+# Public coming-soon waitlist signup (called from the static /soon page).
+[functions.waitlist-signup]
+verify_jwt = false

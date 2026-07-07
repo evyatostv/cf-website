@@ -695,17 +695,32 @@
       sp.className = 'spinner';
       btn.insertBefore(sp, label);
 
-      /* TODO: replace this simulated delay with a real POST to a Supabase
-         waitlist table / edge function before relying on signups. */
-      setTimeout(function(){
+      function resetBtn(){
         if(sp.parentNode) sp.parentNode.removeChild(sp);
         label.textContent = labelText;
         btn.disabled = false;
         input.readOnly = false;
+      }
+
+      /* Real signup: POST to the waitlist-signup edge function, which stores the
+         email and emails the owner. Anon key is public (also in the app bundle). */
+      var SB_URL = 'https://dmuwxydmuylcbhcoagri.supabase.co';
+      var SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtdXd4eWRtdXlsY2JoY29hZ3JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MjAyMDYsImV4cCI6MjA4NDk5NjIwNn0.GETQeDKZk9FV41B7HCN95guPEkyWhJSQ8VYb_SNGfWY';
+      fetch(SB_URL + '/functions/v1/waitlist-signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON },
+        body: JSON.stringify({ email: val })
+      }).then(function(res){
+        if(!res.ok) throw new Error('bad status ' + res.status);
+        resetBtn();
         form.classList.add('is-success');     /* swaps form -> success chip */
         var chip = form.querySelector('[data-success]');
         if(chip && chip.focus) chip.focus();
-      }, 1300);
+      }).catch(function(){
+        resetBtn();
+        setError('אירעה שגיאה בהרשמה. נסו שוב בעוד רגע.');
+        input.focus();
+      });
     });
   }
 
