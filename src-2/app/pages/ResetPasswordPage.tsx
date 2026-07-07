@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { motion } from 'motion/react';
 import { supabase } from '@/lib/supabase';
 import { Captcha, CaptchaHandle } from '@/app/components/Captcha';
+import { mapAuthError } from '@/lib/auth-errors';
 
 export function ResetPasswordPage() {
   const [email, setEmail] = useState('');
@@ -24,7 +25,7 @@ export function ResetPasswordPage() {
       if (error) throw error;
       setSent(true);
     } catch (err: any) {
-      setError(err.message || 'אירעה שגיאה. נסה/י שוב.');
+      setError(mapAuthError(err));
     } finally {
       setLoading(false);
       captchaRef.current?.reset(); // tokens are single-use

@@ -5,7 +5,7 @@ import { getUserAccess, UserAccess, PLAN_LABELS, supabase } from '@/lib/supabase
 import { DeleteAccountSection } from '@/app/components/DeleteAccountSection';
 import { DataExportSection } from '@/app/components/DataExportSection';
 import { TwoFactorSection } from '@/app/components/TwoFactorSection';
-import { MfaGate } from '@/app/components/MfaGate';
+// MFA is now enforced by the route-level RequireAuth guard (requireMfa).
 
 type DownloadOs = 'win' | 'mac' | 'linux';
 
@@ -110,7 +110,6 @@ export function DashboardPage() {
   const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'משתמש';
 
   return (
-    <MfaGate>
     <div className="min-h-screen bg-[#f5f7f9] pt-28 pb-20" dir="rtl">
       <div className="container mx-auto px-4 max-w-5xl">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -434,6 +433,5 @@ export function DashboardPage() {
         </motion.div>
       </div>
     </div>
-    </MfaGate>
   );
 }

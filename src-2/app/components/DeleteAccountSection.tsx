@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { mapAuthError } from '@/lib/auth-errors';
+import { Captcha, CaptchaHandle } from '@/app/components/Captcha';
 import { downloadUserData } from '@/lib/data-export';
 import { Trash2, ShieldAlert, X, Clock, AlertTriangle, Download } from 'lucide-react';
 
@@ -21,6 +22,8 @@ export function DeleteAccountSection() {
   const [request, setRequest] = useState<DeletionRequest | null | undefined>(undefined);
   const [confirming, setConfirming] = useState(false);
   const [password, setPassword] = useState('');
+  const [captchaToken, setCaptchaToken] = useState('');
+  const captchaRef = useRef<CaptchaHandle>(null);
   const [busy, setBusy] = useState(false);
   const [dlBusy, setDlBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -137,13 +140,20 @@ export function DeleteAccountSection() {
     if (!password) { setError('יש להזין סיסמה לאישור'); return; }
     setBusy(true);
     try {
-      const { error: authErr } = await supabase.auth.signInWithPassword({ email: user.email, password });
-      if (authErr) { setError('הסיסמה שגויה'); setBusy(false); return; }
+      const { error: authErr } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password,
+        options: captchaToken ? { captchaToken } : undefined,
+      });
+      // Map real errors properly: a CAPTCHA or rate-limit failure must NOT be
+      // shown as "wrong password" (it would trap a user with the right password).
+      if (authErr) { setError(mapAuthError(authErr)); setBusy(false); captchaRef.current?.reset(); return; }
       await scheduleDeletion(user.id, user.email);
     } catch (e) {
       setError(mapAuthError(e));
     } finally {
       setBusy(false);
+      captchaRef.current?.reset(); // single-use token
     }
   }
 
@@ -288,14 +298,17 @@ export function DeleteAccountSection() {
                   : <>להמשך, הזן/י את סיסמתך (התחברות מחדש). הנתונים יימחקו בעוד {GRACE_DAYS} ימים.</>}
               </p>
               {!useGoogleReauth && (
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="הסיסמה שלך"
-                  autoComplete="current-password"
-                  className="w-full border border-red-300 rounded-lg px-3 py-2.5 mb-3 outline-none focus:ring-2 focus:ring-red-400 min-h-[44px]"
-                />
+                <>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="הסיסמה שלך"
+                    autoComplete="current-password"
+                    className="w-full border border-red-300 rounded-lg px-3 py-2.5 mb-3 outline-none focus:ring-2 focus:ring-red-400 min-h-[44px]"
+                  />
+                  <Captcha ref={captchaRef} onVerify={setCaptchaToken} />
+                </>
               )}
               {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
               <div className="flex gap-2">

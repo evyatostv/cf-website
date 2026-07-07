@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import { supabase } from '@/lib/supabase';
+import { mapAuthError } from '@/lib/auth-errors';
 import { PasswordInput } from '@/app/components/ui/password-input';
 import { PasswordStrength } from '@/app/components/ui/password-strength';
 import { evaluatePassword } from '@/lib/password';
@@ -52,7 +53,7 @@ export function UpdatePasswordPage() {
       if (updateError) throw updateError;
       setDone(true);
     } catch (err: any) {
-      setError(err?.message || 'אירעה שגיאה בעדכון הסיסמה. נסו שוב.');
+      setError(mapAuthError(err));
     } finally {
       setLoading(false);
     }

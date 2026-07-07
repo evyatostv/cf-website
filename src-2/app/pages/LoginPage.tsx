@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
 import { motion } from 'motion/react';
@@ -11,7 +11,7 @@ import { safeRedirect } from '@/lib/safe-redirect';
 export function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { signIn } = useAuth();
+  const { signIn, user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -23,6 +23,17 @@ export function LoginPage() {
   // Where to send the user after login: honour a validated same-origin
   // ?redirect= (e.g. back to /payment?plan=...), else the normal flow.
   const redirect = searchParams.get('redirect');
+
+  // Already signed in → don't show the login form; send them onward (same
+  // destination logic as a fresh login). replace:true so Back doesn't return here.
+  useEffect(() => {
+    if (authLoading || !user) return;
+    if (redirect) {
+      navigate(safeRedirect(redirect), { replace: true });
+    } else {
+      navigate(user.user_metadata?.onboarded ? '/dashboard' : '/complete-profile', { replace: true });
+    }
+  }, [user, authLoading, redirect, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

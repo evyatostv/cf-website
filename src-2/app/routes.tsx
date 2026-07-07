@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router";
 import { Layout } from "@/app/components/Layout";
+import { RequireAuth } from "@/app/components/RequireAuth";
 
 const HomePage = lazy(() => import("@/app/pages/HomePage").then(m => ({ default: m.HomePage })));
 const PricingPage = lazy(() => import("@/app/pages/PricingPage").then(m => ({ default: m.PricingPage })));
@@ -42,9 +43,9 @@ export const router = createBrowserRouter([
       { path: "contact", element: <Suspense fallback={<PageLoader />}><ContactPage /></Suspense> },
       { path: "login", element: <Suspense fallback={<PageLoader />}><LoginPage /></Suspense> },
       { path: "signup", element: <Suspense fallback={<PageLoader />}><SignupPage /></Suspense> },
-      { path: "dashboard", element: <Suspense fallback={<PageLoader />}><DashboardPage /></Suspense> },
-      { path: "payment", element: <Suspense fallback={<PageLoader />}><PaymentPage /></Suspense> },
-      { path: "thank-you", element: <Suspense fallback={<PageLoader />}><ThankYouPage /></Suspense> },
+      { path: "dashboard", element: <RequireAuth requireOnboarded requireMfa><Suspense fallback={<PageLoader />}><DashboardPage /></Suspense></RequireAuth> },
+      { path: "payment", element: <RequireAuth requireOnboarded requireMfa><Suspense fallback={<PageLoader />}><PaymentPage /></Suspense></RequireAuth> },
+      { path: "thank-you", element: <RequireAuth><Suspense fallback={<PageLoader />}><ThankYouPage /></Suspense></RequireAuth> },
       { path: "terms", element: <Suspense fallback={<PageLoader />}><TermsPage /></Suspense> },
       { path: "privacy", element: <Suspense fallback={<PageLoader />}><PrivacyPage /></Suspense> },
       { path: "disclaimer", element: <Suspense fallback={<PageLoader />}><DisclaimerPage /></Suspense> },
@@ -53,7 +54,7 @@ export const router = createBrowserRouter([
       { path: "blog/:slug", element: <Suspense fallback={<PageLoader />}><BlogPostPage /></Suspense> },
       { path: "reset-password", element: <Suspense fallback={<PageLoader />}><ResetPasswordPage /></Suspense> },
       { path: "update-password", element: <Suspense fallback={<PageLoader />}><UpdatePasswordPage /></Suspense> },
-      { path: "complete-profile", element: <Suspense fallback={<PageLoader />}><CompleteProfilePage /></Suspense> },
+      { path: "complete-profile", element: <RequireAuth><Suspense fallback={<PageLoader />}><CompleteProfilePage /></Suspense></RequireAuth> },
       { path: "*", element: <Suspense fallback={<PageLoader />}><NotFoundPage /></Suspense> },
     ],
   },

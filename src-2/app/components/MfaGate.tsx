@@ -21,7 +21,7 @@ export function MfaGate({ children }: { children: React.ReactNode }) {
       if (error || !data) { setState('ok'); return; }
       if (data.nextLevel === 'aal2' && data.currentLevel !== 'aal2') {
         const { data: f } = await supabase.auth.mfa.listFactors();
-        const totp = f?.totp?.[0];
+        const totp = (f?.totp || []).find((x: any) => x.status === 'verified');
         if (totp) { setFactorId(totp.id); setState('need'); return; }
       }
       setState('ok');

@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
+import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { motion } from 'motion/react';
@@ -12,6 +13,7 @@ import { mapAuthError } from '@/lib/auth-errors';
 
 export function SignupPage() {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -23,6 +25,12 @@ export function SignupPage() {
   const [submitted, setSubmitted] = useState(false);
   const [captchaToken, setCaptchaToken] = useState('');
   const captchaRef = useRef<CaptchaHandle>(null);
+
+  // Already signed in → skip signup, send them to their onboarding/dashboard.
+  useEffect(() => {
+    if (authLoading || !user) return;
+    navigate(user.user_metadata?.onboarded ? '/dashboard' : '/complete-profile', { replace: true });
+  }, [user, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

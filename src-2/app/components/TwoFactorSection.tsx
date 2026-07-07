@@ -40,9 +40,13 @@ export function TwoFactorSection() {
       return;
     }
     retriedRef.current = false;
-    if (data?.totp && data.totp.length > 0) {
+    // Only a VERIFIED factor counts as "2FA on". A lingering unverified factor
+    // (abandoned enroll) must not show the card as active — that would present a
+    // login challenge the user can never satisfy (soft lockout).
+    const verified = (data?.totp || []).find((f: any) => f.status === 'verified');
+    if (verified) {
       setEnabled(true);
-      setFactorId(data.totp[0].id);
+      setFactorId(verified.id);
     } else {
       setEnabled(false);
       setFactorId(null);
