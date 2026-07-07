@@ -10,6 +10,33 @@ const NOTIFY_EMAIL =
   Deno.env.get('NOTIFY_EMAIL') ||
   'evyatar.druyan@gmail.com';
 
+// Resend "Audience" = broadcast/contacts list. Set RESEND_AUDIENCE_ID to the
+// audience you want signups added to (Resend dashboard → Audiences).
+const RESEND_AUDIENCE_ID = Deno.env.get('RESEND_AUDIENCE_ID');
+
+// Add the signup as a contact in the Resend broadcast audience. Best-effort:
+// no-op if not configured; never throws to the caller.
+async function addToResendAudience(email: string): Promise<void> {
+  const apiKey = Deno.env.get('RESEND_API_KEY');
+  if (!apiKey || !RESEND_AUDIENCE_ID) return; // not configured → skip
+  try {
+    const res = await fetch(
+      `https://api.resend.com/audiences/${RESEND_AUDIENCE_ID}/contacts`,
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, unsubscribed: false }),
+      },
+    );
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      console.error('Resend audience add failed:', res.status, body);
+    }
+  } catch (e) {
+    console.error('Resend audience add threw:', e);
+  }
+}
+
 const EMAIL_RE = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 function isValidEmail(v: string): boolean {
   const s = (v || '').trim();
@@ -73,7 +100,10 @@ Deno.serve(async (req) => {
       return json({ error: 'failed' }, 500, cors);
     }
 
-    // New signup → notify the owner. Best-effort: never fail the signup on email.
+    // New signup → add to the Resend broadcast audience (best-effort).
+    await addToResendAudience(email);
+
+    // …and notify the owner. Best-effort: never fail the signup on email.
     try {
       const when = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' });
       await sendEmail({
