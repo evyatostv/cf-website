@@ -17,7 +17,7 @@ const RESEND_AUDIENCE_ID = Deno.env.get('RESEND_AUDIENCE_ID');
 // Add the signup as a contact in the Resend broadcast audience. Best-effort:
 // no-op if not configured; never throws to the caller.
 async function addToResendAudience(email: string): Promise<void> {
-  const apiKey = Deno.env.get('RESEND_API_KEY');
+  const apiKey = Deno.env.get('RESEND_FULL_API_KEY') || Deno.env.get('RESEND_API_KEY');
   if (!apiKey || !RESEND_AUDIENCE_ID) return; // not configured → skip
   try {
     const res = await fetch(
