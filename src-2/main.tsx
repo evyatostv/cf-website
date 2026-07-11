@@ -12,7 +12,26 @@ if (!rootElement) {
 }
 
 createRoot(rootElement).render(
-  <Sentry.ErrorBoundary fallback={<p style={{ padding: 24, textAlign: "center" }}>משהו השתבש. אנא רענן את העמוד.</p>} showDialog>
+  <Sentry.ErrorBoundary
+    fallback={
+      <div dir="rtl" style={{ padding: 24, textAlign: "center" }}>
+        <p style={{ marginBottom: 12 }}>אירעה תקלה — רעננו את העמוד.</p>
+        <button
+          onClick={() => window.location.reload()}
+          style={{
+            padding: "8px 20px",
+            borderRadius: 8,
+            border: "none",
+            background: "#0d47a1",
+            color: "#fff",
+            cursor: "pointer",
+          }}
+        >
+          רענון העמוד
+        </button>
+      </div>
+    }
+  >
     <App />
   </Sentry.ErrorBoundary>
 );

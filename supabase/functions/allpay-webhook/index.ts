@@ -376,21 +376,39 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ⚠️ SECURITY RISK — BE-008 (BLOCKER, DEV-OWNED): the inbound webhook `sign`
-    // is NEVER verified here. The paymentstatus API call above only confirms that
-    // `order_id` corresponds to a real successful payment — it does NOT bind the
-    // plan/user/amount that we read below to that payment. An attacker who replays
-    // a legitimate `order_id` with altered `add_field_1` (userId) / `add_field_2`
-    // (plan) / `amount` can have grantAccess() award any plan to any user.
-    // FIX (dev): verify the inbound signature against ALLPAY_KEY (computeSign over
-    // the received body minus `sign`), AND take plan/amount from the trusted
-    // paymentstatus response (or our own order record) rather than from `body`.
-    // Left unpatched intentionally — a partial fix here would give false assurance.
-    const userId = body.add_field_1 || null;
-    const plan = body.add_field_2 || null;
-    const email = body.client_email || null;
+    // SECURITY (BE-008 fix): the paymentstatus call above proved THIS order_id is
+    // a real, successfully-paid order. But we must NOT trust the plan/user carried
+    // in the webhook body — an attacker could replay a legitimate order_id with an
+    // altered add_field_2 (plan) or add_field_1 (userId) to have grantAccess()
+    // award any plan to any user. Instead we derive the plan from the verified
+    // order_id itself (we mint it as `cf_<uid8>_<plan>_<ts>` in create-allpay-
+    // payment) and bind the grant to the original buyer via the embedded uid
+    // prefix. This closes the hole without depending on AllPay's inbound-signature
+    // stringification (which, verified naively, would reject real webhooks).
     const orderId = body.order_id || '';
-    const amount = typeof body.amount === 'number' ? body.amount * 100 : 0; // AllPay sends in ILS, convert to agorot
+    const orderMatch = /^cf_([0-9a-f]+)_(basic|professional|full)_\d+$/.exec(orderId);
+    if (!orderMatch) {
+      console.error('Refusing to grant — unrecognized order_id format:', orderId);
+      return new Response('Bad order reference', { status: 400 });
+    }
+    const trustedUidPrefix = orderMatch[1];
+    const plan = orderMatch[2]; // trusted: from the verified, paid order_id
+
+    const userId = body.add_field_1 || null;
+    const email = body.client_email || null;
+
+    // The account we grant to must match the buyer encoded in the paid order_id.
+    // A legit payment always passes (userId === add_field_1 whose first 8 chars
+    // ARE this prefix); a replay that swaps in another userId is rejected.
+    if (userId && !userId.startsWith(trustedUidPrefix)) {
+      console.error('Refusing to grant — userId does not match paid order:', { orderId, userId });
+      return new Response('User mismatch', { status: 403 });
+    }
+
+    // Amount is used ONLY for the receipt email; the stored purchase amount is the
+    // canonical plan price (PLAN_AMOUNTS, see grantAccess), so a tampered body
+    // amount can't inflate/deflate what we record — at worst it skews one receipt.
+    const amount = typeof body.amount === 'number' ? body.amount * 100 : 0; // ILS → agorot
 
     // Snapshot prior plan/license BEFORE grantAccess overwrites the row.
     const prior = await readPriorAccess(userId, email);

@@ -4,9 +4,17 @@ import { ArrowRight, Clock, Calendar, Tag } from 'lucide-react';
 import { blogPosts, categoryColors } from '@/app/data/blog-posts';
 import { useDocumentMeta } from '@/lib/use-document-meta';
 
+// Graceful fallback when a remote (Unsplash) image fails to load or is blocked:
+// hide the broken <img> instead of showing the browser's broken-image icon.
+const hideBrokenImage = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  e.currentTarget.style.display = 'none';
+};
+
 export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
-  const post = blogPosts.find((p) => p.slug === slug);
+  // Only treat a post as real if it has actual content; empty-content entries
+  // (drafts) are surfaced as 404 rather than a "coming soon" dead-end.
+  const post = blogPosts.find((p) => p.slug === slug && !!p.content?.trim());
 
   // Per-post SEO: title/description/canonical/og:image from the post itself.
   useDocumentMeta({
@@ -87,6 +95,7 @@ export function BlogPostPage() {
             src={post.image}
             alt={post.title}
             className="w-full object-cover max-h-72"
+            onError={hideBrokenImage}
           />
         </motion.div>
       </div>
@@ -98,16 +107,13 @@ export function BlogPostPage() {
         className="mx-auto max-w-3xl px-6 py-10"
       >
         <div className="bg-white rounded-2xl border border-[#e1e6ec] p-8 shadow-sm">
-          {post.content ? (
-            <div
-              className="blog-content"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
-          ) : (
-            <p className="text-[#6b7c93] text-center text-sm py-8">
-              התוכן יתווסף בקרוב.
-            </p>
-          )}
+          {/* TODO(security): sanitize if blog content ever becomes user/CMS-sourced.
+              Content is currently authored in-repo (blog-posts.ts) so it is trusted.
+              DOMPurify is not a dependency; adding one is out of scope here. */}
+          <div
+            className="blog-content"
+            dangerouslySetInnerHTML={{ __html: post.content ?? '' }}
+          />
         </div>
 
         {/* Related posts */}
@@ -115,7 +121,7 @@ export function BlogPostPage() {
           <h3 className="text-base font-bold text-[#1a2332] mb-4">פוסטים נוספים</h3>
           <div className="grid gap-4 sm:grid-cols-2">
             {blogPosts
-              .filter((p) => p.slug !== post.slug)
+              .filter((p) => p.slug !== post.slug && !!p.content?.trim())
               .slice(0, 2)
               .map((related) => (
                 <Link
@@ -127,6 +133,7 @@ export function BlogPostPage() {
                     src={related.image}
                     alt={related.title}
                     className="w-20 h-16 rounded-lg object-cover flex-shrink-0"
+                    onError={hideBrokenImage}
                   />
                   <div className="flex flex-col justify-center gap-1 min-w-0">
                     <span className="text-[11px] text-[#6b7c93]">{related.category}</span>

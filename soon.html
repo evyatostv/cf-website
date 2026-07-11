@@ -34,7 +34,7 @@
   }
 
   *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
+  html{scroll-behavior:smooth;overscroll-behavior-y:none}
   @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
   body{
@@ -156,7 +156,11 @@
     width:100%;height:56px;border:1.5px solid var(--border);background:var(--surface);
     border-radius:14px;padding-inline:18px;font-family:inherit;font-size:16px;color:var(--ink);
     transition:border-color .2s,box-shadow .2s;
+    /* Email addresses are Latin, so type LTR — but keep the field right-aligned
+       so the Hebrew placeholder stays anchored to the RTL side. */
+    direction:ltr;text-align:right;
   }
+  .email-input::placeholder{direction:rtl}
   .email-input::placeholder{color:var(--faint)}
   .email-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(13,71,161,.12)}
   .waitlist.is-error .email-input{border-color:var(--danger);box-shadow:0 0 0 4px rgba(192,57,43,.10)}

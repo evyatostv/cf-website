@@ -7,6 +7,7 @@ import { GoogleSignInButton } from '@/app/components/GoogleSignInButton';
 import { Captcha, CaptchaHandle } from '@/app/components/Captcha';
 import { mapAuthError } from '@/lib/auth-errors';
 import { safeRedirect } from '@/lib/safe-redirect';
+import { serverRateLimit, checkRateLimit } from '@/lib/rate-limit';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -40,6 +41,23 @@ export function LoginPage() {
     setError('');
     setShowResetHint(false);
     setLoading(true);
+
+    // Throttle login attempts (WEB-007 / UERR-028). Server-authoritative counter
+    // keyed by email; best-effort per-tab check as a fallback. Keep the same
+    // Hebrew copy the signup page uses.
+    const rlKey = `login_${email.trim().toLowerCase()}`;
+    try {
+      const rl = await serverRateLimit(rlKey, 5, 60);
+      const clientAllowed = checkRateLimit(rlKey, 5, 60);
+      if (!rl.allowed || !clientAllowed) {
+        setError('ניסיונות רבים מדי. אנא נסה/י שוב בעוד דקה.');
+        setLoading(false);
+        captchaRef.current?.reset();
+        return;
+      }
+    } catch {
+      // Never block login on a throttling-infra failure.
+    }
 
     try {
       const data = await signIn(email, password, captchaToken);

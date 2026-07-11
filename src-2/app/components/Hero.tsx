@@ -30,7 +30,7 @@ const professions = [
 
 export function Hero() {
   return (
-    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-white via-[#f8fafb] to-[#f0f4f7]">
+    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-white via-[#f8fafb] to-[#f5f7f9]">
       <div className="relative z-10 container mx-auto px-6 max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

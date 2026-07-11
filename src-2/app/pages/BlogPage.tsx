@@ -11,7 +11,10 @@ export function BlogPage() {
     description: 'מאמרים לרופאים פרטיים: נוכחות דיגיטלית, ניהול מרפאה, פרטיות נתונים רפואיים ועוד.',
     canonicalPath: '/blog',
   });
-  const [featured, ...rest] = blogPosts;
+  // Only list posts that actually have content; empty-content entries (drafts)
+  // stay in the data file but are not surfaced in the listing.
+  const publishedPosts = blogPosts.filter((p) => !!p.content?.trim());
+  const [featured, ...rest] = publishedPosts;
 
   return (
     <div className="min-h-screen bg-[#f5f7f9]" dir="rtl">

@@ -22,7 +22,7 @@ export function HomePage() {
       <DashboardPreview />
       <OfflineBenefits />
       <CTASection />
-      <section id="lead-form" className="scroll-mt-24 py-16 sm:py-24 bg-[#f5f7f9]">
+      <section id="lead-form" className="scroll-mt-24 py-16 sm:py-24 bg-gradient-to-b from-[#f5f7f9] to-white">
         <div className="container mx-auto px-6 max-w-2xl">
           <div className="text-center mb-8">
             <h2 className="text-2xl sm:text-4xl font-bold text-[#1a2332] mb-3">רוצים לשמוע עוד?</h2>

@@ -4,6 +4,20 @@ import { sendTemplate } from "../_shared/send-template.ts";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
 const NOTIFY_EMAIL = Deno.env.get("NOTIFY_EMAIL") || "contact@clinic-flow.co.il";
 
+// BE-015: send internal notifications from a verified-domain address, not the
+// unverified Resend sandbox (`onboarding@resend.dev`), which silently drops some
+// recipients. The clinic-flow.co.il DOMAIN MUST BE VERIFIED in the Resend
+// dashboard for this from-address to deliver.
+const NOTIFY_FROM = Deno.env.get("NOTIFY_FROM") || "ClinicFlow <info@clinic-flow.co.il>";
+
+// BE-009: this function runs with `verify_jwt=false` (it's fired by a Supabase
+// Database Webhook, which carries no user JWT), so it must authenticate the
+// caller itself. The DB webhook MUST be configured to send this shared secret in
+// the `x-notify-secret` header (Supabase Dashboard → Database → Webhooks → HTTP
+// Headers). Set the secret with `supabase secrets set NOTIFY_CONTACT_SECRET=...`.
+// Without it, anyone with the function URL could trigger emails from our domain.
+const NOTIFY_CONTACT_SECRET = Deno.env.get("NOTIFY_CONTACT_SECRET") || "";
+
 /**
  * Deterministic-ish support ticket id: `SUP-XXXXXXXX`, derived from the row's
  * created_at + email. Because it's a pure function of stable row fields, a
@@ -67,6 +81,18 @@ function formatCreatedAt(value: unknown): string {
 
 serve(async (req) => {
   // This function is called by a Supabase Database Webhook on INSERT into contact_messages
+
+  // BE-009: authenticate the caller via a shared secret. The DB webhook must be
+  // configured to send NOTIFY_CONTACT_SECRET in the `x-notify-secret` header.
+  // Reject if the secret is unset (fail closed) or the header doesn't match, so
+  // the endpoint can't be used to send email from our domain by anyone with the URL.
+  const providedSecret = req.headers.get("x-notify-secret") || "";
+  if (!NOTIFY_CONTACT_SECRET || providedSecret !== NOTIFY_CONTACT_SECRET) {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   // BE-006: guard req.json() — a malformed body must be a clean 400, not a crash.
   let payload: Record<string, unknown>;
@@ -137,11 +163,10 @@ serve(async (req) => {
   `;
 
   // ── 1 · Internal notification to the team ──────────────────────────────────
-  // NOTE: This still goes out from the UNVERIFIED `onboarding@resend.dev`.
-  // TODO(resend-domain): once the Resend domain (clinic-flow.co.il) is verified,
-  // move this internal send off `onboarding@resend.dev` to the verified
-  // `info@clinic-flow.co.il` (ideally by routing it through `sendTemplate` /
-  // `_shared/send-email.ts` too, so ALL outbound mail shares one from-address).
+  // BE-015: sends from the verified-domain `NOTIFY_FROM` (default
+  // `info@clinic-flow.co.il`) instead of the unverified `onboarding@resend.dev`
+  // sandbox, which silently drops some recipients. REQUIRES the clinic-flow.co.il
+  // domain to be verified in the Resend dashboard, otherwise the send is rejected.
   // BE-006: derive a stable idempotency key from the row so a DB-webhook retry
   // does not send the internal notification twice (Resend honours Idempotency-Key).
   const internalTicketId = await makeTicketId(`internal|${created_at ?? ""}|${emailStr}|${nameStr}`);
@@ -155,7 +180,7 @@ serve(async (req) => {
       "Idempotency-Key": `contact-internal:${internalTicketId}`,
     },
     body: JSON.stringify({
-      from: "ClinicFlow <onboarding@resend.dev>",
+      from: NOTIFY_FROM,
       to: [NOTIFY_EMAIL],
       subject: `פנייה חדשה מ-${nameStr}`,
       html: emailHtml,

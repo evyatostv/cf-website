@@ -51,6 +51,8 @@ html { overflow-x: hidden; }
 html {
   scroll-behavior: smooth;
   background-color: #f5f7f9;
+  /* No rubber-band bounce into empty space at the top/bottom. */
+  overscroll-behavior-y: none;
 }
 
 /* Custom scrollbar */

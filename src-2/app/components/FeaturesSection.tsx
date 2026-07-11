@@ -85,7 +85,7 @@ export function FeaturesSection() {
   ];
 
   return (
-    <section id="features" className="py-20 sm:py-32 bg-white relative overflow-hidden">
+    <section id="features" className="py-20 sm:py-32 bg-gradient-to-b from-white to-[#f5f7f9] relative overflow-hidden">
       <div className="container mx-auto px-6 max-w-7xl" ref={ref}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { serverRateLimit, checkRateLimit } from '@/lib/rate-limit';
 import { motion } from 'motion/react';
 import { PasswordInput } from '@/app/components/ui/password-input';
 import { PasswordStrength } from '@/app/components/ui/password-strength';
@@ -37,8 +37,12 @@ export function SignupPage() {
     setError('');
     setSubmitted(true);
 
-    // Rate limiting: max 5 signup attempts per minute per IP/email
-    if (!checkRateLimit(`signup_${email}`, 5, 60)) {
+    // Rate limiting: max 5 signup attempts per minute per email (WEB-007 /
+    // UERR-028). Server-authoritative counter; falls back to the per-tab
+    // in-memory check if the RPC isn't reachable.
+    const rlKey = `signup_${email.trim().toLowerCase()}`;
+    const rl = await serverRateLimit(rlKey, 5, 60);
+    if (!rl.allowed || !checkRateLimit(rlKey, 5, 60)) {
       setError('ניסיונות רבים מדי. אנא נסה/י שוב בעוד דקה.');
       return;
     }

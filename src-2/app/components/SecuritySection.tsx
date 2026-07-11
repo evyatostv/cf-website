@@ -53,7 +53,7 @@ export function SecuritySection() {
   ];
 
   return (
-    <section id="security" className="py-20 sm:py-32 bg-[#f5f7f9] relative overflow-hidden">
+    <section id="security" className="py-20 sm:py-32 bg-gradient-to-b from-[#f5f7f9] to-white relative overflow-hidden">
 
       <div className="container mx-auto px-6 max-w-7xl" ref={ref}>
         <motion.div

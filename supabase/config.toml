@@ -12,6 +12,10 @@ verify_jwt = false
 [functions.allpay-webhook]
 verify_jwt = false
 
+# Fired by a Supabase Database Webhook on INSERT into contact_messages, which
+# carries no user JWT — so the gateway JWT check is disabled. BE-009: the
+# function authenticates itself via the NOTIFY_CONTACT_SECRET shared secret,
+# which the DB webhook MUST send in the `x-notify-secret` HTTP header.
 [functions.notify-contact]
 verify_jwt = false
 

@@ -3,7 +3,7 @@ import { ContainerScroll } from "./ui/container-scroll-animation";
 
 export function DashboardPreview() {
   return (
-    <section id="dashboard" className="bg-white relative overflow-hidden">
+    <section id="dashboard" className="bg-gradient-to-b from-[#f5f7f9] to-white relative overflow-hidden">
       <div className="container mx-auto px-6 max-w-7xl">
         <ContainerScroll
           titleComponent={

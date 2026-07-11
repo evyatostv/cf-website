@@ -10,12 +10,17 @@ on:
 jobs:
   process:
     runs-on: ubuntu-latest
+    # BUILD-008: Supabase URL + anon key from repo secrets (single source),
+    # matching supabase-keepalive.yml so both workflows read the same values.
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
     steps:
       - name: Invoke process-deletions edge function
         run: |
           curl -fsS -X POST \
-            "https://dmuwxydmuylcbhcoagri.supabase.co/functions/v1/process-deletions" \
+            "$SUPABASE_URL/functions/v1/process-deletions" \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
             -w "process-deletions: %{http_code}\n"
