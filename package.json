@@ -94,5 +94,10 @@
     "vite": "^6.4.2",
     "vite-react-ssg": "^0.9.1"
   },
-  "peerDependenciesMeta": {}
+  "peerDependenciesMeta": {},
+  "overrides": {
+    "vite-react-ssg": {
+      "react-router-dom": "$react-router-dom"
+    }
+  }
 }
