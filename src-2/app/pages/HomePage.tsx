@@ -5,17 +5,54 @@ import { DashboardPreview } from "@/app/components/DashboardPreview";
 import { OfflineBenefits } from "@/app/components/OfflineBenefits";
 import { CTASection } from "@/app/components/CTASection";
 import { PremiumContactForm } from "@/app/components/PremiumContactForm";
-import { useDocumentMeta } from "@/lib/use-document-meta";
+import { Seo, SITE_ORIGIN } from "@/app/components/Seo";
+
+const HOME_DESCRIPTION =
+  "תוכנה לניהול קליניקה שעובדת אופליין על המחשב שלך – ללא מנוי חודשי, תשלום חד-פעמי. תיק רפואי דיגיטלי, יומן תורים וחשבוניות. הנתונים נשארים אצלך, בהתאם לתיקון 13.";
+
+const SOFTWARE_APP_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "ClinicFlow",
+  applicationCategory: ["MedicalApplication", "BusinessApplication"],
+  operatingSystem: "Windows",
+  url: SITE_ORIGIN,
+  inLanguage: "he",
+  description: HOME_DESCRIPTION,
+  offers: [
+    {
+      "@type": "Offer",
+      name: "חבילה בסיסית – תשלום חד-פעמי",
+      price: "899",
+      priceCurrency: "ILS",
+      url: `${SITE_ORIGIN}/pricing`,
+    },
+    {
+      "@type": "Offer",
+      name: "חבילה מקצועית – תשלום חד-פעמי",
+      price: "999",
+      priceCurrency: "ILS",
+      url: `${SITE_ORIGIN}/pricing`,
+    },
+    {
+      "@type": "Offer",
+      name: "חבילת ניהול מלאה – תשלום חד-פעמי",
+      price: "1299",
+      priceCurrency: "ILS",
+      url: `${SITE_ORIGIN}/pricing`,
+    },
+  ],
+};
 
 export function HomePage() {
-  useDocumentMeta({
-    title: "ClinicFlow — ניהול מרפאה אופליין לרופאים בישראל",
-    description: "מערכת ניהול חולים אופליין לרופאים שמעריכים פרטיות ואבטחה. תשלום חד-פעמי, רישיון לנצח, כל הנתונים במחשב שלך.",
-    canonicalPath: "/",
-  });
-
   return (
     <>
+      <Seo
+        title="תוכנה לניהול קליניקה ללא מנוי – אופליין ותשלום חד פעמי | ClinicFlow"
+        description={HOME_DESCRIPTION}
+        canonicalPath="/"
+        jsonLd={[SOFTWARE_APP_JSON_LD]}
+      />
       <Hero />
       <SecuritySection />
       <FeaturesSection />

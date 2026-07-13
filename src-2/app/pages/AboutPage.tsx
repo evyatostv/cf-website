@@ -1,15 +1,32 @@
 import { motion } from "motion/react";
 import { Shield, Users, Heart, Target } from "lucide-react";
-import { useDocumentMeta } from "@/lib/use-document-meta";
+import { Seo, SITE_NAME, SITE_ORIGIN } from "@/app/components/Seo";
 
 export function AboutPage() {
-  useDocumentMeta({
-    title: "אודות — ClinicFlow",
-    description: "הסיפור מאחורי ClinicFlow — מערכת ניהול מרפאה אופליין שנבנתה עבור רופאים בישראל שמעריכים פרטיות ושליטה בנתונים.",
-    canonicalPath: "/about",
-  });
   return (
     <div className="pt-32 pb-20">
+      <Seo
+        title="אודות ClinicFlow – תוכנה ישראלית לניהול קליניקה אופליין"
+        description="הסיפור מאחורי ClinicFlow: תוכנה ישראלית לניהול קליניקה שרצה אופליין על המחשב שלכם, בתשלום חד־פעמי וללא מנוי — כל נתוני המטופלים נשארים אצלכם בלבד."
+        canonicalPath="/about"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "AboutPage",
+            name: "אודות ClinicFlow",
+            url: `${SITE_ORIGIN}/about`,
+            inLanguage: "he-IL",
+            mainEntity: {
+              "@type": "Organization",
+              name: SITE_NAME,
+              url: SITE_ORIGIN,
+              logo: { "@type": "ImageObject", url: `${SITE_ORIGIN}/og-image.png` },
+              description:
+                "ClinicFlow — תוכנה לניהול קליניקה שעובדת אופליין על המחשב שלך, בתשלום חד־פעמי וללא מנוי. הנתונים נשארים אצלך, בהתאם לתיקון 13.",
+            },
+          },
+        ]}
+      />
       <div className="container mx-auto px-6 max-w-7xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

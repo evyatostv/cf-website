@@ -16,7 +16,7 @@ export function Navigation() {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -105,7 +105,7 @@ export function Navigation() {
 
             {/* Desktop auth buttons */}
             <div className="hidden md:flex items-center gap-4">
-              {!loading && !user ? (
+              {!user ? (
                 <>
                   <Link
                     to="/login"
@@ -216,7 +216,7 @@ export function Navigation() {
 
               {/* Auth buttons */}
               <div className="flex flex-col gap-3 border-t border-[#e1e6ec] pt-6 mt-4">
-                {!loading && !user ? (
+                {!user ? (
                   <>
                     <Link
                       to="/login"

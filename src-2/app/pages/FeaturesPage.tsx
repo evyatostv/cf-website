@@ -14,7 +14,7 @@ import {
   ArrowUpCircle,
 } from "lucide-react";
 import { Link } from "react-router";
-import { useDocumentMeta } from "@/lib/use-document-meta";
+import { Seo } from "@/app/components/Seo";
 
 type PlanTier = "basic" | "professional" | "full" | "premium";
 
@@ -93,14 +93,27 @@ const features: { icon: React.ElementType; title: string; description: string; p
   },
 ];
 
+const featuresItemListJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "היכולות המרכזיות של ClinicFlow — תוכנה לניהול קליניקה",
+  numberOfItems: features.length,
+  itemListElement: features.map((feature, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: feature.title,
+  })),
+};
+
 export function FeaturesPage() {
-  useDocumentMeta({
-    title: "יכולות — ClinicFlow",
-    description: "כל היכולות של ClinicFlow: סיכומי ביקור, ניהול חולים, יומן פגישות, מסמכי PDF, דוחות פיננסיים ועוד — הכל אופליין.",
-    canonicalPath: "/features",
-  });
   return (
     <div className="pt-32 pb-20">
+      <Seo
+        title="יכולות התוכנה לניהול קליניקה – תיק מטופל, יומן, חשבוניות | ClinicFlow"
+        description="כל היכולות של ClinicFlow לניהול קליניקה: כרטיס מטופל מלא, יומן תורים, תיעוד ביקורים SOAP, קבלות וחשבוניות, דוחות וגיבוי מוצפן — הכל אופליין, בתשלום חד־פעמי."
+        canonicalPath="/features"
+        jsonLd={[featuresItemListJsonLd]}
+      />
       <div className="container mx-auto px-6 max-w-7xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

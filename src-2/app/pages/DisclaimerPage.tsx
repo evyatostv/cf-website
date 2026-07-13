@@ -1,6 +1,13 @@
+import { Seo } from "@/app/components/Seo";
+
 export function DisclaimerPage() {
   return (
     <div className="pt-32 pb-20 min-h-screen" dir="rtl">
+      <Seo
+        title="הסרת אחריות — ClinicFlow"
+        description="הסרת אחריות לשימוש ב-ClinicFlow — תוכנה לניהול קליניקה: גבולות האחריות, המלצות לגיבוי נתונים ואחריות המשתמש על המידע הרפואי."
+        canonicalPath="/disclaimer"
+      />
       <div className="container mx-auto px-6 max-w-4xl">
         <h1 className="text-4xl font-bold text-[#1a2332] mb-2">הסרת אחריות על נתונים</h1>
         <p className="text-sm text-[#6b7c93] mb-10">עדכון אחרון: אפריל 2026 | גרסת מדיניות: 1.0</p>

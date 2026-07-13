@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { PremiumContactForm } from "../components/PremiumContactForm";
 import { useAuth } from "@/lib/auth-context";
 import { getUserAccess } from "@/lib/supabase";
-import { useDocumentMeta } from "@/lib/use-document-meta";
+import { Seo, SITE_ORIGIN } from "@/app/components/Seo";
 
 const PLAN_ORDER = ['basic', 'professional', 'full'];
 
@@ -89,12 +89,73 @@ const enterpriseAddOns = [
   "תמיכה עדיפות",
 ];
 
+const pricingFaq = [
+  {
+    q: "מה קורה אם אקנה חבילה בסיסית וארצה לשדרג?",
+    a: "אפשר לשדרג בכל עת. הסכום ששילמתם נזקף לטובתכם — תשלמו רק את ההפרש בין החבילות."
+  },
+  {
+    q: "האם הנתונים שלי בטוחים אם המחשב מתקלקל?",
+    a: "כן. ClinicFlow כולל גיבוי מוצפן עם סיסמה. שמרו גיבוי על דיסק חיצוני או USB — ותוך דקות תחזרו לעבוד על כל מחשב חדש."
+  },
+  {
+    q: "האם ClinicFlow עובד עם מק ווינדוס?",
+    a: "כן. האפליקציה זמינה ל-Windows ול-macOS. ההתקנה לוקחת פחות מדקה."
+  },
+  {
+    q: "מה אם אני לא מרוצה?",
+    a: "יש 30 יום להחזר כספי מלא, ללא שאלות. אם זה לא מתאים — מקבלים את הכסף בחזרה."
+  },
+];
+
+const softwareAppJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "ClinicFlow",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Windows, macOS",
+  description:
+    "ClinicFlow — תוכנה לניהול קליניקה שעובדת אופליין על המחשב שלך, בתשלום חד־פעמי וללא מנוי. הנתונים נשארים אצלך, בהתאם לתיקון 13.",
+  url: `${SITE_ORIGIN}/pricing`,
+  offers: [
+    {
+      "@type": "Offer",
+      name: "חבילה בסיסית",
+      price: "899",
+      priceCurrency: "ILS",
+      url: `${SITE_ORIGIN}/pricing`,
+      availability: "https://schema.org/InStock",
+    },
+    {
+      "@type": "Offer",
+      name: "חבילה מקצועית",
+      price: "999",
+      priceCurrency: "ILS",
+      url: `${SITE_ORIGIN}/pricing`,
+      availability: "https://schema.org/InStock",
+    },
+    {
+      "@type": "Offer",
+      name: "חבילת ניהול מלאה",
+      price: "1299",
+      priceCurrency: "ILS",
+      url: `${SITE_ORIGIN}/pricing`,
+      availability: "https://schema.org/InStock",
+    },
+  ],
+};
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: pricingFaq.map((item) => ({
+    "@type": "Question",
+    name: item.q,
+    acceptedAnswer: { "@type": "Answer", text: item.a },
+  })),
+};
+
 export function PricingPage() {
-  useDocumentMeta({
-    title: "מחירים — ClinicFlow",
-    description: "תמחור ClinicFlow: תשלום חד-פעמי, רישיון לנצח, ללא מנוי חודשי. בחרו את החבילה שמתאימה למרפאה שלכם.",
-    canonicalPath: "/pricing",
-  });
   const [showAddOns, setShowAddOns] = useState(false);
   const { user } = useAuth();
   const [userPlan, setUserPlan] = useState<string | null>(null);
@@ -131,6 +192,12 @@ export function PricingPage() {
 
   return (
     <div className="pt-32 pb-20">
+      <Seo
+        title="מחיר תוכנה לניהול קליניקה – תשלום חד פעמי מ־899 ₪"
+        description="מחיר ClinicFlow — תוכנה לניהול קליניקה בתשלום חד־פעמי וללא מנוי: חבילה בסיסית 899 ₪, מקצועית 999 ₪ וניהול מלאה 1,299 ₪. רישיון לצמיתות ו־30 יום החזר כספי מלא."
+        canonicalPath="/pricing"
+        jsonLd={[softwareAppJsonLd, faqJsonLd]}
+      />
       <div className="container mx-auto px-6 max-w-7xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -306,24 +373,7 @@ export function PricingPage() {
         >
           <h2 className="text-2xl sm:text-3xl font-bold text-[#1a2332] text-center mb-8">שאלות נפוצות</h2>
           <div className="space-y-4">
-            {[
-              {
-                q: "מה קורה אם אקנה חבילה בסיסית וארצה לשדרג?",
-                a: "אפשר לשדרג בכל עת. הסכום ששילמתם נזקף לטובתכם — תשלמו רק את ההפרש בין החבילות."
-              },
-              {
-                q: "האם הנתונים שלי בטוחים אם המחשב מתקלקל?",
-                a: "כן. ClinicFlow כולל גיבוי מוצפן עם סיסמה. שמרו גיבוי על דיסק חיצוני או USB — ותוך דקות תחזרו לעבוד על כל מחשב חדש."
-              },
-              {
-                q: "האם ClinicFlow עובד עם מק ווינדוס?",
-                a: "כן. האפליקציה זמינה ל-Windows ול-macOS. ההתקנה לוקחת פחות מדקה."
-              },
-              {
-                q: "מה אם אני לא מרוצה?",
-                a: "יש 30 יום להחזר כספי מלא, ללא שאלות. אם זה לא מתאים — מקבלים את הכסף בחזרה."
-              },
-            ].map((item, i) => (
+            {pricingFaq.map((item, i) => (
               <FAQItem key={i} question={item.q} answer={item.a} />
             ))}
           </div>

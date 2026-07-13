@@ -9,5 +9,26 @@ Disallow: /payment
 Disallow: /thank-you
 Disallow: /calendar
 Disallow: /reset-password
+Disallow: /update-password
+Disallow: /complete-profile
 
-Sitemap: https://clinic-flow.co.il/sitemap.xml
+# Explicitly welcome AI / answer-engine crawlers (GEO)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+Sitemap: https://www.clinic-flow.co.il/sitemap.xml

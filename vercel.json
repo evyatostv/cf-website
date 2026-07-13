@@ -1,8 +1,16 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "clinic-flow.co.il" }],
+      "destination": "https://www.clinic-flow.co.il/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/soon", "destination": "/soon.html" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/app-shell.html" }
   ],
   "headers": [
     {

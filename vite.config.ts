@@ -31,4 +31,16 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src-2"),
     },
   },
+  // vite-react-ssg static-site-generation options. `vite-react-ssg build`
+  // reads these; a plain `vite build` ignores them.
+  ssgOptions: {
+    entry: "src-2/main.tsx",
+    // /pricing -> /pricing/index.html (clean crawlable URLs)
+    dirStyle: "nested",
+    // Skip critical-CSS inlining (beasties); the normal <link> stylesheet is
+    // emitted instead. Keeps the build robust; CWV pass handled separately.
+    beastiesOptions: false,
+    // includedRoutes lives in the entry (src-2/main.tsx) so it can read the
+    // blog + content-page data; it takes priority over any handler here.
+  },
 });

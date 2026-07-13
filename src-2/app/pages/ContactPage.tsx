@@ -3,14 +3,9 @@ import { Mail, MessageCircle, Send, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import { submitLead } from "@/lib/leads";
 import { CONTACT_EMAIL, CONTACT_WHATSAPP_URL } from "@/app/config/site";
-import { useDocumentMeta } from "@/lib/use-document-meta";
+import { Seo, SITE_NAME, SITE_ORIGIN } from "@/app/components/Seo";
 
 export function ContactPage() {
-  useDocumentMeta({
-    title: "צור קשר — ClinicFlow",
-    description: "שאלות על ClinicFlow, על ההתקנה, או רוצים הדגמה? כתבו לנו ונחזור אליכם.",
-    canonicalPath: "/contact",
-  });
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -57,6 +52,28 @@ export function ContactPage() {
 
   return (
     <div className="pt-32 pb-20">
+      <Seo
+        title="צור קשר | ClinicFlow"
+        description="שאלות על ClinicFlow, על ההתקנה או על החבילות? צרו קשר במייל או בוואטסאפ, או השאירו הודעה בטופס — עונים בעברית וחוזרים אליכם במהירות."
+        canonicalPath="/contact"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: SITE_NAME,
+            url: SITE_ORIGIN,
+            logo: { "@type": "ImageObject", url: `${SITE_ORIGIN}/og-image.png` },
+            description:
+              "ClinicFlow — תוכנה לניהול קליניקה שעובדת אופליין על המחשב שלך, בתשלום חד־פעמי וללא מנוי. הנתונים נשארים אצלך, בהתאם לתיקון 13.",
+            contactPoint: {
+              "@type": "ContactPoint",
+              contactType: "customer support",
+              email: "info@clinic-flow.co.il",
+              availableLanguage: ["Hebrew"],
+            },
+          },
+        ]}
+      />
       <div className="container mx-auto px-6 max-w-7xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

@@ -1,8 +1,8 @@
 import { useParams, Link } from 'react-router';
 import { motion } from 'motion/react';
-import { ArrowRight, Clock, Calendar, Tag } from 'lucide-react';
+import { ArrowRight, Clock, Calendar, Tag, ChevronDown } from 'lucide-react';
 import { blogPosts, categoryColors } from '@/app/data/blog-posts';
-import { useDocumentMeta } from '@/lib/use-document-meta';
+import { Seo, SITE_ORIGIN, SITE_NAME } from '@/app/components/Seo';
 
 // Graceful fallback when a remote (Unsplash) image fails to load or is blocked:
 // hide the broken <img> instead of showing the browser's broken-image icon.
@@ -16,17 +16,16 @@ export function BlogPostPage() {
   // (drafts) are surfaced as 404 rather than a "coming soon" dead-end.
   const post = blogPosts.find((p) => p.slug === slug && !!p.content?.trim());
 
-  // Per-post SEO: title/description/canonical/og:image from the post itself.
-  useDocumentMeta({
-    title: post ? post.title : 'הפוסט לא נמצא',
-    description: post?.description,
-    canonicalPath: `/blog/${slug ?? ''}`,
-    image: post?.image,
-  });
-
   if (!post) {
+    // 404 shell: keep it out of the index.
     return (
       <div className="min-h-screen bg-[#f5f7f9] flex items-center justify-center" dir="rtl">
+        <Seo
+          title="הפוסט לא נמצא"
+          description="הפוסט שחיפשתם לא נמצא."
+          canonicalPath={`/blog/${slug ?? ''}`}
+          noindex
+        />
         <div className="text-center">
           <p className="text-[#1a2332] font-bold text-xl mb-2">הפוסט לא נמצא</p>
           <Link to="/blog" className="text-[#0d47a1] text-sm hover:underline">
@@ -37,8 +36,61 @@ export function BlogPostPage() {
     );
   }
 
+  const canonicalPath = `/blog/${post.slug}`;
+  const dateModified = post.updatedAt ?? post.createdAt;
+
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: post.description,
+    image: post.image,
+    inLanguage: 'he-IL',
+    datePublished: post.createdAt,
+    dateModified,
+    url: `${SITE_ORIGIN}${canonicalPath}`,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_ORIGIN}${canonicalPath}` },
+    author: { '@type': 'Organization', name: SITE_NAME, url: SITE_ORIGIN },
+    publisher: {
+      '@type': 'Organization',
+      name: SITE_NAME,
+      url: SITE_ORIGIN,
+      logo: { '@type': 'ImageObject', url: `${SITE_ORIGIN}/og-image.png` },
+    },
+  };
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'בית', item: SITE_ORIGIN + '/' },
+      { '@type': 'ListItem', position: 2, name: 'בלוג', item: SITE_ORIGIN + '/blog' },
+      { '@type': 'ListItem', position: 3, name: post.title, item: `${SITE_ORIGIN}${canonicalPath}` },
+    ],
+  };
+
+  const faqSchema =
+    post.faq && post.faq.length > 0
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: post.faq.map((f) => ({
+            '@type': 'Question',
+            name: f.q,
+            acceptedAnswer: { '@type': 'Answer', text: f.a },
+          })),
+        }
+      : null;
+
   return (
     <div className="min-h-screen bg-[#f5f7f9]" dir="rtl">
+      <Seo
+        title={`${post.title} | ${SITE_NAME}`}
+        description={post.description}
+        canonicalPath={canonicalPath}
+        ogImage={post.image}
+        jsonLd={[articleSchema, breadcrumbSchema, ...(faqSchema ? [faqSchema] : [])]}
+      />
       {/* Hero */}
       <section className="bg-[#1a2332] pt-16 pb-0">
         <div className="mx-auto max-w-3xl px-6 pt-8 pb-10">
@@ -115,6 +167,30 @@ export function BlogPostPage() {
             dangerouslySetInnerHTML={{ __html: post.content ?? '' }}
           />
         </div>
+
+        {/* FAQ */}
+        {post.faq && post.faq.length > 0 && (
+          <div className="mt-10">
+            <h2 className="text-lg font-bold text-[#1a2332] mb-4">שאלות נפוצות</h2>
+            <div className="flex flex-col gap-3">
+              {post.faq.map((f, i) => (
+                <details
+                  key={i}
+                  className="group bg-white rounded-xl border border-[#e1e6ec] shadow-sm [&_summary::-webkit-details-marker]:hidden"
+                >
+                  <summary className="flex cursor-pointer items-center justify-between gap-3 px-5 py-4 font-semibold text-[#1a2332]">
+                    {f.q}
+                    <ChevronDown
+                      size={18}
+                      className="flex-shrink-0 text-[#0d47a1] transition-transform group-open:rotate-180"
+                    />
+                  </summary>
+                  <div className="px-5 pb-5 text-[#4a5568] leading-relaxed">{f.a}</div>
+                </details>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Related posts */}
         <div className="mt-10">

@@ -3,21 +3,53 @@ import { Link } from 'react-router';
 import { Clock, Calendar, Tag } from 'lucide-react';
 import { LazyImage } from '@/app/components/ui/lazy-image';
 import { blogPosts, categoryColors } from '@/app/data/blog-posts';
-import { useDocumentMeta } from '@/lib/use-document-meta';
+import { Seo, SITE_ORIGIN } from '@/app/components/Seo';
+
+const BLOG_TITLE = 'בלוג לניהול קליניקה פרטית – מדריכים לרופאים ומטפלים | ClinicFlow';
+const BLOG_DESCRIPTION =
+  'מדריכים מעשיים לרופאים ומטפלים בקליניקה פרטית: ניהול מרפאה, תיעוד רפואי, פרטיות נתוני מטופלים לפי תיקון 13, תמחור ושיווק — מהבלוג של ClinicFlow.';
 
 export function BlogPage() {
-  useDocumentMeta({
-    title: 'בלוג — ClinicFlow',
-    description: 'מאמרים לרופאים פרטיים: נוכחות דיגיטלית, ניהול מרפאה, פרטיות נתונים רפואיים ועוד.',
-    canonicalPath: '/blog',
-  });
   // Only list posts that actually have content; empty-content entries (drafts)
   // stay in the data file but are not surfaced in the listing.
   const publishedPosts = blogPosts.filter((p) => !!p.content?.trim());
   const [featured, ...rest] = publishedPosts;
 
+  const blogJsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      '@id': `${SITE_ORIGIN}/blog`,
+      url: `${SITE_ORIGIN}/blog`,
+      name: BLOG_TITLE,
+      description: BLOG_DESCRIPTION,
+      inLanguage: 'he-IL',
+      isPartOf: {
+        '@type': 'WebSite',
+        name: 'ClinicFlow',
+        url: SITE_ORIGIN,
+      },
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: publishedPosts.length,
+        itemListElement: publishedPosts.map((post, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          url: `${SITE_ORIGIN}/blog/${post.slug}`,
+          name: post.title,
+        })),
+      },
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-[#f5f7f9]" dir="rtl">
+      <Seo
+        title={BLOG_TITLE}
+        description={BLOG_DESCRIPTION}
+        canonicalPath="/blog"
+        jsonLd={blogJsonLd}
+      />
       {/* Hero */}
       <section className="bg-[#1a2332] pt-16 pb-12">
         <div className="mx-auto max-w-5xl px-6">

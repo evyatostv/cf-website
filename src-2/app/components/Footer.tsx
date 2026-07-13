@@ -102,6 +102,95 @@ export function Footer() {
             </ul>
           </div>
 
+          {/* Guides & comparisons */}
+          <div>
+            <h4 className="text-xl font-semibold mb-6">מדריכים והשוואות</h4>
+            <ul className="space-y-4">
+              <li>
+                <a href="/tikun-13-guide" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  מדריך תיקון 13 למרפאה הפרטית
+                </a>
+              </li>
+              <li>
+                <a href="/best-clinic-software-israel" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  התוכנות הטובות לניהול קליניקה בישראל
+                </a>
+              </li>
+              <li>
+                <a href="/clinicflow-vs-tipulog" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  ClinicFlow מול טיפולוג
+                </a>
+              </li>
+              <li>
+                <a href="/tipulog-alternatives" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  חלופות לטיפולוג
+                </a>
+              </li>
+              <li>
+                <a href="/clinic-software-no-subscription" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  תוכנה לקליניקה ללא מנוי
+                </a>
+              </li>
+              <li>
+                <a href="/offline-clinic-software" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  תוכנה למרפאה ללא אינטרנט
+                </a>
+              </li>
+              <li>
+                <a href="/clinic-software-one-time-payment" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  תוכנה בתשלום חד פעמי
+                </a>
+              </li>
+              <li>
+                <a href="/tikun-13-clinic-software" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  תוכנה תואמת תיקון 13
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Solutions by profession */}
+          <div>
+            <h4 className="text-xl font-semibold mb-6">פתרונות לפי תחום</h4>
+            <ul className="space-y-4">
+              <li>
+                <a href="/clinic-software-for-psychologists" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  תוכנה לפסיכולוגים
+                </a>
+              </li>
+              <li>
+                <a href="/clinic-software-for-dietitians" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  תוכנה לדיאטניות
+                </a>
+              </li>
+              <li>
+                <a href="/clinic-software-for-speech-therapists" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  תוכנה לקלינאיות תקשורת
+                </a>
+              </li>
+              <li>
+                <a href="/clinic-software-for-physiotherapists" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  תוכנה לפיזיותרפיסטים
+                </a>
+              </li>
+              <li>
+                <a href="/clinic-software-for-veterinarians" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  תוכנה לווטרינרים
+                </a>
+              </li>
+              <li>
+                <a href="/clinic-software-for-complementary-medicine" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  תוכנה לרפואה משלימה
+                </a>
+              </li>
+              <li>
+                <a href="/clinic-software-for-private-doctors" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  תוכנה לרופאים פרטיים
+                </a>
+              </li>
+            </ul>
+          </div>
+
           {/* Contact */}
           <div>
             <h4 className="text-xl font-semibold mb-6">צור/י קשר</h4>

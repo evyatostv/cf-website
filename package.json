@@ -4,8 +4,9 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "postinstall": "node scripts/patch-react-router-dom.mjs",
+    "dev": "vite-react-ssg dev",
+    "build": "vite-react-ssg build && node scripts/postbuild-seo.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "email:dev": "email dev --dir emails",
@@ -69,6 +70,7 @@
     "react-resizable-panels": "2.1.7",
     "react-responsive-masonry": "2.7.1",
     "react-router": "^7.13.0",
+    "react-router-dom": "7.13.0",
     "react-slick": "0.31.0",
     "recharts": "2.15.2",
     "slick-carousel": "^1.8.1",
@@ -85,9 +87,12 @@
     "@types/react-slick": "^0.23.13",
     "@vitejs/plugin-react": "4.7.0",
     "react-email": "^6.6.5",
+    "react-helmet-async": "^2.0.5",
     "resend": "^6.16.0",
     "tailwindcss": "4.1.12",
-    "vite": "^6.4.2"
+    "typescript": "^5.9.3",
+    "vite": "^6.4.2",
+    "vite-react-ssg": "^0.9.1"
   },
   "peerDependenciesMeta": {}
 }
