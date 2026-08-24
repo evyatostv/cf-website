@@ -20,8 +20,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Get initial session, then SELF-HEAL a dead one. getSession() only reads
+    // the token from localStorage — it does not check the token is still valid.
+    // If the user behind it was deleted (or the project was reset), every call
+    // to /auth/v1/user returns 403 "User from sub claim in JWT does not exist",
+    // which traps the user on /complete-profile forever (its updateUser() can
+    // never succeed). Validating once against GoTrue and signing out on failure
+    // turns that dead end into a clean logged-out state → log in fresh.
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session) {
+        const { error } = await supabase.auth.getUser();
+        if (error) {
+          await supabase.auth.signOut().catch(() => {});
+          setSession(null);
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+      }
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
