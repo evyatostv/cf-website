@@ -56,9 +56,24 @@ const HEARD_ABOUT = [
 const inputCls =
   'w-full px-4 py-3 text-base border border-[#e1e6ec] rounded-lg focus:outline-none focus:border-[#0d47a1] focus:ring-2 focus:ring-[#0d47a1]/20 transition';
 
+// A dead / orphaned session: the JWT's user no longer exists, so GoTrue answers
+// 401/403 ("User from sub claim in JWT does not exist"). Retrying can't fix it —
+// the only way out is a fresh login, so we must NOT just show the raw error and
+// leave the user bouncing on this page.
+function isDeadSessionError(err: any): boolean {
+  const msg = String(err?.message || '').toLowerCase();
+  return (
+    err?.status === 401 ||
+    err?.status === 403 ||
+    msg.includes('sub claim') ||
+    msg.includes('does not exist') ||
+    msg.includes('user not found')
+  );
+}
+
 export function CompleteProfilePage() {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [needsName, setNeedsName] = useState(false);
@@ -140,6 +155,13 @@ export function CompleteProfilePage() {
       });
       navigate('/dashboard');
     } catch (err: any) {
+      if (isDeadSessionError(err)) {
+        // Session is dead — clear it and send the user to log in fresh, instead
+        // of stranding them here with a cryptic error and no way forward.
+        await signOut().catch(() => {});
+        navigate('/login?expired=1', { replace: true });
+        return;
+      }
       setError(err?.message || 'שגיאה בשמירת הפרטים');
     } finally {
       setSaving(false);
@@ -163,6 +185,13 @@ export function CompleteProfilePage() {
       await persist({ full_name: fullName, phone });
       navigate('/dashboard');
     } catch (err: any) {
+      if (isDeadSessionError(err)) {
+        // Session is dead — clear it and send the user to log in fresh, instead
+        // of stranding them here with a cryptic error and no way forward.
+        await signOut().catch(() => {});
+        navigate('/login?expired=1', { replace: true });
+        return;
+      }
       setError(err?.message || 'שגיאה בשמירת הפרטים');
     } finally {
       setSaving(false);
