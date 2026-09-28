@@ -16,7 +16,7 @@ function normalizePlan(plan: string | null): string | null {
 
 const clinicFlowTiers = [
   {
-    name: "רישיון לצמיתות",
+    name: "Clinic Flow Forever",
     price: "₪1,299",
     description: "כל הכלים לניהול הקליניקה — בתשלום חד־פעמי",
     highlight: true,
@@ -130,9 +130,9 @@ export function PricingPage() {
         onClick: (e: React.MouseEvent) => {
           e.preventDefault();
           if (user) {
-            navigate("/payment?plan=full");
+            navigate("/payment?plan=forever");
           } else {
-            navigate("/signup?redirect=/payment?plan=full");
+            navigate("/signup?redirect=/payment?plan=forever");
           }
         }
       };

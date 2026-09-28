@@ -22,14 +22,15 @@ import {
   Star, ArrowLeft, Shield, Zap, ChevronDown, ChevronUp, ArrowUpCircle
 } from 'lucide-react';
 
-const CHANGELOG = [
-  { version: '0.1.0', date: '04/2026', items: ['הפעלת יישום עם מערכת רישוי', 'כניסה מאובטחת עם PIN', 'ניהול מטופלים, ביקורים ומסמכים', 'יומן תורים', 'כתיבת חוות דעת רפואית', 'גיבוי ושחזור מוצפן'] },
+const QUICK_ACTIONS = [
+  { icon: Download, title: 'הורדת התוכנה', desc: 'התקן את המערכת על המחשב שלך', action: 'download' },
+  { icon: BookOpen, title: 'מדריך למשתמש', desc: 'למד איך להפיק את המירב', action: 'guide' },
+  { icon: MessageCircle, title: 'תמיכה טכנית', desc: 'צור קשר עם הצוות', action: 'support' },
 ];
 
 const RESOURCES = [
   { icon: BookOpen, title: 'מדריך התחלה מהירה', desc: 'כל מה שצריך לדעת להתחיל', href: '/contact', color: '#0d47a1' },
   { icon: MessageCircle, title: 'תמיכה טכנית', desc: 'נענה תוך 24 שעות', href: 'mailto:contact@clinic-flow.co.il', color: '#00838f' },
-  { icon: Star, title: 'שדרוג חבילה', desc: 'גלה/י את כל היכולות', href: '/pricing', color: '#f59e0b' },
 ];
 
 const SYSTEM_REQ = [
@@ -50,7 +51,6 @@ export function DashboardPage() {
   const navigate = useNavigate();
   const { user, loading, signOut } = useAuth();
   const [access, setAccess] = useState<UserAccess | null | undefined>(undefined);
-  const [showChangelog, setShowChangelog] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
@@ -106,12 +106,6 @@ export function DashboardPage() {
   const hasActiveAccess = access?.is_active && !isTrialExpired;
   const planLabel = access ? PLAN_LABELS[access.plan] ?? access.plan : null;
 
-  const UPGRADE_NEXT: Record<string, { label: string; desc: string; features: string[]; to: string; btnLabel: string }> = {
-    trial: { label: 'חבילה בסיסית', desc: 'רכוש/י רישיון לצמיתות ותמשיך/י להשתמש ללא הגבלת זמן', features: ['סיכומי ביקור ו-PDF', 'ניהול יומן תורים', 'כרטיס מטופל מלא'], to: '/pricing', btnLabel: 'בחר/י חבילה' },
-    basic: { label: 'חבילה מקצועית', desc: 'קבל/י כלים מתקדמים לניתוח הפעילות שלך', features: ['דוחות סטטיסטיים וגרפים', 'יומן אישי ותיוג רשומות', 'הערות דביקות וחיפוש מתקדם'], to: '/payment?plan=professional&upgrade=true', btnLabel: 'שדרג/י עכשיו' },
-    professional: { label: 'חבילת ניהול מלאה', desc: 'הוסף/י ניהול כספי מלא לקליניקה שלך', features: ['חשבוניות וקבלות אוטומטיות', 'דוחות הכנסות פיננסיים', 'מעקב שיטות תשלום'], to: '/payment?plan=full&upgrade=true', btnLabel: 'שדרג/י עכשיו' },
-  };
-  const upgradeNext = access?.plan ? UPGRADE_NEXT[access.plan] : null;
   const trialDaysLeft = access?.plan === 'trial' && access.expires_at && !isTrialExpired
     ? Math.ceil((new Date(access.expires_at).getTime() - Date.now()) / 86400000) : null;
   const memberSince = user.created_at ? new Date(user.created_at).toLocaleDateString('he-IL') : '—';
@@ -226,99 +220,35 @@ export function DashboardPage() {
                 </Card>
               </motion.div>
 
-              {/* Upgrade CTA */}
-              {upgradeNext && hasActiveAccess && (
-                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-                  <div className="rounded-2xl border-2 border-[#0d47a1]/20 bg-gradient-to-br from-[#f0f4ff] to-[#e8f4f8] p-6">
-                    <div className="flex items-start gap-3 mb-4">
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0d47a1] to-[#00838f] flex items-center justify-center flex-shrink-0">
-                        <ArrowUpCircle className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-[#6b7c93] mb-0.5">הצעד הבא עבורך</p>
-                        <h3 className="font-bold text-[#1a2332]">{upgradeNext.label}</h3>
-                        <p className="text-sm text-[#6b7c93] mt-0.5">{upgradeNext.desc}</p>
-                      </div>
-                    </div>
-                    <ul className="space-y-2 mb-5">
-                      {upgradeNext.features.map(f => (
-                        <li key={f} className="flex items-center gap-2 text-sm text-[#1a2332]">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#00838f] flex-shrink-0" />
-                          {f}
-                        </li>
-                      ))}
-                    </ul>
-                    <Link
-                      to={upgradeNext.to}
-                      className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white text-sm font-bold py-3 rounded-xl hover:shadow-md transition w-full"
-                    >
-                      {upgradeNext.btnLabel}
-                      <ArrowLeft className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Installation Steps */}
-              {hasActiveAccess && (
-                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                  <Card className="p-6">
-                    <h3 className="font-bold text-[#1a2332] mb-4 flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-[#0d47a1]" />
-                      התקנה בשלושה צעדים
-                    </h3>
-                    <div className="flex flex-col gap-4">
-                      {[
-                        { n: 1, title: 'הורד/י את הקובץ', desc: 'לחץ/י על כפתור ההורדה למעלה ושמור/י את הקובץ' },
-                        { n: 2, title: 'הפעל/י את ה-Installer', desc: 'פתח/י את הקובץ שהורדת ועקוב/י אחרי הוראות ההתקנה' },
-                        { n: 3, title: 'הפעל/י עם הדוא"ל שלך', desc: 'בפתיחה ראשונה הזן/י את הדוא"ל והסיסמה שלך מהאתר' },
-                      ].map(({ n, title, desc }) => (
-                        <div key={n} className="flex gap-4 items-start">
-                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0d47a1] to-[#00838f] text-white text-sm font-bold flex items-center justify-center flex-shrink-0">
-                            {n}
-                          </div>
-                          <div>
-                            <p className="font-semibold text-[#1a2332] text-sm">{title}</p>
-                            <p className="text-xs text-[#6b7c93] mt-0.5">{desc}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
-                </motion.div>
-              )}
-
-              {/* Changelog */}
+              {/* Quick Actions */}
               <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                <Card className="overflow-hidden">
-                  <button
-                    onClick={() => setShowChangelog(v => !v)}
-                    className="w-full flex items-center justify-between p-5 text-right hover:bg-[#f9fafc] transition"
-                  >
-                    <div className="flex items-center gap-2">
-                      <RefreshCw className="w-4 h-4 text-[#0d47a1]" />
-                      <span className="font-bold text-[#1a2332]">מה חדש</span>
-                      <span className="text-xs bg-[#0d47a1]/10 text-[#0d47a1] px-2 py-0.5 rounded-full font-medium">v0.1.0</span>
-                    </div>
-                    {showChangelog ? <ChevronUp className="w-4 h-4 text-[#6b7c93]" /> : <ChevronDown className="w-4 h-4 text-[#6b7c93]" />}
-                  </button>
-                  {showChangelog && (
-                    <div className="px-5 pb-5 border-t border-[#e1e6ec]">
-                      {CHANGELOG.map(({ version, date, items }) => (
-                        <div key={version} className="mt-4">
-                          <p className="text-xs text-[#6b7c93] mb-2">{date}</p>
-                          <ul className="space-y-1.5">
-                            {items.map(item => (
-                              <li key={item} className="flex items-start gap-2 text-sm text-[#1a2332]">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-green-500 flex-shrink-0 mt-0.5" />
-                                {item}
-                              </li>
-                            ))}
-                          </ul>
+                <Card className="p-6">
+                  <h3 className="font-bold text-[#1a2332] mb-4 flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-[#00838f]" />
+                    פעולות מהירות
+                  </h3>
+                  <div className="flex flex-col gap-3">
+                    {QUICK_ACTIONS.map(({ icon: Icon, title, desc, action }) => (
+                      <button
+                        key={title}
+                        onClick={() => {
+                          if (action === 'download') handleDownload();
+                          else if (action === 'guide') navigate('/contact');
+                          else if (action === 'support') window.location.href = 'mailto:contact@clinic-flow.co.il';
+                        }}
+                        className="flex items-center gap-4 p-4 rounded-xl hover:bg-[#f5f7f9] border border-transparent hover:border-[#e1e6ec] transition text-right w-full"
+                      >
+                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#0d47a1] to-[#00838f] text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+                          <Icon className="w-5 h-5" />
                         </div>
-                      ))}
-                    </div>
-                  )}
+                        <div>
+                          <p className="font-bold text-[#1a2332] text-sm">{title}</p>
+                          <p className="text-xs text-[#6b7c93] mt-0.5">{desc}</p>
+                        </div>
+                        <ArrowLeft className="w-4 h-4 text-[#6b7c93] mr-auto" />
+                      </button>
+                    ))}
+                  </div>
                 </Card>
               </motion.div>
             </div>
