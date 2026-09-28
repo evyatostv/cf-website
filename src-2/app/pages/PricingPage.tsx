@@ -1,5 +1,5 @@
-import { motion } from "motion/react";
-import { ChevronDown, ShieldCheck, Zap, Building2 } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { ChevronDown, ShieldCheck, Zap, Building2, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { PremiumContactForm } from "../components/PremiumContactForm";
 import { useAuth } from "@/lib/auth-context";
@@ -47,8 +47,7 @@ const clinicFlowTiers = [
         <Building2 className="w-7 h-7 relative z-10" />
       </div>
     ),
-    buttonText: "לשיחת ייעוץ",
-    href: "#contact",
+    buttonText: "דברו איתנו",
     features: [
       { name: "כל מה שבחבילת הניהול המלאה +", description: "", included: true },
       { name: "פריסה והטמעה מותאמת לארגון", description: "", included: true },
@@ -108,8 +107,23 @@ const faqJsonLd = {
 
 export function PricingPage() {
   const [showAddOns, setShowAddOns] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
   const [userPlan, setUserPlan] = useState<string | null>(null);
+
+  // Inject onClick for the enterprise plan
+  const tiersWithActions = clinicFlowTiers.map(tier => {
+    if (tier.name === "פתרון ארגוני (Enterprise)") {
+      return {
+        ...tier,
+        onClick: (e: React.MouseEvent) => {
+          e.preventDefault();
+          setIsModalOpen(true);
+        }
+      };
+    }
+    return tier;
+  });
 
   useEffect(() => {
     if (user) {
@@ -158,31 +172,47 @@ export function PricingPage() {
           </div>
         </div>
 
-        <PricingSection tiers={clinicFlowTiers} />
+        <PricingSection tiers={tiersWithActions} />
 
-        {/* Enterprise Contact Details */}
-        <motion.div
-          id="contact"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="max-w-6xl mx-auto mt-8"
-        >
-          <div className="bg-white rounded-3xl p-6 md:p-8 border-2 border-[#0d47a1] shadow-xl shadow-[#0d47a1]/10 flex flex-col lg:flex-row gap-8">
-            <div className="flex-grow">
-              <h3 className="text-3xl font-bold text-[#1a2332] mb-2">צרו קשר לפתרון ארגוני</h3>
-              <p className="text-[#6b7c93] mb-6 text-lg">
-                השאירו פרטים ונחזור אליכם עם הצעה המותאמת במיוחד לצרכי הקליניקה שלכם.
-              </p>
+        {/* Enterprise Contact Modal */}
+        <AnimatePresence>
+          {isModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsModalOpen(false)}
+                className="absolute inset-0 bg-[#1a2332]/60 backdrop-blur-sm"
+              />
+              
+              {/* Modal Content */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 md:p-8 z-10"
+              >
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="absolute top-4 left-4 p-2 text-[#6b7c93] hover:text-[#1a2332] bg-[#f5f7f9] hover:bg-[#e1e6ec] rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                
+                <div className="text-center mb-6">
+                  <h3 className="text-2xl font-bold text-[#1a2332] mb-2">צרו קשר לפתרון ארגוני</h3>
+                  <p className="text-[#6b7c93]">
+                    השאירו פרטים ונחזור אליכם עם הצעה המותאמת במיוחד לצרכי הקליניקה שלכם.
+                  </p>
+                </div>
+                
+                <PremiumContactForm />
+              </motion.div>
             </div>
-
-            {/* Contact Form - Right Side */}
-            <div className="w-full lg:w-1/3 flex-shrink-0 flex flex-col justify-center">
-              <PremiumContactForm />
-            </div>
-          </div>
-        </motion.div>
-
+          )}
+        </AnimatePresence>
 
         {/* FAQ Section */}
         <motion.div

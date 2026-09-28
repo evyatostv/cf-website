@@ -21,7 +21,8 @@ interface PricingTier {
   badge?: string
   icon: React.ReactNode
   buttonText: string
-  href: string
+  href?: string
+  onClick?: (e: React.MouseEvent) => void
 }
 
 interface PricingSectionProps {
@@ -165,8 +166,24 @@ function PricingSection({ tiers, className }: PricingSectionProps) {
               </div>
 
               <div className="p-8 pt-0 mt-auto">
-                <a href={tier.href} className="w-full block">
+                {tier.href ? (
+                  <a href={tier.href} className="w-full block" onClick={tier.onClick}>
+                    <Button
+                      className={cn(
+                        "w-full relative transition-all duration-300",
+                        tier.highlight
+                          ? buttonStyles.highlight
+                          : buttonStyles.default,
+                      )}
+                    >
+                      <span className="relative z-10 flex items-center justify-center gap-2">
+                        {tier.buttonText}
+                      </span>
+                    </Button>
+                  </a>
+                ) : (
                   <Button
+                    onClick={tier.onClick}
                     className={cn(
                       "w-full relative transition-all duration-300",
                       tier.highlight
@@ -178,7 +195,7 @@ function PricingSection({ tiers, className }: PricingSectionProps) {
                       {tier.buttonText}
                     </span>
                   </Button>
-                </a>
+                )}
               </div>
             </div>
           ))}
