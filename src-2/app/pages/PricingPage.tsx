@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, ShieldCheck, Zap, Building2, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import { PremiumContactForm } from "../components/PremiumContactForm";
 import { useAuth } from "@/lib/auth-context";
 import { getUserAccess } from "@/lib/supabase";
@@ -27,7 +28,6 @@ const clinicFlowTiers = [
       </div>
     ),
     buttonText: "התחילו עכשיו",
-    href: "/payment?plan=full",
     features: [
       { name: "ניהול יומן פגישות (לומי/שבועי/חודשי)", description: "", included: true },
       { name: "ניהול תיק מטופל ורקע רפואי מלא", description: "", included: true },
@@ -111,8 +111,9 @@ export function PricingPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
   const [userPlan, setUserPlan] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  // Inject onClick for the enterprise plan
+  // Inject onClick for the enterprise plan and primary plan
   const tiersWithActions = clinicFlowTiers.map(tier => {
     if (tier.name === "פתרון ארגוני (Enterprise)") {
       return {
@@ -120,6 +121,19 @@ export function PricingPage() {
         onClick: (e: React.MouseEvent) => {
           e.preventDefault();
           setIsModalOpen(true);
+        }
+      };
+    }
+    if (tier.name === "רישיון לצמיתות") {
+      return {
+        ...tier,
+        onClick: (e: React.MouseEvent) => {
+          e.preventDefault();
+          if (user) {
+            navigate("/payment?plan=full");
+          } else {
+            navigate("/signup?redirect=/payment?plan=full");
+          }
         }
       };
     }
@@ -193,7 +207,7 @@ export function PricingPage() {
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 md:p-8 z-10"
+                className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 md:p-10 z-10"
               >
                 <button
                   onClick={() => setIsModalOpen(false)}

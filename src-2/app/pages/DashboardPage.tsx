@@ -74,7 +74,15 @@ export function DashboardPage() {
 
   useEffect(() => {
     if (!loading && !user) { navigate('/login'); return; }
-    if (user) getUserAccess(user.id).then(setAccess);
+    if (user) {
+      getUserAccess(user.id).then((acc) => {
+        if (acc && acc.plan === 'none') {
+          navigate('/payment?plan=full', { replace: true });
+        } else {
+          setAccess(acc);
+        }
+      });
+    }
   }, [user, loading, navigate]);
 
   const handleSignOut = async () => {

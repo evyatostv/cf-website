@@ -32,8 +32,8 @@ export function PremiumContactForm() {
       email: formData.email,
       phone: formData.phone,
       clinicName: formData.clinicName,
-      message: formData.message,
-      source: 'homepage-lead-form',
+      message: `[🔥 URGENT ENTERPRISE LEAD 🔥]\n${formData.message}`,
+      source: 'enterprise-lead-form',
     });
 
     setLoading(false);
