@@ -23,6 +23,7 @@ interface PricingTier {
   buttonText: string
   href?: string
   onClick?: (e: React.MouseEvent) => void
+  featuresTitle?: string
 }
 
 interface PricingSectionProps {
@@ -88,7 +89,7 @@ function PricingSection({ tiers, className }: PricingSectionProps) {
                 "rounded-3xl transition-all duration-300",
                 "flex flex-col",
                 tier.highlight
-                  ? "bg-[#f8fcff]"
+                  ? "bg-[#f8fcff] md:scale-105 z-10"
                   : "bg-white",
                 "border-2",
                 tier.highlight
@@ -137,7 +138,9 @@ function PricingSection({ tiers, className }: PricingSectionProps) {
                 </div>
 
                 <div className="space-y-4 mt-8">
-                  <div className="text-lg font-bold text-[#1a2332] mb-4">מה כלול בחבילה?</div>
+                  <div className="text-lg font-bold text-[#1a2332] mb-4">
+                    {tier.featuresTitle || "מה כלול בחבילה?"}
+                  </div>
                   {tier.features.map((feature) => (
                     <div key={feature.name} className="flex gap-4">
                       <div

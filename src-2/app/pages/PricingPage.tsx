@@ -15,7 +15,7 @@ function normalizePlan(plan: string | null): string | null {
 
 const clinicFlowTiers = [
   {
-    name: "Clinic Flow Forever",
+    name: "רישיון לצמיתות",
     price: "₪1,299",
     description: "כל הכלים לניהול הקליניקה — בתשלום חד־פעמי",
     highlight: true,
@@ -48,6 +48,7 @@ const clinicFlowTiers = [
       </div>
     ),
     buttonText: "דברו איתנו",
+    featuresTitle: "אפשרויות להתאמה אישית",
     features: [
       { name: "כל מה שבחבילת הניהול המלאה +", description: "", included: true },
       { name: "פריסה והטמעה מותאמת לארגון", description: "", included: true },
