@@ -8,7 +8,7 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, captchaToken?: string) => Promise<any>;
   signIn: (email: string, password: string, captchaToken?: string) => Promise<any>;
-  signInWithGoogle: () => Promise<any>;
+  signInWithGoogle: (redirectUrl?: string) => Promise<any>;
   signOut: () => Promise<void>;
 }
 
@@ -75,13 +75,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return data;
   };
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (redirectUrl?: string) => {
     // Land on /complete-profile: it collects the phone Google can't give us,
     // then forwards to /dashboard (or straight to /dashboard if a phone already
     // exists). Supabase's onAuthStateChange (above) picks up the session.
+    
+    // Pass the target redirect to complete-profile so it can redirect there afterwards
+    const redirectTo = redirectUrl
+      ? `${window.location.origin}/complete-profile?redirect=${encodeURIComponent(redirectUrl)}`
+      : `${window.location.origin}/complete-profile`;
+      
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/complete-profile` },
+      options: { redirectTo },
     });
     if (error) throw error;
     return data;

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { serverRateLimit, checkRateLimit } from '@/lib/rate-limit';
@@ -26,11 +26,20 @@ export function SignupPage() {
   const [captchaToken, setCaptchaToken] = useState('');
   const captchaRef = useRef<CaptchaHandle>(null);
 
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get('redirect');
+  
+  const safeRedirect = (path: string | null) => {
+    if (!path || path.startsWith('http') || path.startsWith('//')) return '/dashboard';
+    return path;
+  };
+
   // Already signed in → skip signup, send them to their onboarding/dashboard.
   useEffect(() => {
     if (authLoading || !user) return;
-    navigate(user.user_metadata?.onboarded ? '/dashboard' : '/complete-profile', { replace: true });
-  }, [user, authLoading, navigate]);
+    const target = safeRedirect(redirect);
+    navigate(user.user_metadata?.onboarded ? target : `/complete-profile?redirect=${encodeURIComponent(target)}`, { replace: true });
+  }, [user, authLoading, navigate, redirect]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -92,7 +101,7 @@ export function SignupPage() {
       // the onboarding step. Otherwise show the "confirm your email" success
       // screen — onboarding then runs on first login (LoginPage guard).
       if (data.session) {
-        navigate('/complete-profile');
+        navigate(`/complete-profile?redirect=${encodeURIComponent(safeRedirect(redirect))}`);
         return;
       }
       setSuccess(true);
@@ -269,7 +278,7 @@ export function SignupPage() {
             </button>
           </form>
 
-          <GoogleSignInButton label="הרשמה עם Google" onError={setError} />
+          <GoogleSignInButton label="הרשמה עם Google" onError={setError} redirectUrl={target} />
 
           <div className="mt-6 text-center">
             <p className="text-[#6b7c93]">

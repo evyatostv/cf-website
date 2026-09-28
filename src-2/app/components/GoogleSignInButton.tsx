@@ -22,9 +22,11 @@ function GoogleIcon() {
 export function GoogleSignInButton({
   label = 'התחברות עם Google',
   onError,
+  redirectUrl,
 }: {
   label?: string;
   onError?: (message: string) => void;
+  redirectUrl?: string;
 }) {
   const { signInWithGoogle } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -32,7 +34,7 @@ export function GoogleSignInButton({
   const handleClick = async () => {
     setLoading(true);
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(redirectUrl);
       // Browser redirects to Google; nothing else runs on success.
     } catch (err: any) {
       onError?.(err?.message || 'שגיאה בהתחברות עם Google');

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { mapAuthError } from '@/lib/auth-errors';
@@ -73,7 +73,15 @@ function isDeadSessionError(err: any): boolean {
 
 export function CompleteProfilePage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, loading, signOut } = useAuth();
+  
+  const redirect = searchParams.get('redirect');
+  const safeRedirect = (path: string | null) => {
+    if (!path || path.startsWith('http') || path.startsWith('//')) return '/dashboard';
+    return path;
+  };
+  const target = safeRedirect(redirect);
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [needsName, setNeedsName] = useState(false);
@@ -104,7 +112,7 @@ export function CompleteProfilePage() {
     const meta = (user.user_metadata as Record<string, any>) || {};
     if (meta.onboarded) {
       // Already completed onboarding — nothing to do.
-      navigate('/dashboard');
+      navigate(target);
       return;
     }
     const name = meta.full_name || meta.name || '';
@@ -153,7 +161,7 @@ export function CompleteProfilePage() {
         clinic_size: clinicSize || null,
         heard_about: heardAbout || null,
       });
-      navigate('/dashboard');
+      navigate(target);
     } catch (err: any) {
       if (isDeadSessionError(err)) {
         // Session is dead — clear it and send the user to log in fresh, instead
@@ -183,7 +191,7 @@ export function CompleteProfilePage() {
     setSaving(true);
     try {
       await persist({ full_name: fullName, phone });
-      navigate('/dashboard');
+      navigate(target);
     } catch (err: any) {
       if (isDeadSessionError(err)) {
         // Session is dead — clear it and send the user to log in fresh, instead

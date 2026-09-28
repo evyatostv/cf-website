@@ -24,15 +24,16 @@ export function LoginPage() {
   // Where to send the user after login: honour a validated same-origin
   // ?redirect= (e.g. back to /payment?plan=...), else the normal flow.
   const redirect = searchParams.get('redirect');
+  const target = safeRedirect(redirect);
 
   // Already signed in → don't show the login form; send them onward (same
   // destination logic as a fresh login). replace:true so Back doesn't return here.
   useEffect(() => {
     if (authLoading || !user) return;
-    if (redirect) {
-      navigate(safeRedirect(redirect), { replace: true });
+    if (!user.user_metadata?.onboarded) {
+      navigate(`/complete-profile?redirect=${encodeURIComponent(target)}`, { replace: true });
     } else {
-      navigate(user.user_metadata?.onboarded ? '/dashboard' : '/complete-profile', { replace: true });
+      navigate(target, { replace: true });
     }
   }, [user, authLoading, redirect, navigate]);
 
@@ -61,12 +62,11 @@ export function LoginPage() {
 
     try {
       const data = await signIn(email, password, captchaToken);
-      // Users who haven't finished onboarding are sent to complete it first.
       const onboarded = data?.user?.user_metadata?.onboarded;
-      if (redirect) {
-        navigate(safeRedirect(redirect));
+      if (!onboarded) {
+        navigate(`/complete-profile?redirect=${encodeURIComponent(target)}`);
       } else {
-        navigate(onboarded ? '/dashboard' : '/complete-profile');
+        navigate(target);
       }
     } catch (err: any) {
       setError(mapAuthError(err));
@@ -154,7 +154,7 @@ export function LoginPage() {
             </button>
           </form>
 
-          <GoogleSignInButton label="התחברות עם Google" onError={setError} />
+          <GoogleSignInButton label="התחברות עם Google" onError={setError} redirectUrl={target} />
 
           <div className="mt-4 text-center">
             <Link to="/reset-password" className="text-sm font-medium text-[#0d47a1] hover:underline transition">
