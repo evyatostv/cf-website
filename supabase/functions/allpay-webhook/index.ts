@@ -280,7 +280,11 @@ async function grantAccess(
   // Record purchase — store full plan price for future upgrade credit
   const fullPlanAmount = PLAN_AMOUNTS[plan] || amount;
 
-  const { error: purchaseError } = await supabase.from('purchases').insert({
+  // SEC-005: idempotent on payment_id — a replayed webhook must NOT create a
+  // second purchase row. Requires the UNIQUE(payment_id) index from migration
+  // 20260725000000_purchases_payment_id_unique.sql; ignoreDuplicates makes the
+  // conflicting replay a no-op instead of an error.
+  const { error: purchaseError } = await supabase.from('purchases').upsert({
     user_id: userId || null,
     email,
     plan,
@@ -289,7 +293,7 @@ async function grantAccess(
     payment_id: paymentId,
     discount_eligible: false,
     purchased_at: now,
-  });
+  }, { onConflict: 'payment_id', ignoreDuplicates: true });
 
   if (purchaseError) {
     console.error('Failed to record purchase (non-fatal):', purchaseError);

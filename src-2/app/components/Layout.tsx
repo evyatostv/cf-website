@@ -16,7 +16,7 @@ export function Layout() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white" dir="rtl" style={{ fontFamily: "Heebo, sans-serif" }}>
+    <div className="min-h-screen bg-white" dir="rtl" style={{ fontFamily: "'Noto Sans Hebrew', sans-serif" }}>
       <Navigation />
       <AnimatePresence mode="wait" initial={false}>
         <motion.div

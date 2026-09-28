@@ -30,6 +30,8 @@ export function DashboardPreview() {
             <img
               src="/preview/app-home-v2.png"
               alt="לוח הבקרה של ClinicFlow"
+              width={1459}
+              height={988}
               className="w-full h-auto block"
               loading="lazy"
             />

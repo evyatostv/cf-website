@@ -5,7 +5,7 @@ import type { ContentPageData } from "@/app/content/types";
 
 const OG_IMAGE = `${SITE_ORIGIN}/og-image.png`;
 
-// Renders a ContentPageData 1:1 in the site design language (RTL, Heebo,
+// Renders a ContentPageData 1:1 in the site design language (RTL, Rubik,
 // #0d47a1 / #1a2332 / #f5f7f9, rounded cards). Auto-emits Seo tags, WebPage or
 // Article JSON-LD, FAQPage JSON-LD and a BreadcrumbList. Used by every route in
 // the content registry (src-2/app/content/registry.ts).
@@ -58,7 +58,7 @@ export function ContentPage({ data }: { data: ContentPageData }) {
   const jsonLd = [mainSchema, breadcrumb, ...(faqSchema ? [faqSchema] : [])];
 
   return (
-    <div className="min-h-screen bg-[#f5f7f9]" dir="rtl" style={{ fontFamily: "Heebo, sans-serif" }}>
+    <div className="min-h-screen bg-[#f5f7f9]" dir="rtl" style={{ fontFamily: "'Noto Sans Hebrew', sans-serif" }}>
       <Seo
         title={data.metaTitle}
         description={data.metaDescription}

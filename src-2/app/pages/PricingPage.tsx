@@ -16,50 +16,20 @@ function normalizePlan(plan: string | null): string | null {
 
 const regularPlans = [
   {
-    slug: "basic",
-    name: "חבילה בסיסית",
-    price: "₪899",
-    period: "לנצח",
-    description: "למטפלים יחידים שרוצים להתחיל",
-    newFeatures: [
-      "הפקת סיכומי ביקור מעוצבים",
-      "יצירת מסמכי PDF",
-      "ניהול יומן פגישות (לוח שנה יומי/שבועי/חודשי)",
-      "ניהול חולים ורקע רפואי",
-      "יצירת מסמכים מותאמים נוספים",
-    ],
-  },
-  {
-    slug: "professional",
-    name: "חבילה מקצועית",
-    price: "₪999",
-    period: "לנצח",
-    description: "לקליניקות קטנות עם ארגון מתקדם",
-    popular: true,
-    newFeatures: [
-      "כל מה שבחבילה הבסיסית +",
-      "דוח מעקב סטטיסטי (פגישות, מסמכים, שעות עבודה)",
-      "גרפים וניתוח נתונים (ביקורים בשבוע, מסמכים בשבוע)",
-      "יומן אישי ותיוג רשומות",
-      "הערות דביקות ב-Dashboard",
-      "חיפוש וסינון מתקדם",
-    ],
-  },
-  {
     slug: "full",
-    name: "חבילת ניהול מלאה",
+    name: "רישיון לניהול קליניקה",
     price: "₪1,299",
     period: "לנצח",
-    description: "לקליניקות בינוניות עם ניהול כספי",
+    description: "כל הכלים לניהול הקליניקה — בתשלום חד־פעמי",
+    popular: true,
     newFeatures: [
-      "כל מה שבחבילת ניהול היומן +",
-      "דוח הכנסות ודוחות פיננסיים",
-      "הנפקת קבלות תשלום",
-      "הנפקת חשבוניות",
-      "קבלה וחשבונית משולבת",
-      "עקבוי שיטות תשלום וסוגי שירותים",
+      "ניהול יומן פגישות (לוח שנה יומי/שבועי/חודשי)",
+      "ניהול תיק מטופל ורקע רפואי מלא",
+      "הפקת סיכומי ביקור מעוצבים ויצירת מסמכי PDF",
+      "הנפקת חשבוניות, קבלות, וקבלות-חשבונית",
+      "דוחות מעקב, סטטיסטיקות פיננסיות ופעילות",
       "חוות דעת מקצועיות (Medical Opinions) עם חתימה",
-      "יצירת מסמכים מותאמים נוספים",
+      "הערות דביקות, יומן אישי, תיוגים וחיפוש מתקדם",
     ],
   },
 ];
@@ -91,10 +61,6 @@ const enterpriseAddOns = [
 
 const pricingFaq = [
   {
-    q: "מה קורה אם אקנה חבילה בסיסית וארצה לשדרג?",
-    a: "אפשר לשדרג בכל עת. הסכום ששילמתם נזקף לטובתכם — תשלמו רק את ההפרש בין החבילות."
-  },
-  {
     q: "האם הנתונים שלי בטוחים אם המחשב מתקלקל?",
     a: "כן. ClinicFlow כולל גיבוי מוצפן עם סיסמה. שמרו גיבוי על דיסק חיצוני או USB — ותוך דקות תחזרו לעבוד על כל מחשב חדש."
   },
@@ -120,23 +86,7 @@ const softwareAppJsonLd = {
   offers: [
     {
       "@type": "Offer",
-      name: "חבילה בסיסית",
-      price: "899",
-      priceCurrency: "ILS",
-      url: `${SITE_ORIGIN}/pricing`,
-      availability: "https://schema.org/InStock",
-    },
-    {
-      "@type": "Offer",
-      name: "חבילה מקצועית",
-      price: "999",
-      priceCurrency: "ILS",
-      url: `${SITE_ORIGIN}/pricing`,
-      availability: "https://schema.org/InStock",
-    },
-    {
-      "@type": "Offer",
-      name: "חבילת ניהול מלאה",
+      name: "רישיון לניהול קליניקה",
       price: "1299",
       priceCurrency: "ILS",
       url: `${SITE_ORIGIN}/pricing`,
@@ -227,8 +177,8 @@ export function PricingPage() {
           </div>
         </motion.div>
 
-        {/* Regular 3 Plans */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-6xl mx-auto mb-12">
+        {/* Regular Plan */}
+        <div className="max-w-md mx-auto mb-12">
           {regularPlans.map((plan, index) => (
             <motion.div
               key={index}
@@ -351,18 +301,6 @@ export function PricingPage() {
           </div>
         </motion.div>
 
-        {/* Upgrade credit policy */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="max-w-3xl mx-auto mt-12 text-center bg-[#f8fafb] rounded-2xl p-6 border border-[#e1e6ec]"
-        >
-          <p className="text-[#1a2332] font-medium text-lg mb-2">שדרוג חבילה?</p>
-          <p className="text-[#6b7c93]">
-            קניתם חבילה בסיסית ורוצים לשדרג? תשלמו רק את ההפרש. הסכום ששילמתם נזקף לטובתכם.
-          </p>
-        </motion.div>
 
         {/* FAQ Section */}
         <motion.div

@@ -8,9 +8,9 @@ export function Footer() {
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
       <div className="container mx-auto px-6 max-w-7xl relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 sm:gap-16 mb-8 sm:mb-16">
+        <div className="mb-8 sm:mb-16">
           {/* Brand */}
-          <div className="md:col-span-2">
+          <div className="mb-10 sm:mb-14 max-w-md">
             <div className="flex items-center gap-3 mb-4">
               <svg viewBox="0 0 24 24" className="w-10 h-10 rounded-xl" role="img" aria-label="ClinicFlow">
                 <rect width="24" height="24" rx="5.4" fill="#2756A6" />
@@ -33,6 +33,8 @@ export function Footer() {
             </p>
           </div>
 
+          {/* Link columns — 5 lists in their own responsive grid so they never wrap into empty cells */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8 sm:gap-12">
           {/* Links */}
           <div>
             <h4 className="text-xl font-semibold mb-6">קישורים</h4>
@@ -209,6 +211,7 @@ export function Footer() {
                 תל אביב, ישראל
               </li>
             </ul>
+          </div>
           </div>
         </div>
 
