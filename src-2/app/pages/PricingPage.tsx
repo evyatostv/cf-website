@@ -178,60 +178,74 @@ export function PricingPage() {
         </motion.div>
 
         {/* Regular Plan */}
-        <div className="max-w-md mx-auto mb-12">
+        <div className="max-w-4xl mx-auto mb-16">
           {regularPlans.map((plan, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className={`relative bg-white rounded-3xl p-5 sm:p-8 border-2 flex flex-col ${
-                plan.popular ? "border-[#0d47a1] shadow-xl shadow-[#0d47a1]/10" : "border-[#e1e6ec]"
+              className={`relative bg-white rounded-3xl p-6 sm:p-10 border-2 flex flex-col md:flex-row gap-8 md:gap-12 ${
+                plan.popular ? "border-[#0d47a1] shadow-2xl shadow-[#0d47a1]/15" : "border-[#e1e6ec]"
               }`}
             >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                   <span className="bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white px-6 py-2 rounded-full text-sm font-medium">
-                    הכי פופולרי
+                    החבילה המלאה
                   </span>
                 </div>
               )}
 
-              <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-[#1a2332] mb-2">{plan.name}</h3>
-                <p className="text-[#6b7c93] mb-6">{plan.description}</p>
-                <div className="flex items-baseline justify-center gap-2">
-                  <span className="text-5xl font-bold text-[#1a2332]">{plan.price}</span>
-                  <span className="text-[#6b7c93]">/ {plan.period}</span>
+              {/* Right Side (Pricing & CTA) */}
+              <div className="w-full md:w-1/2 text-center md:text-right flex flex-col h-full justify-between">
+                <div>
+                  <h3 className="text-3xl font-bold text-[#1a2332] mb-3">{plan.name}</h3>
+                  <p className="text-lg text-[#6b7c93] mb-8">{plan.description}</p>
+                  <div className="flex items-baseline justify-center md:justify-start gap-2 mb-8">
+                    <span className="text-6xl font-bold text-[#1a2332]">{plan.price}</span>
+                    <span className="text-[#6b7c93] text-xl">/ {plan.period}</span>
+                  </div>
+                </div>
+                
+                <div className="mt-4 w-full">
+                  {(() => {
+                    const btn = getPlanButton(plan.slug, !!plan.popular);
+                    return btn.disabled ? (
+                      <div className={`block w-full py-4 rounded-xl text-center font-medium ${btn.style}`}>
+                        {btn.label}
+                      </div>
+                    ) : (
+                      <Link
+                        to={`/payment?plan=${plan.slug}${btn.isUpgrade ? '&upgrade=true' : ''}`}
+                        className={`block w-full py-4 rounded-xl text-center text-lg font-semibold cursor-pointer transition-all duration-200 active:scale-95 active:translate-y-0 ${btn.style}`}
+                      >
+                        {btn.label}
+                      </Link>
+                    );
+                  })()}
                 </div>
               </div>
 
-              <div className="flex-grow">
-                <ul className="space-y-4 mb-6">
+              {/* Divider for mobile */}
+              <div className="w-full h-px bg-[#e1e6ec] md:hidden"></div>
+              
+              {/* Divider for desktop */}
+              <div className="hidden md:block w-px self-stretch bg-[#e1e6ec]"></div>
+
+              {/* Left Side (Features) */}
+              <div className="w-full md:w-1/2">
+                <h4 className="text-xl font-bold text-[#1a2332] mb-6">מה כלול בחבילה?</h4>
+                <ul className="space-y-4">
                   {plan.newFeatures.map((feature, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-[#00838f] flex-shrink-0 mt-0.5" />
-                    <span className="text-[#1a2332]">{feature}</span>
+                    <Check className="w-6 h-6 text-[#00838f] flex-shrink-0 mt-0.5 bg-[#00838f]/10 p-1 rounded-full" />
+                    <span className="text-[#1a2332] font-medium leading-relaxed">{feature}</span>
                   </li>
                 ))}
                 </ul>
               </div>
 
-              {(() => {
-                const btn = getPlanButton(plan.slug, !!plan.popular);
-                return btn.disabled ? (
-                  <div className={`block w-full py-4 rounded-xl text-center font-medium ${btn.style}`}>
-                    {btn.label}
-                  </div>
-                ) : (
-                  <Link
-                    to={`/payment?plan=${plan.slug}${btn.isUpgrade ? '&upgrade=true' : ''}`}
-                    className={`block w-full py-4 rounded-xl text-center font-semibold cursor-pointer transition-all duration-200 active:scale-95 active:translate-y-0 ${btn.style}`}
-                  >
-                    {btn.label}
-                  </Link>
-                );
-              })()}
             </motion.div>
           ))}
         </div>
