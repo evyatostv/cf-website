@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "postinstall": "node scripts/patch-react-router-dom.mjs",
-    "dev": "vite-react-ssg dev",
+    "dev": "vite dev",
     "build": "vite-react-ssg build && node scripts/postbuild-seo.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
