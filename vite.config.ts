@@ -29,6 +29,7 @@ export default defineConfig({
     alias: {
       // Alias @ to the src directory
       "@": path.resolve(__dirname, "./src-2"),
+      "react-router-dom": "react-router",
     },
   },
   // vite-react-ssg static-site-generation options. `vite-react-ssg build`

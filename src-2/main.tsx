@@ -1,7 +1,7 @@
 import "@/instrument";
 
 import { ViteReactSSG } from "vite-react-ssg";
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter } from "react-router";
 import { routes } from "@/app/routes";
 import "@/styles/index.css";
 
