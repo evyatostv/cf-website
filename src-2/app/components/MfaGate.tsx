@@ -27,8 +27,20 @@ export function MfaGate({ children }: { children: React.ReactNode }) {
         const { data: f, error: factorsError } = await supabase.auth.mfa.listFactors();
         // Fail CLOSED: if we can't read the factor list while 2FA is pending, block.
         if (factorsError) { setState('error'); return; }
-        const totp = (f?.totp || []).find((x: any) => x.status === 'verified');
-        if (totp) { setFactorId(totp.id); setState('need'); return; }
+        
+        // Search in both totp and all just in case
+        const totp = (f?.totp || []).find((x: any) => x.status === 'verified') 
+                  || (f?.all || []).find((x: any) => x.status === 'verified' && x.factor_type === 'totp');
+                  
+        if (totp) { 
+          setFactorId(totp.id); 
+          setState('need'); 
+          return; 
+        } else {
+          // Fail CLOSED: if nextLevel is aal2 but no factor is found, something is wrong.
+          setState('error');
+          return;
+        }
       }
       setState('ok');
     } catch {
