@@ -34,10 +34,11 @@ export function SignupPage() {
     return path;
   };
 
+  const target = safeRedirect(redirect);
+
   // Already signed in → skip signup, send them to their onboarding/dashboard.
   useEffect(() => {
     if (authLoading || !user) return;
-    const target = safeRedirect(redirect);
     navigate(user.user_metadata?.onboarded ? target : `/complete-profile?redirect=${encodeURIComponent(target)}`, { replace: true });
   }, [user, authLoading, navigate, redirect]);
 
