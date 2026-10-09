@@ -54,23 +54,27 @@ export function DashboardPage() {
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
-  const handleDownload = async () => {
-    setDownloadError(null);
-    setDownloading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('download-installer', {
-        body: { os: detectOs() },
-      });
-      if (error) throw error;
-      if (!data?.downloadUrl) throw new Error('לא התקבל קישור להורדה');
-      window.location.href = data.downloadUrl;
-    } catch (err: any) {
-      console.error('download failed:', err);
-      setDownloadError(err?.message || 'ההורדה נכשלה. נסה/י שוב.');
-    } finally {
-      setDownloading(false);
+  
+  const MAC_LINK = 'https://api.keygen.sh/v1/accounts/57b5f2b8-4504-45d7-a0d9-384a726b65fb/artifacts/latest?product=baa66a06-ff90-47c3-a1d3-97f5aa8b1575&platform=mac';
+  const WIN_LINK = 'https://api.keygen.sh/v1/accounts/57b5f2b8-4504-45d7-a0d9-384a726b65fb/artifacts/latest?product=baa66a06-ff90-47c3-a1d3-97f5aa8b1575&platform=win';
+
+  const [osType, setOsType] = useState<'mac' | 'win' | 'unknown'>('unknown');
+
+  useEffect(() => {
+    const userAgent = window.navigator.userAgent || '';
+    if (userAgent.indexOf('Mac') !== -1) setOsType('mac');
+    else if (userAgent.indexOf('Win') !== -1) setOsType('win');
+  }, []);
+
+  const handleDownload = async (targetOs?: 'mac' | 'win') => {
+    const finalOs = targetOs || osType;
+    if (finalOs === 'mac') {
+      window.location.href = MAC_LINK;
+    } else if (finalOs === 'win') {
+      window.location.href = WIN_LINK;
     }
   };
+
 
   useEffect(() => {
     if (!loading && !user) { navigate('/login'); return; }
@@ -203,17 +207,44 @@ export function DashboardPage() {
                         </div>
                       </div>
 
-                      <button
-                        onClick={handleDownload}
-                        disabled={downloading}
-                        className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white px-6 py-3.5 rounded-xl hover:shadow-lg transition w-full font-medium disabled:opacity-60 disabled:cursor-not-allowed"
-                      >
-                        <Download className="w-5 h-5" />
-                        {downloading ? 'מכין/ה הורדה...' : 'הורד/י את האפליקציה (Windows / macOS)'}
-                      </button>
-                      {downloadError && (
-                        <p className="mt-2 text-xs text-red-600 text-center">{downloadError}</p>
+                      
+                      {osType === 'unknown' ? (
+                        <div className="flex flex-col gap-3">
+                          <button
+                            onClick={() => handleDownload('mac')}
+                            className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white px-6 py-3.5 rounded-xl hover:shadow-lg transition w-full font-medium"
+                          >
+                            <Download className="w-5 h-5" />
+                            הורדה ל-Mac (Apple Silicon)
+                          </button>
+                          <button
+                            onClick={() => handleDownload('win')}
+                            className="flex items-center justify-center gap-2 bg-[#f5f7f9] text-[#1a2332] px-6 py-3.5 rounded-xl hover:shadow-lg transition w-full font-medium border border-[#e1e6ec]"
+                          >
+                            <Download className="w-5 h-5" />
+                            הורדה ל-Windows
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-2">
+                          <button
+                            onClick={() => handleDownload()}
+                            className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white px-6 py-3.5 rounded-xl hover:shadow-lg transition w-full font-medium"
+                          >
+                            <Download className="w-5 h-5" />
+                            {osType === 'mac' ? 'הורדה ל-Mac' : 'הורדה ל-Windows'}
+                          </button>
+                          {osType === 'mac' && <p className="text-xs text-center text-gray-500">גרסת Mac נתמכת למעבדי Apple Silicon בלבד.</p>}
+                          
+                          <button
+                            onClick={() => setOsType('unknown')}
+                            className="text-sm text-[#0d47a1] hover:underline mt-1 self-center"
+                          >
+                            הורדה למערכת הפעלה אחרת
+                          </button>
+                        </div>
                       )}
+
 
                     </div>
                   )}
