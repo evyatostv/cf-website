@@ -69,7 +69,7 @@ export function DashboardPage() {
   const handleDownload = async (targetOs?: 'mac' | 'win') => {
     const finalOs = targetOs || osType;
     setDownloadError(null);
-    setIsDownloading(true);
+    setDownloading(true);
 
     try {
       const ACCOUNT_ID = '57b5f2b8-4504-45d7-a0d9-384a726b65fb';
@@ -96,7 +96,7 @@ export function DashboardPage() {
       console.error('Download error:', err);
       setDownloadError('ההורדה נכשלה. אנא נסה שוב או פנה לתמיכה.');
     } finally {
-      setIsDownloading(false);
+      setDownloading(false);
     }
   };
 
