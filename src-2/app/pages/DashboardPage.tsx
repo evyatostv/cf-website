@@ -55,8 +55,8 @@ export function DashboardPage() {
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
   
-  const MAC_LINK = 'https://api.keygen.sh/v1/accounts/57b5f2b8-4504-45d7-a0d9-384a726b65fb/artifacts/latest?product=baa66a06-ff90-47c3-a1d3-97f5aa8b1575&platform=mac';
-  const WIN_LINK = 'https://api.keygen.sh/v1/accounts/57b5f2b8-4504-45d7-a0d9-384a726b65fb/artifacts/latest?product=baa66a06-ff90-47c3-a1d3-97f5aa8b1575&platform=win';
+  const MAC_LINK = 'https://api.keygen.sh/v1/accounts/57b5f2b8-4504-45d7-a0d9-384a726b65fb/artifacts/latest?product=baa66a06-ff90-47c3-a1d3-97f5aa8b1575&platform=mac&channel=beta';
+  const WIN_LINK = 'https://api.keygen.sh/v1/accounts/57b5f2b8-4504-45d7-a0d9-384a726b65fb/artifacts/latest?product=baa66a06-ff90-47c3-a1d3-97f5aa8b1575&platform=win&channel=beta';
 
   const [osType, setOsType] = useState<'mac' | 'win' | 'unknown'>('unknown');
 
@@ -68,10 +68,35 @@ export function DashboardPage() {
 
   const handleDownload = async (targetOs?: 'mac' | 'win') => {
     const finalOs = targetOs || osType;
-    if (finalOs === 'mac') {
-      window.location.href = MAC_LINK;
-    } else if (finalOs === 'win') {
-      window.location.href = WIN_LINK;
+    setDownloadError(null);
+    setIsDownloading(true);
+
+    try {
+      const ACCOUNT_ID = '57b5f2b8-4504-45d7-a0d9-384a726b65fb';
+      const PRODUCT_ID = 'baa66a06-ff90-47c3-a1d3-97f5aa8b1575';
+      const ymlFile = finalOs === 'mac' ? 'latest-mac.yml' : 'latest.yml';
+      
+      const ymlResponse = await fetch(`https://api.keygen.sh/v1/accounts/${ACCOUNT_ID}/artifacts/${ymlFile}?product=${PRODUCT_ID}`);
+      if (!ymlResponse.ok) throw new Error('Failed to fetch release metadata');
+      
+      const ymlText = await ymlResponse.text();
+      
+      const pathMatch = ymlText.match(/path:\s*(.+)/);
+      if (!pathMatch || !pathMatch[1]) throw new Error('Could not parse installer filename');
+      
+      let filename = pathMatch[1].trim();
+      
+      if (finalOs === 'mac') {
+        const dmgMatch = ymlText.match(/url:\s*(.+\.dmg)/);
+        if (dmgMatch && dmgMatch[1]) filename = dmgMatch[1].trim();
+      }
+
+      window.location.href = `https://api.keygen.sh/v1/accounts/${ACCOUNT_ID}/artifacts/${encodeURIComponent(filename)}?product=${PRODUCT_ID}`;
+    } catch (err: any) {
+      console.error('Download error:', err);
+      setDownloadError('ההורדה נכשלה. אנא נסה שוב או פנה לתמיכה.');
+    } finally {
+      setIsDownloading(false);
     }
   };
 
