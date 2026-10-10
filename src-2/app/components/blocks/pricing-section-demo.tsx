@@ -11,6 +11,7 @@ const defaultTiers = [
       yearly: 144,
     },
     description: "Perfect for individuals and small projects",
+    buttonText: "בחר תוכנית",
     icon: (
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-r from-gray-500/30 to-gray-500/30 blur-2xl rounded-full" />
@@ -47,6 +48,7 @@ const defaultTiers = [
       yearly: 470,
     },
     description: "Ideal for growing teams and businesses",
+    buttonText: "בחר תוכנית",
     highlight: true,
     badge: "Most Popular",
     icon: (
@@ -80,7 +82,7 @@ const defaultTiers = [
 ]
 
 function PricingSectionDemo() {
-  return <PricingSection tiers={defaultTiers} />
+  return <PricingSection tiers={defaultTiers as any} />
 }
 
 export { PricingSectionDemo }

@@ -15,11 +15,12 @@ function detectOs(): DownloadOs {
   if (/Linux/i.test(ua)) return 'linux';
   return 'win';
 }
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Download, LogOut, Clock, CheckCircle2, XCircle, AlertCircle,
   BookOpen, MessageCircle, Monitor, HardDrive, Cpu, RefreshCw,
-  Star, ArrowLeft, Shield, Zap, ChevronDown, ChevronUp, ArrowUpCircle
+  Star, ArrowLeft, Shield, Zap, ChevronDown, ChevronUp, ArrowUpCircle,
+  X, Check
 } from 'lucide-react';
 
 const QUICK_ACTIONS = [
@@ -59,6 +60,7 @@ export function DashboardPage() {
   const WIN_LINK = 'https://api.keygen.sh/v1/accounts/57b5f2b8-4504-45d7-a0d9-384a726b65fb/artifacts/latest?product=baa66a06-ff90-47c3-a1d3-97f5aa8b1575&platform=win&channel=beta';
 
   const [osType, setOsType] = useState<'mac' | 'win' | 'unknown'>('unknown');
+  const [showWindowsGuideModal, setShowWindowsGuideModal] = useState(false);
 
   useEffect(() => {
     const userAgent = window.navigator.userAgent || '';
@@ -92,6 +94,12 @@ export function DashboardPage() {
       }
 
       window.location.href = `https://api.keygen.sh/v1/accounts/${ACCOUNT_ID}/artifacts/${encodeURIComponent(filename)}?product=${PRODUCT_ID}`;
+      
+      // Show SmartScreen guide modal only after downloading an .exe installer
+      const isExeDownload = finalOs === 'win' || (!finalOs && filename.toLowerCase().endsWith('.exe')) || filename.toLowerCase().endsWith('.exe');
+      if (isExeDownload) {
+        setShowWindowsGuideModal(true);
+      }
     } catch (err: any) {
       console.error('Download error:', err);
       setDownloadError('ההורדה נכשלה. אנא נסה שוב או פנה לתמיכה.');
@@ -105,7 +113,7 @@ export function DashboardPage() {
     if (!loading && !user) { navigate('/login'); return; }
     if (user) {
       getUserAccess(user.id).then((acc) => {
-        if (acc && acc.plan === 'none') {
+        if (acc && (acc.plan as string) === 'none') {
           navigate('/payment?plan=full', { replace: true });
         } else {
           setAccess(acc);
@@ -249,6 +257,13 @@ export function DashboardPage() {
                             <Download className="w-5 h-5" />
                             הורדה ל-Windows
                           </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowWindowsGuideModal(true)}
+                            className="text-xs text-[#0284c7] hover:underline self-center"
+                          >
+                            מדריך וידאו: התקנה ב-Windows והפעלת SmartScreen
+                          </button>
                         </div>
                       ) : (
                         <div className="flex flex-col gap-2">
@@ -260,6 +275,15 @@ export function DashboardPage() {
                             {osType === 'mac' ? 'הורדה ל-Mac' : 'הורדה ל-Windows'}
                           </button>
                           {osType === 'mac' && <p className="text-xs text-center text-gray-500">גרסת Mac נתמכת למעבדי Apple Silicon בלבד.</p>}
+                          {osType === 'win' && (
+                            <button
+                              type="button"
+                              onClick={() => setShowWindowsGuideModal(true)}
+                              className="text-xs text-[#0284c7] hover:underline self-center mt-0.5"
+                            >
+                              מדריך וידאו: התקנה ב-Windows והפעלת SmartScreen
+                            </button>
+                          )}
                           
                           <button
                             onClick={() => setOsType('unknown')}
@@ -426,6 +450,110 @@ export function DashboardPage() {
           </div>
         </motion.div>
       </div>
+
+      {/* Windows Defender SmartScreen Guide Popup Modal */}
+      <AnimatePresence>
+        {showWindowsGuideModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowWindowsGuideModal(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+
+            {/* Modal Dialog */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94, y: 20 }}
+              transition={{ type: 'spring', duration: 0.35, bounce: 0.15 }}
+              className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-[#e1e6ec] overflow-hidden z-10 text-right my-8"
+              dir="rtl"
+            >
+              {/* Header with Title and Close 'X' Button */}
+              <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-[#f0f4f8]">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#e0f2fe] text-[#0284c7] flex items-center justify-center font-bold shadow-sm">
+                    <Shield className="w-5 h-5 text-[#0284c7]" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-[#1a2332] leading-tight">
+                      התקנה ב-Windows • מדריך קצר
+                    </h3>
+                    <p className="text-xs text-[#6b7c93] mt-0.5">
+                      Windows Defender מציג התראה? כך מפעילים ב-2 קליקים פשוטים
+                    </p>
+                  </div>
+                </div>
+
+                {/* Small 'X' to close the popup */}
+                <button
+                  type="button"
+                  onClick={() => setShowWindowsGuideModal(false)}
+                  className="p-2 text-[#94a3b8] hover:text-[#1a2332] hover:bg-[#f1f5f9] rounded-full transition"
+                  aria-label="סגור חלון"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Video Player Container */}
+              <div className="p-6 pb-4">
+                <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 shadow-md border border-[#e1e6ec]">
+                  <video
+                    src="/windows-install-guide.mp4"
+                    controls
+                    autoPlay
+                    playsInline
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+
+                {/* 2 Step Checklist */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                  <div className="flex items-center gap-3 bg-[#f0f9ff] border border-[#bae6fd] p-3.5 rounded-xl">
+                    <div className="w-7 h-7 rounded-lg bg-[#0284c7] text-white flex items-center justify-center font-extrabold text-sm flex-shrink-0">
+                      1
+                    </div>
+                    <div className="text-xs">
+                      <span className="font-bold text-[#0f172a] block">לחצו על ״מידע נוסף״</span>
+                      <span className="text-[#64748b]">(More info במסך הכחול)</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 bg-[#f0fdf4] border border-[#bbf7d0] p-3.5 rounded-xl">
+                    <div className="w-7 h-7 rounded-lg bg-[#10b981] text-white flex items-center justify-center font-extrabold text-sm flex-shrink-0">
+                      2
+                    </div>
+                    <div className="text-xs">
+                      <span className="font-bold text-[#0f172a] block">לחצו על ״הפעל בכל מקרה״</span>
+                      <span className="text-[#64748b]">(Run anyway להפעלת התוכנה)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-6 py-4 bg-[#f8fafc] border-t border-[#f0f4f8] flex items-center justify-between">
+                <p className="text-xs text-[#64748b] flex items-center gap-1.5">
+                  <Check className="w-4 h-4 text-[#10b981]" />
+                  <span>קליניק פלואו מאובטחת ועובדת 100% אופליין במחשב שלכם</span>
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowWindowsGuideModal(false)}
+                  className="bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white px-5 py-2 rounded-xl text-sm font-semibold hover:shadow-md transition"
+                >
+                  הבנתי, תודה!
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
