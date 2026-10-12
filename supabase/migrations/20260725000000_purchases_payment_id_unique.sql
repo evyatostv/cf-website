@@ -10,6 +10,10 @@
 -- payment_id so a replay becomes a no-op. Legacy/manual rows may carry a null
 -- payment_id, so the index is partial.
 
+-- 0. Ensure payment_id and amount columns exist
+ALTER TABLE public.purchases ADD COLUMN IF NOT EXISTS payment_id text;
+ALTER TABLE public.purchases ADD COLUMN IF NOT EXISTS amount integer;
+
 -- 1. Collapse existing duplicates, keeping the earliest row per payment_id.
 DELETE FROM public.purchases a
 USING public.purchases b

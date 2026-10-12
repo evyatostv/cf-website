@@ -123,6 +123,10 @@ export const routes: RouteRecord[] = [
         lazy: () => import("@/app/pages/SignupPage").then((m) => ({ Component: m.SignupPage })),
       },
       {
+        path: "beta",
+        lazy: () => import("@/app/pages/BetaPage").then((m) => ({ Component: m.BetaPage })),
+      },
+      {
         path: "dashboard",
         element: (
           <RequireAuth requireOnboarded requireMfa>
