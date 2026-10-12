@@ -19,7 +19,7 @@ export function BetaPage() {
   const [mode, setMode] = useState<'register' | 'login'>('register');
 
   // Form fields
-  const [passcode, setPasscode] = useState(() => searchParams.get('code') || searchParams.get('passcode') || 'CLINIC-BETA-2026');
+  const [passcode, setPasscode] = useState(() => searchParams.get('code') || searchParams.get('passcode') || '');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -37,7 +37,10 @@ export function BetaPage() {
   const [existingUserClaiming, setExistingUserClaiming] = useState(false);
 
   const cleanPasscode = passcode.trim().toUpperCase();
-  const isPasscodeFormatValid = ['CLINIC-BETA-2026', 'CLINIC-BETA', 'CF-BETA'].includes(cleanPasscode);
+  const isPasscodeFormatValid = Boolean(
+    cleanPasscode &&
+    ['CLINICFLOWBETA', 'CLINIC-FLOW-BETA', 'CLINICFLOW-BETA', 'CLINIC-BETA-2026', 'CLINIC-BETA', 'CF-BETA'].includes(cleanPasscode)
+  );
 
   // Auto-claim if returning from email confirmation
   useEffect(() => {
@@ -394,7 +397,7 @@ export function BetaPage() {
                           type="text"
                           value={passcode}
                           onChange={(e) => setPasscode(e.target.value)}
-                          placeholder="למשל: CLINIC-BETA-2026"
+                          placeholder="הזן קוד בטא (למשל: clinicflowbeta)"
                           required
                           dir="ltr"
                           className="w-full px-4 py-3 bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-center font-mono font-bold tracking-wider text-lg text-[#0f172a] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition"
@@ -402,7 +405,7 @@ export function BetaPage() {
                         <KeyRound className="w-5 h-5 text-gray-400 absolute left-4 top-3.5" />
                       </div>
                       {isPasscodeFormatValid && (
-                        <p className="text-xs text-green-600 mt-1.5 flex items-center gap-1">
+                        <p className="text-xs text-green-600 mt-1.5 flex items-center justify-center gap-1">
                           <Check className="w-3.5 h-3.5" /> קוד בטא תקין ומאושר
                         </p>
                       )}
@@ -480,7 +483,7 @@ export function BetaPage() {
                             type="text"
                             value={passcode}
                             onChange={(e) => setPasscode(e.target.value)}
-                            placeholder="CLINIC-BETA-2026"
+                            placeholder="למשל: clinicflowbeta"
                             required
                             dir="ltr"
                             className="w-full px-4 py-2.5 bg-[#f8fafc] border border-[#cbd5e1] rounded-xl font-mono font-bold tracking-wider text-base text-[#0f172a] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition"
@@ -600,7 +603,7 @@ export function BetaPage() {
                             type="text"
                             value={passcode}
                             onChange={(e) => setPasscode(e.target.value)}
-                            placeholder="CLINIC-BETA-2026"
+                            placeholder="למשל: clinicflowbeta"
                             required
                             dir="ltr"
                             className="w-full px-4 py-2.5 bg-[#f8fafc] border border-[#cbd5e1] rounded-xl font-mono font-bold tracking-wider text-base text-[#0f172a] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition"

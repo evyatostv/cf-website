@@ -21,7 +21,7 @@ begin
 
   -- 2. Verify beta passcode
   v_clean_code := upper(trim(coalesce(passcode, '')));
-  if v_clean_code not in ('CLINIC-BETA-2026', 'CLINIC-BETA', 'CF-BETA') then
+  if v_clean_code not in ('CLINICFLOWBETA', 'CLINIC-FLOW-BETA', 'CLINICFLOW-BETA', 'CLINIC-BETA-2026', 'CLINIC-BETA', 'CF-BETA') then
     return jsonb_build_object('ok', false, 'error', 'קוד גישה שגוי. אנא ודא/י את הקוד ונסה/י שוב.');
   end if;
 
