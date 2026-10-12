@@ -157,6 +157,51 @@ export function BetaPage() {
       });
 
       if (signUpError) {
+        const errMsg = (signUpError.message || '').toLowerCase();
+        const errCode = (signUpError as any).code || '';
+        const isUserExists =
+          errMsg.includes('already registered') ||
+          errMsg.includes('already exists') ||
+          errCode === 'user_already_exists' ||
+          (signUpError as any).status === 422;
+
+        if (isUserExists) {
+          // Attempt automatic sign-in with the provided password
+          const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+            email: email.trim(),
+            password,
+          });
+
+          if (!signInErr && signInData?.session) {
+            // User signed in successfully! Now claim beta access
+            const { data: claimData, error: claimError } = await supabase.rpc('claim_beta_access', {
+              passcode: cleanPasscode,
+            });
+
+            if (claimError || !claimData?.ok) {
+              setError(claimData?.error || claimError?.message || 'קוד גישה שגוי.');
+              setLoading(false);
+              return;
+            }
+
+            await supabase.auth.updateUser({
+              data: { onboarded: true },
+            });
+
+            setSuccess(true);
+            setTimeout(() => {
+              navigate('/dashboard', { replace: true });
+            }, 1000);
+            return;
+          } else {
+            // Password didn't match: switch cleanly to login tab with helpful message
+            setMode('login');
+            setError('כתובת האימייל הזו כבר רשומה במערכת. יש להזין את הסיסמה של החשבון הקיים שלך כדי להתחבר ולהפעיל את רישיון הבטא.');
+            setLoading(false);
+            return;
+          }
+        }
+
         setError(mapAuthError(signUpError));
         setLoading(false);
         return;
@@ -397,7 +442,7 @@ export function BetaPage() {
                           type="text"
                           value={passcode}
                           onChange={(e) => setPasscode(e.target.value)}
-                          placeholder="הזן קוד בטא (למשל: clinicflowbeta)"
+                          placeholder="הזן קוד גישה סודי"
                           required
                           dir="ltr"
                           className="w-full px-4 py-3 bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-center font-mono font-bold tracking-wider text-lg text-[#0f172a] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition"
@@ -483,7 +528,7 @@ export function BetaPage() {
                             type="text"
                             value={passcode}
                             onChange={(e) => setPasscode(e.target.value)}
-                            placeholder="למשל: clinicflowbeta"
+                            placeholder="הזן קוד גישה סודי"
                             required
                             dir="ltr"
                             className="w-full px-4 py-2.5 bg-[#f8fafc] border border-[#cbd5e1] rounded-xl font-mono font-bold tracking-wider text-base text-[#0f172a] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition"
@@ -603,7 +648,7 @@ export function BetaPage() {
                             type="text"
                             value={passcode}
                             onChange={(e) => setPasscode(e.target.value)}
-                            placeholder="למשל: clinicflowbeta"
+                            placeholder="הזן קוד גישה סודי"
                             required
                             dir="ltr"
                             className="w-full px-4 py-2.5 bg-[#f8fafc] border border-[#cbd5e1] rounded-xl font-mono font-bold tracking-wider text-base text-[#0f172a] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition"
@@ -638,6 +683,11 @@ export function BetaPage() {
                           required
                           className="w-full px-3.5 py-2.5 bg-[#f8fafc] border border-[#cbd5e1] rounded-xl text-sm text-[#0f172a] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition"
                         />
+                        <div className="flex justify-end mt-1">
+                          <Link to="/reset-password" className="text-xs text-[#0d47a1] hover:underline">
+                            שכחת סיסמה?
+                          </Link>
+                        </div>
                       </div>
 
                       {error && (
