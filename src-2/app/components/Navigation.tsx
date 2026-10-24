@@ -115,7 +115,7 @@ export function Navigation() {
                   </Link>
                   <Link
                     to="/signup"
-                    className="px-6 py-2.5 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-xl hover:shadow-lg hover:shadow-[#0d47a1]/20 transition-all font-medium"
+                    className="px-5 py-2.5 bg-[#0d47a1] hover:bg-[#0a3880] text-white rounded-xl shadow-xs hover:shadow-sm transition-all font-medium text-sm"
                   >
                     הרשמה
                   </Link>
@@ -123,7 +123,7 @@ export function Navigation() {
               ) : (
                 <Link
                   to="/dashboard"
-                  className="px-6 py-2.5 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-xl hover:shadow-lg hover:shadow-[#0d47a1]/20 transition-all font-medium"
+                  className="px-5 py-2.5 bg-[#0d47a1] hover:bg-[#0a3880] text-white rounded-xl shadow-xs hover:shadow-sm transition-all font-medium text-sm"
                 >
                   {user?.user_metadata?.full_name || user?.email}
                 </Link>
@@ -228,7 +228,7 @@ export function Navigation() {
                     <Link
                       to="/signup"
                       onClick={() => setMobileOpen(false)}
-                      className="w-full text-center px-6 py-3 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-xl font-medium"
+                      className="w-full text-center px-6 py-3 bg-[#0d47a1] hover:bg-[#0a3880] text-white rounded-xl font-medium shadow-xs"
                     >
                       הרשמה
                     </Link>
@@ -237,7 +237,7 @@ export function Navigation() {
                   <Link
                     to="/dashboard"
                     onClick={() => setMobileOpen(false)}
-                    className="w-full text-center px-6 py-3 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-xl font-medium"
+                    className="w-full text-center px-6 py-3 bg-[#0d47a1] hover:bg-[#0a3880] text-white rounded-xl font-medium shadow-xs"
                   >
                     {user?.user_metadata?.full_name || user?.email}
                   </Link>

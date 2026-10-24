@@ -24,6 +24,7 @@ interface PricingTier {
   href?: string
   onClick?: (e: React.MouseEvent) => void
   featuresTitle?: string
+  disabled?: boolean
 }
 
 interface PricingSectionProps {
@@ -35,26 +36,26 @@ function PricingSection({ tiers, className }: PricingSectionProps) {
   const buttonStyles = {
     default: cn(
       "h-12 bg-white",
-      "hover:bg-[#f5f7f9]",
+      "hover:bg-[#f1f5f9]",
       "text-[#0d47a1]",
-      "border-2 border-[#0d47a1]",
-      "shadow-sm hover:shadow-md",
-      "text-sm font-bold",
+      "border border-[#cbd5e1]",
+      "shadow-xs hover:shadow-sm",
+      "text-sm font-semibold",
     ),
     highlight: cn(
-      "h-12 bg-gradient-to-r from-[#0d47a1] to-[#00838f]",
-      "hover:shadow-xl hover:shadow-[#0d47a1]/40 hover:-translate-y-0.5",
+      "h-12 bg-[#0d47a1]",
+      "hover:bg-[#0a3880]",
       "text-white",
-      "shadow-[0_1px_15px_rgba(13,71,161,0.25)]",
+      "shadow-md hover:shadow-lg",
       "font-bold text-base",
     ),
   }
 
   const badgeStyles = cn(
-    "px-4 py-1.5 text-sm font-medium",
-    "bg-gradient-to-r from-[#0d47a1] to-[#00838f]",
+    "px-3.5 py-1 text-xs font-bold",
+    "bg-[#0d47a1]",
     "text-white",
-    "border-none shadow-lg",
+    "border-none shadow-sm rounded-full",
   )
 
   return (
@@ -69,18 +70,18 @@ function PricingSection({ tiers, className }: PricingSectionProps) {
       <div className="w-full max-w-5xl mx-auto" dir="rtl">
         <div className="flex flex-col items-center gap-4 mb-12 text-center">
           <h2 className="text-3xl sm:text-5xl md:text-6xl font-bold text-[#1a2332]">
-            בחרו את החבילה
+            מחיר אחד. הכל כלול.
             <br />
-            <span className="text-[#0d47a1]">המתאימה לכם</span>
+            <span className="text-[#0d47a1]">בלי מנוי חודשי</span>
           </h2>
           <p className="text-xl text-[#6b7c93] max-w-2xl mx-auto mt-4">
-            כל החבילות כוללות רישיון לצמיתות — ללא עלויות חודשיות או שנתיות.
+            המסלול הסטנדרטי כולל את כל יכולות ClinicFlow ברישיון לצמיתות — ללא עלויות חודשיות או שנתיות.
             <br />
-            <span className="font-semibold">תשלום חד-פעמי בלבד.</span>
+            <span className="font-semibold">צריכים התאמות מיוחדות? פתרון Enterprise מתומחר לפי הצורך.</span>
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 max-w-5xl mx-auto gap-8">
           {tiers.map((tier) => (
             <div
               key={tier.name}
@@ -126,7 +127,7 @@ function PricingSection({ tiers, className }: PricingSectionProps) {
                     <span className="text-5xl font-bold text-[#1a2332]">
                       {tier.price}
                     </span>
-                    {tier.price !== "צור/י קשר" && (
+                    {!tier.price.includes("קשר") && (
                       <span className="text-lg text-[#6b7c93]">
                         / לנצח
                       </span>
@@ -187,6 +188,7 @@ function PricingSection({ tiers, className }: PricingSectionProps) {
                 ) : (
                   <Button
                     onClick={tier.onClick}
+                    disabled={tier.disabled}
                     className={cn(
                       "w-full relative transition-all duration-300",
                       tier.highlight

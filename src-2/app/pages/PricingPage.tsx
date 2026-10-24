@@ -1,60 +1,46 @@
-import { motion, AnimatePresence } from "motion/react";
-import { ChevronDown, ShieldCheck, Zap, Building2, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { Building2, ChevronDown, ShieldCheck, X, Zap } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { PremiumContactForm } from "../components/PremiumContactForm";
 import { useAuth } from "@/lib/auth-context";
 import { getUserAccess } from "@/lib/supabase";
 import { Seo, SITE_ORIGIN } from "@/app/components/Seo";
 import { PricingSection } from "../components/blocks/pricing-section";
-
-const PLAN_ORDER = ['basic', 'professional', 'full'];
-
-function normalizePlan(plan: string | null): string | null {
-  return plan === 'premium' ? 'full' : plan;
-}
+import { PremiumContactForm } from "../components/PremiumContactForm";
 
 const clinicFlowTiers = [
   {
-    name: "Clinic Flow Forever",
-    price: "₪1,299",
+    name: "ClinicFlow — רישיון לצמיתות",
+    price: "₪1,499",
     description: "כל הכלים לניהול הקליניקה — בתשלום חד־פעמי",
     highlight: true,
-    badge: "הכי משתלם",
-    icon: (
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 to-blue-500/30 blur-2xl rounded-full" />
-        <Zap className="w-7 h-7 relative z-10 animate-[float_3s_ease-in-out_infinite]" />
-      </div>
-    ),
-    buttonText: "התחילו עכשיו",
+    badge: "המסלול המומלץ",
+    icon: <Zap className="w-6 h-6 text-[#0d47a1]" />,
+    buttonText: "רכישת רישיון",
     features: [
-      { name: "ניהול יומן פגישות (לומי/שבועי/חודשי)", description: "", included: true },
+      { name: "ניהול יומן פגישות (יומי/שבועי/חודשי)", description: "", included: true },
       { name: "ניהול תיק מטופל ורקע רפואי מלא", description: "", included: true },
       { name: "הפקת סיכומי ביקור מעוצבים ב-PDF", description: "", included: true },
       { name: "הנפקת חשבוניות, קבלות, וקבלות-חשבונית", description: "", included: true },
       { name: "דוחות מעקב, סטטיסטיקות פיננסיות ופעילות", description: "", included: true },
       { name: "חוות דעת מקצועיות (Medical Opinions) עם חתימה", description: "", included: true },
       { name: "הערות דביקות, יומן אישי, תיוגים וחיפוש מתקדם", description: "", included: true },
+      { name: "גיבוי מוצפן בסיסמה להתקן חיצוני / USB", description: "", included: true },
+      { name: "התקנה על Windows ועל macOS", description: "", included: true },
     ],
   },
   {
-    name: "פתרון ארגוני (Enterprise)",
-    price: "צור/י קשר",
-    description: "לקליניקות גדולות, רשתות ומערכות מורכבות בהתאמה אישית",
-    icon: (
-      <div className="relative">
-        <Building2 className="w-7 h-7 relative z-10" />
-      </div>
-    ),
+    name: "Enterprise — פתרון מותאם",
+    price: "צרו קשר",
+    description: "לקליניקות גדולות, מרכזים רפואיים או צרכים מיוחדים",
+    icon: <Building2 className="w-6 h-6 text-[#475569]" />,
     buttonText: "דברו איתנו",
-    featuresTitle: "אפשרויות להתאמה אישית",
+    featuresTitle: "אפשרויות להתאמה",
     features: [
-      { name: "כל מה שבחבילת הניהול המלאה +", description: "", included: true },
-      { name: "פריסה והטמעה מותאמת לארגון", description: "", included: true },
-      { name: "אינטגרציות מותאמות למערכות קיימות", description: "", included: true },
-      { name: "ייצוא נתונים דרך API", description: "", included: true },
-      { name: "מיתוג ועיצוב מותאמים (לוגו וזיהוי חזותי)", description: "", included: true },
+      { name: "התאמות לתהליך העבודה של הקליניקה", description: "", included: true },
+      { name: "פריסה והטמעה מותאמת", description: "", included: true },
+      { name: "אינטגרציות לפי הצורך והיתכנות", description: "", included: true },
+      { name: "מיתוג ועיצוב מותאמים", description: "", included: true },
       { name: "ליווי ותמיכה בעדיפות", description: "", included: true },
     ],
   },
@@ -88,7 +74,7 @@ const softwareAppJsonLd = {
     {
       "@type": "Offer",
       name: "רישיון לניהול קליניקה",
-      price: "1299",
+      price: "1499",
       priceCurrency: "ILS",
       url: `${SITE_ORIGIN}/pricing`,
       availability: "https://schema.org/InStock",
@@ -107,74 +93,105 @@ const faqJsonLd = {
 };
 
 export function PricingPage() {
-  const [showAddOns, setShowAddOns] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
-  const [userPlan, setUserPlan] = useState<string | null>(null);
+  const [hasActiveLicense, setHasActiveLicense] = useState(false);
+  const [accessLoaded, setAccessLoaded] = useState(false);
+  const [isEnterpriseModalOpen, setIsEnterpriseModalOpen] = useState(false);
+  const enterpriseDialogRef = useRef<HTMLDivElement>(null);
+  const enterpriseTriggerRef = useRef<HTMLElement | null>(null);
   const navigate = useNavigate();
 
-  // Inject onClick for the enterprise plan and primary plan
+  // There is one product and one checkout path.
   const tiersWithActions = clinicFlowTiers.map(tier => {
-    if (tier.name === "פתרון ארגוני (Enterprise)") {
+    if (tier.name === "Enterprise — פתרון מותאם") {
       return {
         ...tier,
         onClick: (e: React.MouseEvent) => {
           e.preventDefault();
-          setIsModalOpen(true);
-        }
+          enterpriseTriggerRef.current = e.currentTarget as HTMLElement;
+          setIsEnterpriseModalOpen(true);
+        },
       };
     }
-    if (tier.name === "רישיון לצמיתות") {
-      return {
-        ...tier,
-        onClick: (e: React.MouseEvent) => {
-          e.preventDefault();
-          if (user) {
-            navigate("/payment?plan=forever");
-          } else {
-            navigate("/signup?redirect=/payment?plan=forever");
-          }
+
+    return {
+      ...tier,
+      onClick: (e: React.MouseEvent) => {
+        e.preventDefault();
+        if (user && !accessLoaded) return;
+        if (hasActiveLicense) {
+          navigate("/dashboard");
+        } else if (user) {
+          navigate("/payment?plan=forever");
+        } else {
+          navigate("/signup?redirect=/payment?plan=forever");
         }
-      };
-    }
-    return tier;
+      },
+      buttonText: hasActiveLicense ? "לניהול הרישיון" : user && !accessLoaded ? "בודק רישיון..." : tier.buttonText,
+      disabled: Boolean(user && !accessLoaded),
+    };
   });
 
   useEffect(() => {
     if (user) {
+      setAccessLoaded(false);
+      setHasActiveLicense(false);
       getUserAccess(user.id).then(access => {
-        if (access?.is_active) setUserPlan(normalizePlan(access.plan));
+        setHasActiveLicense(Boolean(access?.is_active));
+        setAccessLoaded(true);
       });
+    } else {
+      setHasActiveLicense(false);
+      setAccessLoaded(true);
     }
   }, [user]);
 
-  function getPlanButton(slug: string, isPopular: boolean) {
-    if (userPlan) {
-      const currentIdx = PLAN_ORDER.indexOf(userPlan);
-      const thisIdx = PLAN_ORDER.indexOf(slug);
-      if (slug === userPlan) {
-        return { label: "✓ החבילה שלך", disabled: true, style: "bg-green-50 text-green-700 border border-green-200 cursor-default" };
+  useEffect(() => {
+    if (!isEnterpriseModalOpen) return;
+
+    const dialog = enterpriseDialogRef.current;
+    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const getFocusable = () => Array.from(dialog?.querySelectorAll<HTMLElement>(focusableSelector) ?? [])
+      .filter((element) => !element.hasAttribute("disabled"));
+
+    getFocusable()[0]?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setIsEnterpriseModalOpen(false);
+        return;
       }
-      if (thisIdx > currentIdx) {
-        return { label: "שדרג/י לחבילה זו", disabled: false, isUpgrade: true, style: isPopular ? "bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white shadow-lg shadow-[#0d47a1]/25 hover:shadow-xl hover:shadow-[#0d47a1]/40 hover:-translate-y-0.5" : "bg-white text-[#0d47a1] border-2 border-[#0d47a1] shadow-md hover:bg-[#0d47a1] hover:text-white hover:shadow-lg hover:-translate-y-0.5" };
+      if (event.key !== "Tab") return;
+
+      const focusable = getFocusable();
+      if (focusable.length === 0) {
+        event.preventDefault();
+        return;
       }
-      return { label: "חבילה נמוכה יותר", disabled: true, style: "bg-[#f5f7f9] text-[#6b7c93] border border-[#e1e6ec] cursor-not-allowed" };
-    }
-    return {
-      label: "התחילו עכשיו",
-      disabled: false,
-      isUpgrade: false,
-      style: isPopular
-        ? "bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white shadow-lg shadow-[#0d47a1]/25 hover:shadow-xl hover:shadow-[#0d47a1]/40 hover:-translate-y-0.5"
-        : "bg-white text-[#0d47a1] border-2 border-[#0d47a1] shadow-md hover:bg-[#0d47a1] hover:text-white hover:shadow-lg hover:-translate-y-0.5"
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
-  }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      enterpriseTriggerRef.current?.focus();
+    };
+  }, [isEnterpriseModalOpen]);
 
   return (
     <div className="pt-32 pb-20">
       <Seo
-        title="מחיר תוכנה לניהול קליניקה – תשלום חד פעמי מ־899 ₪"
-        description="מחיר ClinicFlow — תוכנה לניהול קליניקה בתשלום חד־פעמי וללא מנוי: חבילה בסיסית 899 ₪, מקצועית 999 ₪ וניהול מלאה 1,299 ₪. רישיון לצמיתות ו־30 יום החזר כספי מלא."
+        title="מחיר ClinicFlow – 1,499 ₪ בתשלום חד־פעמי"
+        description="ClinicFlow עולה 1,499 ₪ בתשלום חד־פעמי. כל יכולות המערכת, רישיון לצמיתות, ללא מנוי חודשי ועם 30 יום החזר כספי מלא."
         canonicalPath="/pricing"
         jsonLd={[softwareAppJsonLd, faqJsonLd]}
       />
@@ -189,40 +206,39 @@ export function PricingPage() {
 
         <PricingSection tiers={tiersWithActions} />
 
-        {/* Enterprise Contact Modal */}
         <AnimatePresence>
-          {isModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              {/* Backdrop */}
-              <motion.div
+          {isEnterpriseModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="enterprise-contact-title">
+              <motion.button
+                type="button"
+                aria-label="סגירת טופס יצירת קשר"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={() => setIsModalOpen(false)}
+                onClick={() => setIsEnterpriseModalOpen(false)}
                 className="absolute inset-0 bg-[#1a2332]/60 backdrop-blur-sm"
               />
-              
-              {/* Modal Content */}
               <motion.div
+                ref={enterpriseDialogRef}
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 md:p-10 z-10"
+                className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl p-6 md:p-10 z-10"
               >
                 <button
-                  onClick={() => setIsModalOpen(false)}
+                  type="button"
+                  onClick={() => setIsEnterpriseModalOpen(false)}
+                  aria-label="סגירה"
                   className="absolute top-4 left-4 p-2 text-[#6b7c93] hover:text-[#1a2332] bg-[#f5f7f9] hover:bg-[#e1e6ec] rounded-full transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
-                
                 <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold text-[#1a2332] mb-2">צרו קשר לפתרון ארגוני</h3>
+                  <h3 id="enterprise-contact-title" className="text-2xl font-bold text-[#1a2332] mb-2">פתרון Enterprise מותאם</h3>
                   <p className="text-[#6b7c93]">
-                    השאירו פרטים ונחזור אליכם עם הצעה המותאמת במיוחד לצרכי הקליניקה שלכם.
+                    ספרו לנו על הקליניקה ועל ההתאמות הנדרשות, ונחזור אליכם לבדיקת התאמה והצעה אישית.
                   </p>
                 </div>
-                
                 <PremiumContactForm />
               </motion.div>
             </div>

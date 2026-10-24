@@ -17,7 +17,7 @@ export type UserAccess = {
   id: string;
   user_id: string;
   email: string;
-  plan: 'basic' | 'professional' | 'full' | 'premium' | 'trial';
+  plan: 'forever' | 'basic' | 'professional' | 'full' | 'premium' | 'trial';
   is_active: boolean;
   expires_at: string | null;
   notes: string | null;
@@ -25,6 +25,7 @@ export type UserAccess = {
 };
 
 export const PLAN_LABELS: Record<string, string> = {
+  forever: 'ClinicFlow — רישיון לצמיתות',
   basic: 'חבילה בסיסית',
   professional: 'חבילה מקצועית',
   full: 'חבילת ניהול מלאה',

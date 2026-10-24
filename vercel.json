@@ -6,7 +6,12 @@
       "has": [{ "type": "host", "value": "clinic-flow.co.il" }],
       "destination": "https://www.clinic-flow.co.il/:path*",
       "permanent": true
-    }
+    },
+    { "source": "/clinicflow-vs-tipulog", "destination": "/clinic-software-no-subscription", "permanent": true },
+    { "source": "/tipulog-alternatives", "destination": "/clinic-software-no-subscription", "permanent": true },
+    { "source": "/clinicflow-vs-my-cliniq", "destination": "/clinic-software-no-subscription", "permanent": true },
+    { "source": "/clinicflow-vs-medform", "destination": "/clinic-software-no-subscription", "permanent": true },
+    { "source": "/best-clinic-software-israel", "destination": "/clinic-software-no-subscription", "permanent": true }
   ],
   "rewrites": [
     { "source": "/soon", "destination": "/soon.html" },

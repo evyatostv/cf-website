@@ -133,13 +133,8 @@ const page: ContentPageData = {
     { label: "כל התכונות של ClinicFlow", to: "/features" },
     { label: "תוכנה לניהול קליניקה שעובדת אופליין", to: "/offline-clinic-software" },
     { label: "תוכנה לניהול קליניקה ללא מנוי", to: "/clinic-software-no-subscription" },
-    { label: "התוכנות המובילות לניהול קליניקה בישראל", to: "/best-clinic-software-israel" },
   ],
-  sources: [
-    { label: "ClinicaOnline — אתר רשמי", url: "https://ww2.clinicaonline.co.il/" },
-    { label: "VetKey — מערכת וטרינרית ייעודית", url: "https://www.vetkey.co.il/" },
-    { label: "Rapid Vet — מערכת וטרינרית ייעודית", url: "https://www.rapid-image.com/rapid-vet/" },
-  ],
+  sources: [],
   datePublished: "2026-07-12",
   dateModified: "2026-07-12",
 };

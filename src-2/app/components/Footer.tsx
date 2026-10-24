@@ -114,21 +114,6 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="/best-clinic-software-israel" className="text-[#b8d4e6] hover:text-white transition-colors">
-                  התוכנות הטובות לניהול קליניקה בישראל
-                </a>
-              </li>
-              <li>
-                <a href="/clinicflow-vs-tipulog" className="text-[#b8d4e6] hover:text-white transition-colors">
-                  ClinicFlow מול טיפולוג
-                </a>
-              </li>
-              <li>
-                <a href="/tipulog-alternatives" className="text-[#b8d4e6] hover:text-white transition-colors">
-                  חלופות לטיפולוג
-                </a>
-              </li>
-              <li>
                 <a href="/clinic-software-no-subscription" className="text-[#b8d4e6] hover:text-white transition-colors">
                   תוכנה לקליניקה ללא מנוי
                 </a>
@@ -141,6 +126,11 @@ export function Footer() {
               <li>
                 <a href="/clinic-software-one-time-payment" className="text-[#b8d4e6] hover:text-white transition-colors">
                   תוכנה בתשלום חד פעמי
+                </a>
+              </li>
+              <li>
+                <a href="/tikun-13-clinic-software" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  אבטחת מידע ותיקון 13
                 </a>
               </li>
               <li>

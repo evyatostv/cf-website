@@ -5,12 +5,14 @@ const ALLPAY_KEY = Deno.env.get('ALLPAY_KEY')!;
 const SITE_URL = Deno.env.get('SITE_URL') || 'https://clinic-flow.co.il';
 
 const PLAN_PRICES: Record<string, number> = {
+  forever: 1499,
   basic: 899,
   professional: 999,
   full: 1299,
 };
 
 const PLAN_NAMES: Record<string, string> = {
+  forever: 'ClinicFlow — רישיון לצמיתות',
   basic: 'חבילה בסיסית',
   professional: 'חבילה מקצועית',
   full: 'חבילת ניהול מלאה',

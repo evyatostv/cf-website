@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { Shield, Users, Heart, Target } from "lucide-react";
+import { Link } from "react-router";
 import { Seo, SITE_NAME, SITE_ORIGIN } from "@/app/components/Seo";
 
 export function AboutPage() {
@@ -114,31 +115,26 @@ export function AboutPage() {
           </motion.div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="bg-gradient-to-br from-[#0d47a1] to-[#00838f] rounded-3xl p-6 sm:p-12 text-center text-white"
-        >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">המידע של המטופלים שלכם — לא צריך לצאת מהמחשב</h2>
-          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            אתם לא צריכים ענן כדי לנהל מרפאה. כל מה שצריך רץ על המחשב שלכם — נסו, יש 30 יום להחזר כספי.
+        <div className="bg-[#0d47a1] rounded-2xl p-8 sm:p-14 text-center text-white shadow-xl">
+          <h2 className="text-2xl sm:text-4xl font-bold mb-4">המידע של המטופלים שלכם — לא צריך לצאת מהמחשב</h2>
+          <p className="text-base sm:text-xl text-white/85 mb-8 max-w-2xl mx-auto">
+            אתם לא צריכים ענן כדי לנהל מרפאה. כל מה שצריך רץ על המחשב שלכם — בתשלום חד־פעמי (1,499 ₪) ועם 30 יום החזר כספי מלא.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="/contact"
-              className="px-10 py-4 bg-white text-[#0d47a1] rounded-xl font-semibold hover:shadow-xl transition-all"
+            <Link
+              to="/pricing"
+              className="px-8 py-3.5 bg-white text-[#0d47a1] rounded-xl font-bold hover:bg-[#f8fafc] transition-all shadow-md text-base"
             >
-              צור/י קשר
-            </a>
-            <a
-              href="/pricing"
-              className="px-10 py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl border-2 border-white/30 hover:bg-white/20 transition-all font-medium"
+              לרכישת רישיון לצמיתות
+            </Link>
+            <Link
+              to="/contact"
+              className="px-8 py-3.5 bg-white/10 hover:bg-white/20 text-white rounded-xl border border-white/30 transition-all font-medium text-base"
             >
-              ראה/י מחירים
-            </a>
+              צרו קשר להדגמה
+            </Link>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

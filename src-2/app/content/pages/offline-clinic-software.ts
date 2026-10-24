@@ -113,7 +113,7 @@ const page: ContentPageData = {
     { label: "כל התכונות של ClinicFlow", to: "/features" },
     { label: "תוכנה לניהול קליניקה ללא מנוי", to: "/clinic-software-no-subscription" },
     { label: "מדריך תיקון 13 למטפלים", to: "/tikun-13-guide" },
-    { label: "איזו תוכנה לניהול קליניקה הכי טובה בישראל?", to: "/best-clinic-software-israel" },
+    { label: "תוכנה לקליניקה בתשלום חד־פעמי", to: "/clinic-software-one-time-payment" },
   ],
   datePublished: "2026-07-12",
   dateModified: "2026-07-12",

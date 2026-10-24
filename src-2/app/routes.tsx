@@ -1,5 +1,14 @@
+import { useEffect } from "react";
 import * as Sentry from "@sentry/react";
 import type { RouteRecord } from "vite-react-ssg";
+function RedirectToNoSubscription() {
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.location.replace("/clinic-software-no-subscription");
+    }
+  }, []);
+  return <meta httpEquiv="refresh" content="0; url=/clinic-software-no-subscription" />;
+}
 import { Layout } from "@/app/components/Layout";
 import { RequireAuth } from "@/app/components/RequireAuth";
 import { AuthProvider } from "@/lib/auth-context";
@@ -110,6 +119,14 @@ export const routes: RouteRecord[] = [
             .filter((p) => !!p.content?.trim())
             .map((p) => `/blog/${p.slug}`),
       },
+
+      // Competitor comparison redirects to generic no-subscription page
+      { path: "clinicflow-vs-tipulog", element: <RedirectToNoSubscription /> },
+      { path: "tipulog-alternatives", element: <RedirectToNoSubscription /> },
+      { path: "clinicflow-vs-my-cliniq", element: <RedirectToNoSubscription /> },
+      { path: "clinicflow-vs-medform", element: <RedirectToNoSubscription /> },
+      { path: "best-clinic-software-israel", element: <RedirectToNoSubscription /> },
+
       ...contentRoutes,
 
       // --- Excluded from prerender (stay SPA). Kept in the router so client-side

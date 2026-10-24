@@ -8,9 +8,9 @@ import { mapAuthError } from '@/lib/auth-errors';
 
 const PLAN_INFO: Record<string, { name: string; price: string; amount: number; features: string[] }> = {
   forever: {
-    name: 'Clinic Flow Forever',
-    price: '₪1,299',
-    amount: 129900,
+    name: 'ClinicFlow — רישיון לצמיתות',
+    price: '₪1,499',
+    amount: 149900,
     features: [
       'ניהול יומן פגישות (לומי/שבועי/חודשי)', 
       'ניהול תיק מטופל ורקע רפואי מלא', 

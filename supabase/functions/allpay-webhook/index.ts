@@ -21,6 +21,7 @@ const ORDERS_URL = `${SITE_URL}/account/orders`;
 const RETRY_URL = `${SITE_URL}/checkout/retry`;
 
 const PLAN_AMOUNTS: Record<string, number> = {
+  forever: 149900,
   basic: 89900,
   professional: 99900,
   full: 129900,
@@ -390,7 +391,7 @@ Deno.serve(async (req) => {
     // prefix. This closes the hole without depending on AllPay's inbound-signature
     // stringification (which, verified naively, would reject real webhooks).
     const orderId = body.order_id || '';
-    const orderMatch = /^cf_([0-9a-f]+)_(basic|professional|full)_\d+$/.exec(orderId);
+    const orderMatch = /^cf_([0-9a-f]+)_(forever|basic|professional|full)_\d+$/.exec(orderId);
     if (!orderMatch) {
       console.error('Refusing to grant — unrecognized order_id format:', orderId);
       return new Response('Bad order reference', { status: 400 });

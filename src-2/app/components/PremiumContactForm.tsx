@@ -162,9 +162,9 @@ export function PremiumContactForm() {
         <button
           type="submit"
           disabled={loading}
-          className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-medium py-3 rounded-lg hover:shadow-lg hover:shadow-[#0d47a1]/30 transition-all active:scale-95 disabled:opacity-50"
+          className="flex items-center justify-center gap-2 w-full bg-[#0d47a1] hover:bg-[#0a3880] text-white font-semibold py-3.5 rounded-xl shadow-xs hover:shadow-md transition-all disabled:opacity-50 cursor-pointer text-base"
         >
-          {loading ? 'שולח/ת...' : 'שלח/י'}
+          {loading ? 'שולח...' : 'שליחת פנייה להדגמה'}
         </button>
       </div>
     </form>

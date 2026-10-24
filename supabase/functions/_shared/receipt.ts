@@ -18,6 +18,7 @@ export const VAT_RATE = 0.18;
 
 /** Plan slug → English display label used in receipts/emails. */
 const PLAN_LABELS: Record<string, string> = {
+  forever: "ClinicFlow — Lifetime License",
   basic: "ClinicFlow Basic",
   professional: "ClinicFlow Professional",
   full: "ClinicFlow Full",

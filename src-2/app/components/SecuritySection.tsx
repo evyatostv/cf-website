@@ -1,27 +1,16 @@
 import { motion, useInView } from "motion/react";
 import { useRef } from "react";
-import { Lock, Database, ShieldOff, Eye } from "lucide-react";
+import { Lock, HardDrive, ShieldCheck, KeyRound, ServerOff, FileCheck } from "lucide-react";
 
-const SecurityFeature = ({ icon: Icon, title, description, delay }: any) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
+const SecurityFeature = ({ icon: Icon, title, description }: any) => {
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-      transition={{ duration: 0.5, delay }}
-      className="group relative bg-white rounded-3xl p-6 sm:p-8 border border-[#e1e6ec] hover:border-[#0d47a1]/30 hover:shadow-xl hover:shadow-[#0d47a1]/5 transition-all duration-300"
-    >
-      <div className="flex flex-col items-center text-center">
-        <div className="w-16 h-16 rounded-2xl bg-[#e8f4f8] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-          <Icon className="w-8 h-8 text-[#0d47a1]" />
-        </div>
-        <h3 className="text-2xl font-semibold text-[#1a2332] mb-3">{title}</h3>
-        <p className="text-[#6b7c93] leading-relaxed">{description}</p>
+    <div className="bg-white rounded-2xl p-6 sm:p-8 border border-[#e2e8f0] shadow-xs hover:border-[#0d47a1]/40 hover:shadow-md transition-all">
+      <div className="w-12 h-12 rounded-xl bg-[#e8f4f8] flex items-center justify-center mb-5">
+        <Icon className="w-6 h-6 text-[#0d47a1]" />
       </div>
-    </motion.div>
+      <h3 className="text-xl font-bold text-[#0f172a] mb-2">{title}</h3>
+      <p className="text-sm sm:text-base text-[#64748b] leading-relaxed">{description}</p>
+    </div>
   );
 };
 
@@ -31,94 +20,74 @@ export function SecuritySection() {
 
   const features = [
     {
-      icon: Lock,
-      title: "נתוני מטופלים — מקומי בלבד",
-      description: "כל הרשומות הרפואיות נשמרות אך ורק על המחשב שלך. אף גורם חיצוני אינו יכול לגשת אליהן.",
+      icon: HardDrive,
+      title: "נתוני מטופלים מקומיים בלבד",
+      description: "כל הרשומות הרפואיות, סיכומי הביקור והתורים נשמרים ישירות על המחשב שלך בלבד. שום גורם חיצוני אינו יכול לגשת אליהם.",
     },
     {
-      icon: Database,
-      title: "עבודה ללא אינטרנט",
-      description: "ניהול תורים, תיעוד רפואי ועריכת מסמכים — הכל עובד במצב אופליין מלא, ללא תלות בחיבור.",
+      icon: ServerOff,
+      title: "אפס שרתי ענן לרשומות רפואיות",
+      description: "אין שרת מרכזי שיכול להיפרץ או לדלוף. מידע רפואי רגיש לא מועבר לשום ענן צד שלישי.",
     },
     {
-      icon: ShieldOff,
-      title: "אפס שיתוף נתוני מטופלים",
-      description: "נתוני המטופלים אינם נשלחים לאף שרת. ניהול הרישיון מתבצע דרך שרת מאובטח בנפרד לחלוטין.",
+      icon: KeyRound,
+      title: "הצפנה מקומית וגיבוי בסיסמה",
+      description: "מסד נתונים מוצפן ואפשרות לגיבוי מלא לקובץ מוצפן בסיסמה — לשמירה על דיסק חיצוני או התקן USB.",
     },
     {
-      icon: Eye,
-      title: "שליטה מלאה בנתונים",
-      description: "ClinicFlow אינה רואה, אוספת או מאחסנת נתוני מטופלים בשום אופן. הנתונים הרפואיים שייכים לך בלבד.",
+      icon: ShieldCheck,
+      title: "עמידה בדרישות תיקון 13",
+      description: "מבנה המערכת נבנה בהתאם לחוק הגנת הפרטיות הישראלי (תיקון 13) — שליטה מלאה ואחריות בלעדית של בעל המרפאה על מאגר המידע.",
     },
   ];
 
   return (
-    <section id="security" className="py-20 sm:py-32 bg-gradient-to-b from-[#f5f7f9] to-white relative overflow-hidden">
-
-      <div className="container mx-auto px-6 max-w-7xl" ref={ref}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12 sm:mb-20"
-        >
-          <div className="inline-flex items-center gap-2 bg-[#e8f4f8] rounded-full px-5 py-2 mb-6">
-            <Lock className="w-4 h-4 text-[#0d47a1]" />
-            <span className="text-sm font-medium text-[#0d47a1]">אבטחה ופרטיות</span>
+    <section id="security" className="py-20 sm:py-28 bg-[#f8fafc] border-b border-[#e2e8f0] relative" ref={ref}>
+      <div className="container mx-auto px-6 max-w-6xl">
+        <div className="text-center max-w-3xl mx-auto mb-14">
+          <div className="inline-flex items-center gap-2 bg-[#e0f2fe] text-[#0369a1] text-xs sm:text-sm font-semibold rounded-full px-4 py-1.5 mb-4">
+            <Lock className="w-4 h-4 text-[#0284c7]" />
+            <span>פרטיות ואבטחת מידע</span>
           </div>
-          <h2 className="text-3xl sm:text-5xl md:text-6xl font-bold text-[#1a2332] mb-6 leading-tight">
-            הנתונים שלך
+          <h2 className="text-3xl sm:text-5xl font-bold text-[#0f172a] leading-tight mb-4">
+            הנתונים הרפואיים של המטופלים
             <br />
-            <span className="text-[#0d47a1]">
-              נשארים אצלך
-            </span>
+            <span className="text-[#0d47a1]">נשארים במרפאה שלך</span>
           </h2>
-          <p className="text-xl text-[#6b7c93] max-w-2xl mx-auto leading-relaxed">
-            נתוני המטופלים שלך נשארים על המחשב שלך בלבד. התוכנה פועלת ללא אינטרנט
-            ולא משתפת מידע רפואי עם אף גורם חיצוני.
+          <p className="text-base sm:text-lg text-[#64748b] leading-relaxed">
+            בניגוד למערכות ענן שמרכזות מיליוני תיקים רפואיים ביעד תקיפה אחד — ב-ClinicFlow כל קליניקה היא מבצר עצמאי.
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => (
-            <SecurityFeature key={index} {...feature} delay={0} />
+            <SecurityFeature key={index} {...feature} />
           ))}
         </div>
 
-        {/* Visual Diagram */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-12 sm:mt-20 bg-white rounded-3xl p-6 sm:p-12 border border-[#e1e6ec] shadow-lg"
-        >
-          <div className="flex items-center justify-center gap-6 sm:gap-12 flex-wrap">
-            <div className="text-center">
-              <div className="w-24 h-24 rounded-2xl bg-[#0d47a1] flex items-center justify-center mb-4 mx-auto shadow-lg">
-                <Database className="w-12 h-12 text-white" />
+        {/* Professional Compliance Guarantee Card */}
+        <div className="mt-12 bg-white rounded-2xl p-6 sm:p-10 border border-[#cbd5e1] shadow-sm">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4 text-right">
+              <div className="w-14 h-14 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center flex-shrink-0">
+                <FileCheck className="w-7 h-7 text-emerald-600" />
               </div>
-              <p className="text-lg font-semibold text-[#1a2332]">המחשב שלך</p>
-              <p className="text-sm text-[#6b7c93] mt-1">כל הנתונים כאן</p>
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold text-[#0f172a]">
+                  תאימות מלאה לחוק הגנת הפרטיות (תיקון 13)
+                </h3>
+                <p className="text-sm text-[#64748b] mt-1">
+                  המידע הרפואי אינו עובר עיבוד או אחסון בשרתי צד שלישי — אתם הבעלים הבלעדיים של מאגר המידע.
+                </p>
+              </div>
             </div>
 
-            <div className="flex flex-col items-center">
-              <div className="w-32 h-1 bg-gradient-to-r from-[#e1e6ec] via-[#e1e6ec] to-[#e1e6ec] relative">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <ShieldOff className="w-8 h-8 text-[#00838f] bg-white px-2" />
-                </div>
-              </div>
-              <p className="text-sm text-[#6b7c93] mt-5 font-medium">אין חיבור</p>
-            </div>
-
-            <div className="text-center opacity-40">
-              <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-[#e1e6ec] flex items-center justify-center mb-4 mx-auto">
-                <Eye className="w-12 h-12 text-[#6b7c93]" />
-              </div>
-              <p className="text-lg font-semibold text-[#6b7c93]">אינטרנט</p>
-              <p className="text-sm text-[#6b7c93] mt-1">לא פעיל</p>
+            <div className="flex items-center gap-3 text-xs sm:text-sm font-medium text-[#475569] bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-4 py-3">
+              <ShieldCheck className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <span>ללא תלות באינטרנט • ללא שרתי ביניים</span>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
