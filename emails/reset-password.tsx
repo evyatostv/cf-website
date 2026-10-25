@@ -10,7 +10,7 @@ export interface ResetPasswordProps {
 }
 
 export function ResetPassword({
-  confirmationUrl = 'https://clinic-flow.co.il/auth/confirm?token=demo',
+  confirmationUrl = 'https://clinic-flow.co.il/reset-password',
 }: ResetPasswordProps) {
   return (
     <EmailLayout preheader="קיבלנו בקשה לאיפוס הסיסמה שלך.">
@@ -34,7 +34,7 @@ export function ResetPassword({
 }
 
 ResetPassword.PreviewProps = {
-  confirmationUrl: 'https://clinic-flow.co.il/auth/confirm?token=demo',
+  confirmationUrl: 'https://clinic-flow.co.il/reset-password',
 } as ResetPasswordProps;
 
 export default ResetPassword;

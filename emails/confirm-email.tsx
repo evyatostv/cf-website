@@ -10,7 +10,7 @@ export interface ConfirmEmailProps {
 }
 
 export function ConfirmEmail({
-  confirmationUrl = 'https://clinic-flow.co.il/auth/confirm?token=demo',
+  confirmationUrl = 'https://clinic-flow.co.il/login',
 }: ConfirmEmailProps) {
   return (
     <EmailLayout preheader="עוד לחיצה אחת ונסיים את ההרשמה שלך.">
@@ -34,7 +34,7 @@ export function ConfirmEmail({
 }
 
 ConfirmEmail.PreviewProps = {
-  confirmationUrl: 'https://clinic-flow.co.il/auth/confirm?token=demo',
+  confirmationUrl: 'https://clinic-flow.co.il/login',
 } as ConfirmEmailProps;
 
 export default ConfirmEmail;

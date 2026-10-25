@@ -11,7 +11,7 @@ export interface ChangeEmailProps {
 }
 
 export function ChangeEmail({
-  confirmationUrl = 'https://clinic-flow.co.il/auth/confirm?token=demo',
+  confirmationUrl = 'https://clinic-flow.co.il/dashboard',
   newEmail = 'newapp@clinic-flow.co.il',
 }: ChangeEmailProps) {
   return (
@@ -34,7 +34,7 @@ export function ChangeEmail({
 }
 
 ChangeEmail.PreviewProps = {
-  confirmationUrl: 'https://clinic-flow.co.il/auth/confirm?token=demo',
+  confirmationUrl: 'https://clinic-flow.co.il/dashboard',
   newEmail: 'newapp@clinic-flow.co.il',
 } as ChangeEmailProps;
 

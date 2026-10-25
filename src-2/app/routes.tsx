@@ -192,6 +192,34 @@ export const routes: RouteRecord[] = [
         ),
       },
       {
+        path: "download",
+        element: <DownloadLazy />,
+      },
+      {
+        path: "account/orders",
+        element: <RequireAuth><OrdersLazy /></RequireAuth>,
+      },
+      {
+        path: "account/renew",
+        element: <EmailActionLazy variant="renew" />,
+      },
+      {
+        path: "premium",
+        element: <EmailActionLazy variant="premium" />,
+      },
+      {
+        path: "checkout/retry",
+        element: <EmailActionLazy variant="retry" />,
+      },
+      {
+        path: "whats-new",
+        element: <EmailActionLazy variant="whats-new" />,
+      },
+      {
+        path: "unsubscribe",
+        element: <UnsubscribeLazy />,
+      },
+      {
         path: "*",
         lazy: () => import("@/app/pages/NotFoundPage").then((m) => ({ Component: m.NotFoundPage })),
       },
@@ -216,6 +244,10 @@ const CampaignDashboardPage = lazy(() => import("@/app/pages/CampaignDashboardPa
 const PaymentPage = lazy(() => import("@/app/pages/PaymentPage").then((m) => ({ default: m.PaymentPage })));
 const ThankYouPage = lazy(() => import("@/app/pages/ThankYouPage").then((m) => ({ default: m.ThankYouPage })));
 const CompleteProfilePage = lazy(() => import("@/app/pages/CompleteProfilePage").then((m) => ({ default: m.CompleteProfilePage })));
+const DownloadPage = lazy(() => import("@/app/pages/EmailDestinationPages").then((m) => ({ default: m.DownloadPage })));
+const OrdersPage = lazy(() => import("@/app/pages/EmailDestinationPages").then((m) => ({ default: m.OrdersPage })));
+const EmailActionPage = lazy(() => import("@/app/pages/EmailDestinationPages").then((m) => ({ default: m.EmailActionPage })));
+const UnsubscribePage = lazy(() => import("@/app/pages/EmailDestinationPages").then((m) => ({ default: m.UnsubscribePage })));
 
 function DashboardLazy() {
   return <Suspense fallback={<SpaFallback />}><DashboardPage /></Suspense>;
@@ -228,6 +260,18 @@ function PaymentLazy() {
 }
 function ThankYouLazy() {
   return <Suspense fallback={<SpaFallback />}><ThankYouPage /></Suspense>;
+}
+function DownloadLazy() {
+  return <Suspense fallback={<SpaFallback />}><DownloadPage /></Suspense>;
+}
+function OrdersLazy() {
+  return <Suspense fallback={<SpaFallback />}><OrdersPage /></Suspense>;
+}
+function EmailActionLazy({ variant }: { variant: "renew" | "premium" | "retry" | "whats-new" }) {
+  return <Suspense fallback={<SpaFallback />}><EmailActionPage variant={variant} /></Suspense>;
+}
+function UnsubscribeLazy() {
+  return <Suspense fallback={<SpaFallback />}><UnsubscribePage /></Suspense>;
 }
 function CompleteProfileLazy() {
   return <Suspense fallback={<SpaFallback />}><CompleteProfilePage /></Suspense>;

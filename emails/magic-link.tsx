@@ -12,7 +12,7 @@ export interface MagicLinkProps {
 
 export function MagicLink({
   token = '429-8153',
-  confirmationUrl = 'https://clinic-flow.co.il/auth/confirm?token=demo',
+  confirmationUrl = 'https://clinic-flow.co.il/login',
 }: MagicLinkProps) {
   return (
     <EmailLayout preheader="קוד חד-פעמי לכניסה לחשבון שלך.">
@@ -39,7 +39,7 @@ export function MagicLink({
 
 MagicLink.PreviewProps = {
   token: '429-8153',
-  confirmationUrl: 'https://clinic-flow.co.il/auth/confirm?token=demo',
+  confirmationUrl: 'https://clinic-flow.co.il/login',
 } as MagicLinkProps;
 
 export default MagicLink;

@@ -64,11 +64,11 @@ export function ReceiptRow({
   strong?: boolean;
 }) {
   return (
-    <Row style={{ borderBottom: `1px solid ${brand.border}` }}>
-      <Column style={{ padding: '11px 0', textAlign: 'right', verticalAlign: 'top' }}>
+    <Row style={{ borderBottom: `1px solid ${brand.border}`, direction: 'rtl' }}>
+      <Column style={{ width: '50%', padding: '11px 0', textAlign: 'right', verticalAlign: 'top' }}>
         <Text style={{ ...s.p, margin: 0, fontSize: '15px', color: brand.muted }}>{label}</Text>
       </Column>
-      <Column style={{ padding: '11px 0', textAlign: 'left', verticalAlign: 'top' }}>
+      <Column style={{ width: '50%', padding: '11px 0', textAlign: 'left', verticalAlign: 'top' }}>
         <Text
           style={{
             ...s.p,
@@ -77,6 +77,7 @@ export function ReceiptRow({
             fontWeight: strong ? 700 : 500,
             textAlign: 'left',
             direction: 'ltr',
+            unicodeBidi: 'isolate',
           }}
         >
           {value}

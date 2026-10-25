@@ -45,6 +45,7 @@ const EXCLUDED = new Set([
   "/update-password",
   "/complete-profile",
   "/beta",
+  "/account/orders",
 ]);
 
 export function includedRoutes(paths: string[]): string[] {
