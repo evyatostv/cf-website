@@ -40,3 +40,8 @@ verify_jwt = false
 # Public coming-soon waitlist signup (called from the static /soon page).
 [functions.waitlist-signup]
 verify_jwt = false
+
+# Public tracking endpoint. It accepts an unguessable per-recipient UUID and
+# performs all writes with the service role; browser clients cannot read data.
+[functions.track-email]
+verify_jwt = false

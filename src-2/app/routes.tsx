@@ -152,6 +152,14 @@ export const routes: RouteRecord[] = [
         ),
       },
       {
+        path: "campaign-dashboard",
+        element: (
+          <RequireAuth>
+            <CampaignDashboardLazy />
+          </RequireAuth>
+        ),
+      },
+      {
         path: "payment",
         element: (
           <RequireAuth requireOnboarded requireMfa>
@@ -204,12 +212,16 @@ const SpaFallback = () => (
 );
 
 const DashboardPage = lazy(() => import("@/app/pages/DashboardPage").then((m) => ({ default: m.DashboardPage })));
+const CampaignDashboardPage = lazy(() => import("@/app/pages/CampaignDashboardPage").then((m) => ({ default: m.CampaignDashboardPage })));
 const PaymentPage = lazy(() => import("@/app/pages/PaymentPage").then((m) => ({ default: m.PaymentPage })));
 const ThankYouPage = lazy(() => import("@/app/pages/ThankYouPage").then((m) => ({ default: m.ThankYouPage })));
 const CompleteProfilePage = lazy(() => import("@/app/pages/CompleteProfilePage").then((m) => ({ default: m.CompleteProfilePage })));
 
 function DashboardLazy() {
   return <Suspense fallback={<SpaFallback />}><DashboardPage /></Suspense>;
+}
+function CampaignDashboardLazy() {
+  return <Suspense fallback={<SpaFallback />}><CampaignDashboardPage /></Suspense>;
 }
 function PaymentLazy() {
   return <Suspense fallback={<SpaFallback />}><PaymentPage /></Suspense>;

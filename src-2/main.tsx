@@ -38,6 +38,7 @@ const EXCLUDED = new Set([
   "/login",
   "/signup",
   "/dashboard",
+  "/campaign-dashboard",
   "/payment",
   "/thank-you",
   "/reset-password",
