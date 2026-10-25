@@ -1,133 +1,151 @@
-import { Zap, WifiOff, ShieldCheck, Database, Check, X } from "lucide-react";
+import { motion, useInView } from "motion/react";
+import { useRef } from "react";
+import { Zap, Wifi, Shield, HardDrive } from "lucide-react";
+
+const Benefit = ({ icon: Icon, title, description, delay }: any) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, x: -30 }}
+      animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
+      transition={{ duration: 0.5, delay }}
+      className="flex items-start gap-5"
+    >
+      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center">
+        <Icon className="w-6 h-6 text-[#0d47a1]" />
+      </div>
+      <div>
+        <h4 className="text-xl font-semibold text-white mb-2">{title}</h4>
+        <p className="text-[#b8d4e6] leading-relaxed">{description}</p>
+      </div>
+    </motion.div>
+  );
+};
 
 export function OfflineBenefits() {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
   const benefits = [
     {
       icon: Zap,
-      title: "מהירות תגובה מיידית",
-      description: "כרטיס מטופל נפתח מיד, ללא גלגלי טעינה וללא עיכובים של עומסי שרת.",
+      title: "נפתח מיד",
+      description: "כרטיס מטופל נפתח ברגע, גם כשהאינטרנט אצלכם זוחל. שום גלגל טעינה.",
     },
     {
-      icon: WifiOff,
-      title: "חסינות מלאה לנפילות רשת",
-      description: "האינטרנט נפל במרפאה? העבודה לא נעצרת לשנייה אחת. כל התיקים, התורים והמסמכים זמינים כרגיל.",
+      icon: Wifi,
+      title: "עבודה בכל מקום",
+      description: "המערכת פועלת גם במקומות ללא אינטרנט. בקליניקה, בבית, בשטח - תמיד זמין.",
     },
     {
-      icon: ShieldCheck,
-      title: "אפס חשיפה לרשת החיצונית",
-      description: "אין שרת בענן שחשוף להתקפות כופר או פריצות סייבר מרחוק. המידע שמור רק אצלכם.",
+      icon: Shield,
+      title: "אין שרת שאפשר לפרוץ",
+      description: "אין מסד נתונים בענן שמישהו יכול לתקוף מרחוק. המידע יושב על הדיסק שלכם — לא נחשף לרשת.",
     },
     {
-      icon: Database,
-      title: "עצמאות ושליטה מלאה",
-      description: "הנתונים שייכים לכם. אין חברת תוכנה שיכולה לחסום לכם את הגישה לתיקי המטופלים.",
+      icon: HardDrive,
+      title: "שליטה מלאה",
+      description: "הנתונים שלך נשארים אצלך. אין תלות בחברות ענן או שירותים חיצוניים.",
     },
   ];
 
   return (
-    <section id="offline" className="py-20 sm:py-28 bg-[#0d47a1] text-white relative overflow-hidden">
-      <div className="container mx-auto px-6 max-w-6xl relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+    <section id="offline" className="py-20 sm:py-32 bg-gradient-to-br from-[#0d47a1] via-[#0d47a1] to-[#00838f] relative overflow-hidden">
+      <div className="container mx-auto px-6 max-w-7xl relative z-10" ref={ref}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Left side - Content */}
           <div>
-            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-6 text-xs sm:text-sm font-medium">
-              <ShieldCheck className="w-4 h-4 text-emerald-300" />
-              <span>עבודה מקומית ללא תלות</span>
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-bold mb-6 leading-tight">
-              הענן נשמע מודרני —
-              <br />
-              <span className="text-[#93c5fd]">עד שהאינטרנט נופל באמצע יום טיפולים</span>
-            </h2>
-            <p className="text-base sm:text-lg text-white/80 mb-10 leading-relaxed">
-              כשמטופל יושב מולך בחדר, אי אפשר לחכות שהענן ייטען. ClinicFlow פועלת מקומית על המחשב שלך — עובדת תמיד, מהר ובשקט.
-            </p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-5 py-2 mb-6">
+                <Shield className="w-4 h-4 text-white" />
+                <span className="text-sm font-medium text-white">למה אופליין?</span>
+              </div>
+              <h2 className="text-3xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+                היתרונות של
+                <br />
+                <span className="text-[#b8d4e6]">עבודה אופליין</span>
+              </h2>
+              <p className="text-lg sm:text-xl text-[#b8d4e6] mb-8 sm:mb-12 leading-relaxed">
+                הענן מצוין — עד שהאינטרנט נופל באמצע יום עמוס. אצלנו הכל רץ
+                מקומית, אז המרפאה לא נעצרת אף פעם.
+              </p>
+            </motion.div>
 
-            <div className="space-y-6">
-              {benefits.map((b, i) => (
-                <div key={i} className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center flex-shrink-0">
-                    <b.icon className="w-5 h-5 text-emerald-300" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white mb-1">{b.title}</h3>
-                    <p className="text-sm text-white/75 leading-relaxed">{b.description}</p>
-                  </div>
-                </div>
+            <div className="space-y-8">
+              {benefits.map((benefit, index) => (
+                <Benefit key={index} {...benefit} delay={0} />
               ))}
             </div>
           </div>
 
-          {/* Right side - Real Practical Comparison Card */}
-          <div className="bg-white text-[#0f172a] rounded-2xl p-6 sm:p-8 shadow-2xl border border-white/20">
-            <h3 className="text-xl font-bold text-center mb-6 text-[#0f172a] pb-4 border-b border-[#e2e8f0]">
-              השוואה מעשית: ענן מול ClinicFlow
-            </h3>
+          {/* Right side - Visual */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="relative"
+          >
+            <div className="relative bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20">
+              <div className="bg-white rounded-2xl p-8 shadow-2xl">
+                <div className="space-y-6">
+                  {/* Computer Icon */}
+                  <div className="flex items-center justify-center">
+                    <div className="relative">
+                      <div className="w-32 h-32 rounded-3xl bg-[#0d47a1] flex items-center justify-center shadow-xl">
+                        <HardDrive className="w-16 h-16 text-white" />
+                      </div>
+                    </div>
+                  </div>
 
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3 text-xs sm:text-sm pb-2 border-b border-[#f1f5f9] font-bold text-[#64748b]">
-                <div>תוכנות ענן רגילות</div>
-                <div className="text-[#0d47a1]">ClinicFlow אופליין</div>
-              </div>
+                  <div className="text-center">
+                    <h3 className="text-2xl font-bold text-[#1a2332] mb-2">המחשב שלך = הבית של הנתונים</h3>
+                    <p className="text-[#6b7c93]">כל המידע מאוחסן באופן מקומי ומאובטח</p>
+                  </div>
 
-              {/* Row 1 */}
-              <div className="grid grid-cols-2 gap-3 py-2 border-b border-[#f1f5f9] text-xs sm:text-sm">
-                <div className="flex items-start gap-1.5 text-[#64748b]">
-                  <X className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                  <span>מנוי חודשי שנמשך לנצח ומתייקר עם הזמן</span>
-                </div>
-                <div className="flex items-start gap-1.5 text-[#0f172a] font-medium">
-                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                  <span>תשלום חד־פעמי קבוע (1,499 ₪) ללא מנוי</span>
-                </div>
-              </div>
+                  {/* Status indicators */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-[#f5f7f9] rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-3 h-3 rounded-full bg-red-500" />
+                        <span className="text-sm font-medium text-[#1a2332]">אינטרנט</span>
+                      </div>
+                      <p className="text-xs text-[#6b7c93]">לא מחובר</p>
+                    </div>
+                    <div className="bg-[#f5f7f9] rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-3 h-3 rounded-full bg-green-500" />
+                        <span className="text-sm font-medium text-[#1a2332]">המערכת</span>
+                      </div>
+                      <p className="text-xs text-[#6b7c93]">פעילה</p>
+                    </div>
+                  </div>
 
-              {/* Row 2 */}
-              <div className="grid grid-cols-2 gap-3 py-2 border-b border-[#f1f5f9] text-xs sm:text-sm">
-                <div className="flex items-start gap-1.5 text-[#64748b]">
-                  <X className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                  <span>נפילת אינטרנט = השבתה מלאה של המרפאה</span>
-                </div>
-                <div className="flex items-start gap-1.5 text-[#0f172a] font-medium">
-                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                  <span>עבודה שוטפת 100% מהזמן גם ללא אינטרנט</span>
-                </div>
-              </div>
-
-              {/* Row 3 */}
-              <div className="grid grid-cols-2 gap-3 py-2 border-b border-[#f1f5f9] text-xs sm:text-sm">
-                <div className="flex items-start gap-1.5 text-[#64748b]">
-                  <X className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                  <span>רשומות רפואיות מאוחסנות בשרת צד שלישי</span>
-                </div>
-                <div className="flex items-start gap-1.5 text-[#0f172a] font-medium">
-                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                  <span>נתונים מוצפנים על המחשב שלך בלבד (תיקון 13)</span>
-                </div>
-              </div>
-
-              {/* Row 4 */}
-              <div className="grid grid-cols-2 gap-3 py-2 text-xs sm:text-sm">
-                <div className="flex items-start gap-1.5 text-[#64748b]">
-                  <X className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                  <span>עיכובי טעינה של דפדפן ותלות בספק</span>
-                </div>
-                <div className="flex items-start gap-1.5 text-[#0f172a] font-medium">
-                  <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                  <span>תוכנת שולחן עבודה מהירה ומיידית</span>
+                  {/* Data visualization */}
+                  <div className="bg-gradient-to-r from-[#e8f4f8] to-[#f0f4f7] rounded-xl p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-sm font-medium text-[#1a2332]">אחסון מקומי</span>
+                      <span className="text-sm font-bold text-[#0d47a1]">100%</span>
+                    </div>
+                    <div className="w-full bg-white/50 rounded-full h-3 overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={isInView ? { width: "100%" } : { width: 0 }}
+                        transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
+                        className="h-full bg-gradient-to-r from-[#0d47a1] to-[#00838f] rounded-full"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-
-            <div className="mt-6 pt-4 border-t border-[#e2e8f0] text-center">
-              <a
-                href="#lead-form"
-                className="inline-block w-full py-3 bg-[#0d47a1] hover:bg-[#0a3880] text-white text-sm font-semibold rounded-xl transition-colors text-center"
-              >
-                רוצים לראות איך זה עובד? השאירו פרטים
-              </a>
-            </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

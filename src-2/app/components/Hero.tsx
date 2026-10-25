@@ -1,81 +1,127 @@
 import { motion } from "motion/react";
-import { ShieldCheck, WifiOff, Database, CheckCircle2, ArrowLeft } from "lucide-react";
+import { ShieldCheck, WifiOff } from "lucide-react";
+import { Link } from "react-router";
+import { GooeyText } from "./ui/gooey-text-morphing";
+
+const professions = [
+  "לרופאים פרטיים",
+  "לרופאות פרטיות",
+  "לפסיכולוגים",
+  "לפסיכולוגיות",
+  "לפיזיותרפיסטים",
+  "לפיזיותרפיסטיות",
+  "למרפאים בעיסוק",
+  "למרפאות בעיסוק",
+  "לפסיכותרפיסטים",
+  "לפסיכותרפיסטיות",
+  "לקלינאי תקשורת",
+  "לקלינאיות תקשורת",
+  "לדיאטנים",
+  "לדיאטניות",
+  "למטפלים ברגש",
+  "למטפלות ברגש",
+  "לרופאי משפחה",
+  "לרופאות משפחה",
+  "לאורתופדים",
+  "לאורתופדיות",
+  "לווטרינרים",
+  "לווטרינריות",
+];
 
 export function Hero() {
   return (
-    <section id="hero" className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-[#f8fafc] via-[#f1f5f9] to-[#ffffff] border-b border-[#e2e8f0]">
-      <div className="relative z-10 container mx-auto px-6 max-w-5xl py-20 sm:py-28">
+    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-white via-[#f8fafb] to-[#f5f7f9]">
+      <div className="relative z-10 container mx-auto px-6 max-w-6xl">
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center"
+          transition={{ duration: 0.6 }}
+          className="text-center pt-12 sm:pt-20"
         >
-          {/* Status Badge */}
-          <div className="inline-flex items-center gap-2 bg-white/90 border border-[#cbd5e1] rounded-full px-4 py-1.5 shadow-xs mb-8">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs sm:text-sm font-medium text-[#1e293b]">
-              רישיון לצמיתות • 100% אופליין ומקומי • תואם תיקון 13
-            </span>
-          </div>
-
           {/* Main Headline */}
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-[#0f172a] leading-[1.12] tracking-tight mb-6">
-            פחות ניירת.
-            <br />
-            <span className="text-[#0d47a1]">יותר רפואה.</span>
-          </h1>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="mt-6 sm:mt-8 mb-2"
+          >
+            <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-[#1a2332] leading-[1.1] tracking-tight mb-2 sm:mb-4 px-2">
+              פחות ניירת. יותר רפואה.
+            </h1>
+
+            {/* Morphing profession text */}
+            <div className="relative h-14 sm:h-28 md:h-40 lg:h-44 flex items-center sm:items-end justify-center sm:pb-2 mt-3 sm:mt-8">
+              <GooeyText
+                texts={professions}
+                morphTime={0.6}
+                cooldownTime={1.25}
+                className="w-full h-full"
+                textClassName="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-[#0d47a1] whitespace-nowrap"
+              />
+            </div>
+          </motion.div>
 
           {/* Subtitle */}
-          <p className="text-lg sm:text-2xl text-[#475569] mb-6 max-w-2xl mx-auto leading-relaxed">
-            תוכנה לניהול קליניקה שרצה ישירות על המחשב שלך — ללא שרתי ענן, ללא תלות באינטרנט, וללא מנוי חודשי שמתייקר.
-          </p>
-
-          <p className="text-sm sm:text-base text-[#64748b] mb-10 font-medium">
-            מותאם לרופאים פרטיים, פסיכולוגים, פיזיותרפיסטים, קלינאי תקשורת ומטפלים עצמאיים
-          </p>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="text-base sm:text-lg md:text-2xl text-[#6b7c93] mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-2"
+          >
+            תיק רפואי דיגיטלי שנשאר אצלך בלבד — ללא שרתים חיצוניים, ללא מנוי חודשי.
+            <br />
+            עובד מהר, עובד תמיד, גם בלי אינטרנט.
+          </motion.p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4 max-w-md mx-auto">
-            <a href="#lead-form" className="w-full sm:w-auto flex-1">
-              <button
-                type="button"
-                className="w-full px-8 py-4 bg-[#0d47a1] hover:bg-[#0a3880] text-white rounded-xl font-semibold shadow-md hover:shadow-lg transition-all text-base sm:text-lg flex items-center justify-center gap-2 cursor-pointer"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4"
+          >
+            <a href="#lead-form">
+              <motion.button
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="group relative w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-2xl shadow-lg shadow-[#0d47a1]/20 hover:shadow-xl hover:shadow-[#0d47a1]/30 transition-all duration-300 text-lg font-medium"
               >
-                <span>השאירו פרטים להדגמה</span>
-                <ArrowLeft className="w-4 h-4" />
-              </button>
+                <span className="relative z-10">לקבלת הצעה</span>
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#0a3a85] to-[#006d77] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </motion.button>
             </a>
 
-            <a href="#features" className="w-full sm:w-auto flex-1">
-              <button
-                type="button"
-                className="w-full px-8 py-4 bg-white text-[#1e293b] rounded-xl border border-[#cbd5e1] hover:border-[#0d47a1] hover:bg-[#f8fafc] transition-all text-base sm:text-lg font-medium shadow-xs cursor-pointer"
+            <a href="#features">
+              <motion.button
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full sm:w-auto px-10 py-5 bg-white text-[#1a2332] rounded-2xl border-2 border-[#e1e6ec] hover:border-[#0d47a1] hover:bg-[#f8fafb] transition-all duration-300 text-lg font-medium shadow-sm"
               >
-                גלו את היכולות
-              </button>
+                גלו עוד
+              </motion.button>
             </a>
-          </div>
+          </motion.div>
 
           {/* Trust Indicators */}
-          <div className="mt-14 pt-8 border-t border-[#e2e8f0]/80 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 text-right">
-            <div className="flex items-center gap-2.5 text-[#334155]">
-              <ShieldCheck className="w-5 h-5 text-[#0d47a1] flex-shrink-0" />
-              <span className="text-xs sm:text-sm font-medium">תואם תיקון 13</span>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7, duration: 0.6 }}
+            className="mt-10 sm:mt-16 flex items-center justify-center gap-4 sm:gap-8 flex-wrap"
+          >
+            <div className="flex items-center gap-2 text-[#6b7c93]">
+              <ShieldCheck className="w-5 h-5 text-[#00838f]" />
+              <span className="text-sm">אבטחה ברמה רפואית</span>
             </div>
-            <div className="flex items-center gap-2.5 text-[#334155]">
-              <WifiOff className="w-5 h-5 text-[#00838f] flex-shrink-0" />
-              <span className="text-xs sm:text-sm font-medium">עובד ללא אינטרנט</span>
+            <div className="flex items-center gap-2 text-[#6b7c93]">
+              <WifiOff className="w-5 h-5 text-[#00838f]" />
+              <span className="text-sm">עובד ללא אינטרנט</span>
             </div>
-            <div className="flex items-center gap-2.5 text-[#334155]">
-              <Database className="w-5 h-5 text-[#0d47a1] flex-shrink-0" />
-              <span className="text-xs sm:text-sm font-medium">המידע על המחשב שלך</span>
+            <div className="flex items-center gap-2 text-[#6b7c93]">
+              <div className="w-5 h-5 rounded-full bg-[#0d47a1]" />
+              <span className="text-sm">נתונים אצלך בלבד</span>
             </div>
-            <div className="flex items-center gap-2.5 text-[#334155]">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-              <span className="text-xs sm:text-sm font-medium">30 יום החזר כספי</span>
-            </div>
-          </div>
+          </motion.div>
         </motion.div>
       </div>
     </section>
