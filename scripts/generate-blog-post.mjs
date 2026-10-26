@@ -96,6 +96,45 @@ Return a JSON object with these fields:
 }`;
 
 const models = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b'];
+const responseSchema = {
+  type: 'object',
+  properties: {
+    slug: { type: 'string' },
+    title: { type: 'string' },
+    description: { type: 'string' },
+    image: { type: 'string', enum: IMAGES },
+    category: {
+      type: 'string',
+      enum: [
+        'ניהול מטופלים',
+        'ניהול מרפאה',
+        'תיעוד רפואי',
+        'אבטחת מידע',
+        'ניהול כספי',
+        'ניהול תורים',
+        'נוכחות דיגיטלית',
+        'חוויית מטופל',
+        'שיווק',
+      ],
+    },
+    author: { type: 'string', enum: ['צוות ClinicFlow'] },
+    createdAt: { type: 'string', enum: [today] },
+    readTime: { type: 'string' },
+    content: { type: 'string' },
+  },
+  required: [
+    'slug',
+    'title',
+    'description',
+    'image',
+    'category',
+    'author',
+    'createdAt',
+    'readTime',
+    'content',
+  ],
+  additionalProperties: false,
+};
 let completion;
 let lastError;
 
@@ -106,7 +145,14 @@ for (const model of models) {
       model,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
-      response_format: { type: 'json_object' },
+      response_format: {
+        type: 'json_schema',
+        json_schema: {
+          name: 'clinicflow_blog_post',
+          strict: true,
+          schema: responseSchema,
+        },
+      },
     });
     break;
   } catch (error) {
