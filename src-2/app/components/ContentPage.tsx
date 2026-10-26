@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router";
+import { useEffect, useState } from "react";
 import { ArrowRight, ChevronDown, ExternalLink } from "lucide-react";
 import { Seo, SITE_ORIGIN, SITE_NAME } from "@/app/components/Seo";
 import type { ContentPageData } from "@/app/content/types";
@@ -11,13 +12,18 @@ const OG_IMAGE = `${SITE_ORIGIN}/og-image.png`;
 // the content registry (src-2/app/content/registry.ts).
 export function ContentPage({ data }: { data: ContentPageData }) {
   const location = useLocation();
+  const [trackingSearch, setTrackingSearch] = useState("");
   const url = `${SITE_ORIGIN}${data.path}`;
   const ctaTarget = data.cta?.to === "/contact"
     ? `/contact?${new URLSearchParams({
-        ...Object.fromEntries(new URLSearchParams(location.search)),
+        ...Object.fromEntries(new URLSearchParams(trackingSearch)),
         intent: "demo",
       }).toString()}`
     : data.cta?.to;
+
+  useEffect(() => {
+    setTrackingSearch(window.location.search);
+  }, [location.search]);
 
   const mainSchema = {
     "@context": "https://schema.org",
