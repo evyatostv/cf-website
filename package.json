@@ -87,6 +87,7 @@
     "@tailwindcss/vite": "4.1.12",
     "@types/react-slick": "^0.23.13",
     "@vitejs/plugin-react": "4.7.0",
+    "groq-sdk": "^1.6.0",
     "react-email": "^6.6.5",
     "react-helmet-async": "^2.0.5",
     "resend": "^6.16.0",

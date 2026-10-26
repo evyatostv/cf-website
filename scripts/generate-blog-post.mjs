@@ -60,12 +60,14 @@ const TOPICS = [
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const today = new Date().toISOString().split('T')[0];
 
-const prompt = `You write blog posts for ClinicFlow — a clinic management SaaS for private clinics in Israel.
+const prompt = `You write blog posts for ClinicFlow — a Hebrew desktop application for solo private doctors in Israel.
 
 Rules:
 - Write ONLY in Hebrew (title, description, content). Slugs must be English kebab-case.
 - Content: 500–900 words, practical and specific, no corporate speak
 - Use real examples and numbers where relevant
+- Never invent statistics, customer stories, testimonials, legal claims, medical claims, integrations, or product features
+- ClinicFlow is not SaaS: it works offline on one computer, stores patient data locally, and costs 1,499 ILS as a one-time payment with no monthly subscription
 - Do NOT write about how to use the ClinicFlow software itself
 - HTML tags allowed in content: h2, p, ul, li, strong — nothing else
 - For the image field, pick the most relevant URL from this list (copy it exactly):
@@ -93,12 +95,29 @@ Return a JSON object with these fields:
   "content": "full HTML string in Hebrew, 500-900 words, using h2/p/ul/li/strong tags"
 }`;
 
-console.log('Calling Groq API…');
-const completion = await groq.chat.completions.create({
-  model: 'llama-3.3-70b-versatile',
-  messages: [{ role: 'user', content: prompt }],
-  temperature: 0.7,
-});
+const models = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b'];
+let completion;
+let lastError;
+
+for (const model of models) {
+  try {
+    console.log(`Calling Groq API with ${model}…`);
+    completion = await groq.chat.completions.create({
+      model,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      response_format: { type: 'json_object' },
+    });
+    break;
+  } catch (error) {
+    lastError = error;
+    console.warn(`Model ${model} failed: ${error?.status || 'unknown status'}`);
+  }
+}
+
+if (!completion) {
+  throw lastError;
+}
 
 const rawText = completion.choices[0].message.content.trim();
 
@@ -124,6 +143,29 @@ for (const field of required) {
 
 if (existingSlugs.includes(post.slug)) {
   console.error(`Slug '${post.slug}' already exists — aborting to avoid duplicate`);
+  process.exit(1);
+}
+
+if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(post.slug)) {
+  console.error(`Invalid slug '${post.slug}'`);
+  process.exit(1);
+}
+
+if (!IMAGES.includes(post.image)) {
+  console.error('Generated post used an image outside the approved list');
+  process.exit(1);
+}
+
+const plainContent = post.content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+const wordCount = plainContent.split(' ').filter(Boolean).length;
+if (wordCount < 500 || wordCount > 900) {
+  console.error(`Generated post has ${wordCount} words; expected 500–900`);
+  process.exit(1);
+}
+
+const forbiddenClaims = [/תואם תיקון 13/, /מאושר.*משרד הבריאות/, /HIPAA/i, /100% מאובטח/];
+if (forbiddenClaims.some((pattern) => pattern.test(post.content))) {
+  console.error('Generated post contains a forbidden compliance or security claim');
   process.exit(1);
 }
 
