@@ -8,47 +8,32 @@ import { PremiumContactForm } from "@/app/components/PremiumContactForm";
 import { Seo, SITE_ORIGIN } from "@/app/components/Seo";
 
 const HOME_DESCRIPTION =
-  "תוכנה לניהול קליניקה שעובדת אופליין על המחשב שלך – ללא מנוי חודשי, תשלום חד-פעמי. תיק רפואי דיגיטלי, יומן תורים וחשבוניות. הנתונים נשארים אצלך, בהתאם לתיקון 13.";
+  "תוכנה פשוטה לרופאים עצמאיים שמרכזת תיקי מטופלים, יומן תורים, תיעוד, מסמכים וניהול כספי. 1,499 ₪ בתשלום חד פעמי, ללא מנוי חודשי.";
 
 const SOFTWARE_APP_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "ClinicFlow",
   applicationCategory: ["MedicalApplication", "BusinessApplication"],
-  operatingSystem: "Windows",
+  operatingSystem: "Windows, macOS",
   url: SITE_ORIGIN,
   inLanguage: "he",
   description: HOME_DESCRIPTION,
-  offers: [
-    {
-      "@type": "Offer",
-      name: "חבילה בסיסית – תשלום חד-פעמי",
-      price: "899",
-      priceCurrency: "ILS",
-      url: `${SITE_ORIGIN}/pricing`,
-    },
-    {
-      "@type": "Offer",
-      name: "חבילה מקצועית – תשלום חד-פעמי",
-      price: "999",
-      priceCurrency: "ILS",
-      url: `${SITE_ORIGIN}/pricing`,
-    },
-    {
-      "@type": "Offer",
-      name: "חבילת ניהול מלאה – תשלום חד-פעמי",
-      price: "1299",
-      priceCurrency: "ILS",
-      url: `${SITE_ORIGIN}/pricing`,
-    },
-  ],
+  offers: {
+    "@type": "Offer",
+    name: "ClinicFlow — רישיון לצמיתות",
+    price: "1499",
+    priceCurrency: "ILS",
+    url: `${SITE_ORIGIN}/pricing`,
+    availability: "https://schema.org/InStock",
+  },
 };
 
 export function HomePage() {
   return (
     <>
       <Seo
-        title="תוכנה לניהול קליניקה ללא מנוי – אופליין ותשלום חד פעמי | ClinicFlow"
+        title="תוכנה לניהול מרפאה פרטית לרופאים – ללא מנוי | ClinicFlow"
         description={HOME_DESCRIPTION}
         canonicalPath="/"
         jsonLd={[SOFTWARE_APP_JSON_LD]}

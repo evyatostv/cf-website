@@ -1,32 +1,5 @@
 import { motion } from "motion/react";
 import { ShieldCheck, WifiOff } from "lucide-react";
-import { Link } from "react-router";
-import { GooeyText } from "./ui/gooey-text-morphing";
-
-const professions = [
-  "לרופאים פרטיים",
-  "לרופאות פרטיות",
-  "לפסיכולוגים",
-  "לפסיכולוגיות",
-  "לפיזיותרפיסטים",
-  "לפיזיותרפיסטיות",
-  "למרפאים בעיסוק",
-  "למרפאות בעיסוק",
-  "לפסיכותרפיסטים",
-  "לפסיכותרפיסטיות",
-  "לקלינאי תקשורת",
-  "לקלינאיות תקשורת",
-  "לדיאטנים",
-  "לדיאטניות",
-  "למטפלים ברגש",
-  "למטפלות ברגש",
-  "לרופאי משפחה",
-  "לרופאות משפחה",
-  "לאורתופדים",
-  "לאורתופדיות",
-  "לווטרינרים",
-  "לווטרינריות",
-];
 
 export function Hero() {
   return (
@@ -46,19 +19,12 @@ export function Hero() {
             className="mt-6 sm:mt-8 mb-2"
           >
             <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-[#1a2332] leading-[1.1] tracking-tight mb-2 sm:mb-4 px-2">
-              פחות ניירת. יותר רפואה.
+              פחות ניירת. יותר זמן למטופלים.
             </h1>
 
-            {/* Morphing profession text */}
-            <div className="relative h-14 sm:h-28 md:h-40 lg:h-44 flex items-center sm:items-end justify-center sm:pb-2 mt-3 sm:mt-8">
-              <GooeyText
-                texts={professions}
-                morphTime={0.6}
-                cooldownTime={1.25}
-                className="w-full h-full"
-                textClassName="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-[#0d47a1] whitespace-nowrap"
-              />
-            </div>
+            <p className="text-2xl sm:text-4xl md:text-5xl font-bold text-[#0d47a1] mt-4 sm:mt-8">
+              ניהול המרפאה הפרטית במקום אחד
+            </p>
           </motion.div>
 
           {/* Subtitle */}
@@ -68,9 +34,9 @@ export function Hero() {
             transition={{ delay: 0.4, duration: 0.6 }}
             className="text-base sm:text-lg md:text-2xl text-[#6b7c93] mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-2"
           >
-            תיק רפואי דיגיטלי שנשאר אצלך בלבד — ללא שרתים חיצוניים, ללא מנוי חודשי.
+            תיקי מטופלים, יומן תורים, תיעוד ביקורים, מסמכים וניהול כספי — במערכת פשוטה שנבנתה לרופא העצמאי.
             <br />
-            עובד מהר, עובד תמיד, גם בלי אינטרנט.
+            1,499 ₪ בתשלום חד פעמי. הנתונים נשארים אצלך, והמחשב ממשיך לעבוד גם בלי אינטרנט.
           </motion.p>
 
           {/* CTA Buttons */}
@@ -86,7 +52,7 @@ export function Hero() {
                 whileTap={{ scale: 0.98 }}
                 className="group relative w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-2xl shadow-lg shadow-[#0d47a1]/20 hover:shadow-xl hover:shadow-[#0d47a1]/30 transition-all duration-300 text-lg font-medium"
               >
-                <span className="relative z-10">לקבלת הצעה</span>
+                <span className="relative z-10">לקבלת הדגמה קצרה</span>
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#0a3a85] to-[#006d77] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </motion.button>
             </a>
