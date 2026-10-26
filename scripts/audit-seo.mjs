@@ -5,7 +5,7 @@
 //   1. sitemap.xml is complete + exact (every URL has an index.html, and vice versa)
 //   2. per-page head hygiene (one unique <title>, description length, one exact
 //      canonical, lang/dir, real text content, valid JSON-LD)
-//   3. site-lock marker (cf_unlocked) + hash-redirect script on every page
+//   3. no pre-launch site lock + hash-redirect script on every page
 //   4. app-shell.html is an empty-root noindex shell; no dist/login|dashboard
 //   5. llms.txt / llms-full.txt / robots.txt artifacts
 //   6. no rendering garbage ("undefined</", "[object Object]", "NaN ")
@@ -207,8 +207,8 @@ for (const p of pages) {
     }
   }
 
-  // --- site-lock marker + hash-redirect script ---
-  if (!html.includes("cf_unlocked")) fail(`${rel}: missing site-lock marker cf_unlocked`);
+  // --- public-launch state + hash-redirect script ---
+  if (html.includes("cf_unlocked")) fail(`${rel}: contains obsolete pre-launch site lock`);
   if (!(html.includes("location.hash") && html.includes('indexOf("#/")')))
     fail(`${rel}: missing hash-redirect script`);
 
