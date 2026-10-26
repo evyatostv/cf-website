@@ -42,10 +42,8 @@ const TOPICS = [
   'Google reviews and reputation management for private doctors',
   'Social media (Instagram/Facebook) for private clinics in Israel',
   'Pricing transparency in private clinics — building trust',
-  'Work-life balance for private practitioners in Israel',
   'Building word-of-mouth referrals as a doctor',
   'WhatsApp communication with patients — dos and donts',
-  'First impressions at the clinic — waiting room design that works',
   'Email newsletters for private clinics — is it worth it?',
   'Managing negative patient reviews online',
   'Video marketing on YouTube/Reels for doctors',
@@ -54,6 +52,8 @@ const TOPICS = [
   'Photography tips for clinic marketing — what to shoot',
   'Doctor personal branding — standing out in a crowded market',
   'End-of-year patient retention tactics for private clinics',
+  'Moving a solo private clinic from Word and Excel to one organized workflow',
+  'Administrative tasks that consume a solo private doctor’s time',
 ];
 
 // ── 3. Call Groq ─────────────────────────────────────────────────────────────
@@ -67,6 +67,8 @@ Rules:
 - Content: 500–900 words, practical and specific, no corporate speak
 - Use real examples and numbers where relevant
 - Never invent statistics, customer stories, testimonials, legal claims, medical claims, integrations, or product features
+- Do not provide medical, mental-health, nutrition, sleep, legal, tax, or financial advice
+- Do not use phrases such as "research shows" or "studies show" unless a real source URL is included; this generator does not provide sources, so omit those claims
 - ClinicFlow is not SaaS: it works offline on one computer, stores patient data locally, and costs 1,499 ILS as a one-time payment with no monthly subscription
 - Do NOT write about how to use the ClinicFlow software itself
 - HTML tags allowed in content: h2, p, ul, li, strong — nothing else
