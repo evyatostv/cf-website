@@ -19,38 +19,15 @@ interface PaymentContextType {
 const PaymentContext = createContext<PaymentContextType | undefined>(undefined);
 
 const PLANS: Record<string, PlanDetails> = {
-  basic: {
-    name: 'חבילה בסיסית',
-    price: 3450,
+  forever: {
+    name: 'ClinicFlow — רישיון לצמיתות',
+    price: 1499,
     currency: 'ILS',
     features: [
-      'הפקת סיכומי ביקור מעוצבים',
-      'יצירת מסמכי PDF',
-      'ניהול יומן פגישות',
-      'ניהול חולים ורקע רפואי',
-    ],
-  },
-  professional: {
-    name: 'חבילה מקצועית',
-    price: 4590,
-    currency: 'ILS',
-    features: [
-      'כל מה שבחבילה הבסיסית',
-      'דוח מעקב סטטיסטי',
-      'גרפים וניתוח נתונים',
-      'יומן אישי ותיוג רשומות',
-      'חיפוש וסינון מתקדם',
-    ],
-  },
-  full: {
-    name: 'חבילת ניהול מלאה',
-    price: 5890,
-    currency: 'ILS',
-    features: [
-      'כל מה שבחבילת ניהול היומן',
-      'דוח הכנסות ודוחות פיננסיים',
-      'הנפקת קבלות וחשבוניות',
-      'מעקב שיטות תשלום',
+      'ניהול מטופלים ותיעוד ביקורים',
+      'יומן תורים וארכיון מסמכים',
+      'דוחות, קבלות וחשבוניות',
+      'עבודה אופליין בעמדה אחת',
     ],
   },
 };

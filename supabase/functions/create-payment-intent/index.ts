@@ -5,15 +5,11 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
 
 // Amounts in agorot (ILS cents)
 const PLAN_AMOUNTS: Record<string, number> = {
-  basic:        89900,   // ₪899
-  professional: 99900,   // ₪999
-  full:         129900,  // ₪1,299
+  forever: 149900, // ₪1,499
 };
 
 const PLAN_NAMES: Record<string, string> = {
-  basic:        'חבילה בסיסית',
-  professional: 'חבילה מקצועית',
-  full:         'חבילת ניהול מלאה',
+  forever: 'ClinicFlow — רישיון לצמיתות',
 };
 
 const ALLOWED_ORIGINS = [
