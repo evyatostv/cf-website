@@ -1,11 +1,14 @@
 import { motion } from "motion/react";
 import { Mail, MessageCircle, Send, CheckCircle } from "lucide-react";
 import { useState } from "react";
+import { useSearchParams } from "react-router";
 import { submitLead } from "@/lib/leads";
 import { CONTACT_EMAIL, CONTACT_WHATSAPP_URL } from "@/app/config/site";
 import { Seo, SITE_NAME, SITE_ORIGIN } from "@/app/components/Seo";
 
 export function ContactPage() {
+  const [searchParams] = useSearchParams();
+  const isDemoRequest = searchParams.get("intent") === "demo";
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -30,13 +33,23 @@ export function ContactPage() {
     setError("");
     setSuccess(false);
 
+    const attribution = ["utm_source", "utm_medium", "utm_campaign", "utm_content"]
+      .map((key) => [key, searchParams.get(key)] as const)
+      .filter((entry): entry is readonly [string, string] => Boolean(entry[1]));
+    const source = attribution.length > 0
+      ? attribution.map(([, value]) => value).join("/")
+      : isDemoRequest ? "doctor-demo-request" : "contact-page";
+    const message = formData.message.trim() || (isDemoRequest
+      ? "אשמח לקבל הדגמה קצרה של ClinicFlow."
+      : "פנייה מטופס יצירת הקשר.");
+
     const res = await submitLead({
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
-      message: formData.message,
+      message: `${isDemoRequest ? "[בקשת הדגמה]" : "[פנייה מהאתר]"}\n${message}\n\nמקור: ${source}`,
       clinicName: formData.clinicName,
-      source: "contact-page",
+      source,
     });
 
     setLoading(false);
@@ -54,7 +67,7 @@ export function ContactPage() {
     <div className="pt-32 pb-20">
       <Seo
         title="צור קשר | ClinicFlow"
-        description="שאלות על ClinicFlow, על ההתקנה או על החבילות? צרו קשר במייל או בוואטסאפ, או השאירו הודעה בטופס — עונים בעברית וחוזרים אליכם במהירות."
+        description="שאלות על ClinicFlow, על ההתקנה או על הרישיון? צרו קשר במייל או בוואטסאפ, או בקשו הדגמה קצרה ללא התחייבות."
         canonicalPath="/contact"
         jsonLd={[
           {
@@ -82,14 +95,16 @@ export function ContactPage() {
           className="text-center mb-16"
         >
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-[#1a2332] mb-6">
-            בוא נדבר
+            {isDemoRequest ? "בואו לראות את ClinicFlow" : "בוא נדבר"}
             <br />
             <span className="text-[#0d47a1]">
-              איך נוכל לעזור?
+              {isDemoRequest ? "בהדגמה קצרה" : "איך נוכל לעזור?"}
             </span>
           </h1>
           <p className="text-xl text-[#6b7c93] max-w-2xl mx-auto">
-            שאלה על האפליקציה, על ההתקנה, או רוצים לראות אותה עובדת? כתבו ונחזור אליכם.
+            {isDemoRequest
+              ? "השאירו שם ואימייל ונחזור אליכם לתיאום — בלי התחייבות."
+              : "שאלה על האפליקציה, על ההתקנה, או רוצים לראות אותה עובדת? כתבו ונחזור אליכם."}
           </p>
         </motion.div>
 
@@ -142,7 +157,7 @@ export function ContactPage() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="bg-white rounded-3xl p-5 sm:p-8 border border-[#e1e6ec]"
           >
-            <h2 className="text-2xl font-bold text-[#1a2332] mb-6">שלח/י הודעה</h2>
+            <h2 className="text-2xl font-bold text-[#1a2332] mb-6">{isDemoRequest ? "בקשת הדגמה" : "שלח/י הודעה"}</h2>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
@@ -178,7 +193,7 @@ export function ContactPage() {
               </div>
 
               <div>
-                <label htmlFor="contact-phone" className="block text-[#1a2332] mb-2">טלפון</label>
+                <label htmlFor="contact-phone" className="block text-[#1a2332] mb-2">טלפון <span className="text-[#9aa7b8] text-sm font-normal">(לא חובה)</span></label>
                 <input
                   id="contact-phone"
                   type="tel"
@@ -205,15 +220,14 @@ export function ContactPage() {
               </div>
 
               <div>
-                <label htmlFor="contact-message" className="block text-[#1a2332] mb-2">הודעה</label>
+                <label htmlFor="contact-message" className="block text-[#1a2332] mb-2">הודעה <span className="text-[#9aa7b8] text-sm font-normal">(לא חובה)</span></label>
                 <textarea
                   id="contact-message"
-                  required
                   value={formData.message}
                   onChange={(e) => updateField("message", e.target.value)}
                   rows={4}
                   className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all resize-y min-h-[120px] sm:min-h-[150px]"
-                  placeholder="ספר/י לנו איך נוכל לעזור..."
+                  placeholder={isDemoRequest ? "אפשר לציין שעה נוחה או שאלה שחשוב לך שנראה בהדגמה" : "ספר/י לנו איך נוכל לעזור..."}
                 />
               </div>
 
@@ -229,7 +243,7 @@ export function ContactPage() {
                 className="w-full py-4 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-[#0d47a1]/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Send className="w-5 h-5" />
-                {loading ? "שולח/ת..." : "שלח/י הודעה"}
+                {loading ? "שולח/ת..." : isDemoRequest ? "בקשת הדגמה קצרה" : "שלח/י הודעה"}
               </button>
             </form>
 

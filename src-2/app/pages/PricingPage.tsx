@@ -239,7 +239,7 @@ export function PricingPage() {
                     ספרו לנו על הקליניקה ועל ההתאמות הנדרשות, ונחזור אליכם לבדיקת התאמה והצעה אישית.
                   </p>
                 </div>
-                <PremiumContactForm />
+                <PremiumContactForm mode="enterprise" />
               </motion.div>
             </div>
           )}

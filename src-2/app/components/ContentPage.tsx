@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { ArrowRight, ChevronDown, ExternalLink } from "lucide-react";
 import { Seo, SITE_ORIGIN, SITE_NAME } from "@/app/components/Seo";
 import type { ContentPageData } from "@/app/content/types";
@@ -10,7 +10,14 @@ const OG_IMAGE = `${SITE_ORIGIN}/og-image.png`;
 // Article JSON-LD, FAQPage JSON-LD and a BreadcrumbList. Used by every route in
 // the content registry (src-2/app/content/registry.ts).
 export function ContentPage({ data }: { data: ContentPageData }) {
+  const location = useLocation();
   const url = `${SITE_ORIGIN}${data.path}`;
+  const ctaTarget = data.cta?.to === "/contact"
+    ? `/contact?${new URLSearchParams({
+        ...Object.fromEntries(new URLSearchParams(location.search)),
+        intent: "demo",
+      }).toString()}`
+    : data.cta?.to;
 
   const mainSchema = {
     "@context": "https://schema.org",
@@ -168,7 +175,7 @@ export function ContentPage({ data }: { data: ContentPageData }) {
             <div className="rounded-2xl bg-gradient-to-br from-[#0d47a1] to-[#00838f] p-8 text-center shadow-lg">
               <p className="text-white text-lg font-semibold mb-5">מוכנים להתחיל?</p>
               <Link
-                to={data.cta.to}
+                to={ctaTarget ?? data.cta.to}
                 className="inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 font-semibold text-[#0d47a1] shadow-xl transition-transform hover:scale-[1.02]"
               >
                 {data.cta.label}

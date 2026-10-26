@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Mail, Phone, User, Building2 } from 'lucide-react';
 import { submitLead } from '@/lib/leads';
 
-export function PremiumContactForm() {
+export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterprise' }) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -27,13 +27,14 @@ export function PremiumContactForm() {
     setLoading(true);
     setError('');
 
+    const isEnterprise = mode === 'enterprise';
     const res = await submitLead({
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
       clinicName: formData.clinicName,
-      message: `[🔥 URGENT ENTERPRISE LEAD 🔥]\n${formData.message}`,
-      source: 'enterprise-lead-form',
+      message: `${isEnterprise ? '[פניית Enterprise]' : '[בקשת הדגמה מהאתר]'}\n${formData.message || 'אשמח לקבל הדגמה קצרה של ClinicFlow.'}`,
+      source: isEnterprise ? 'enterprise-lead-form' : 'website-demo-form',
     });
 
     setLoading(false);
@@ -107,7 +108,7 @@ export function PremiumContactForm() {
         {/* Phone */}
         <div>
           <label className="block text-sm font-medium text-[#1a2332] mb-2">
-            טלפון
+            טלפון <span className="text-[#9aa7b8] text-sm font-normal">(לא חובה)</span>
           </label>
           <div className="flex items-center h-12 px-3 border border-[#e1e6ec] rounded-lg focus-within:ring-2 focus-within:ring-[#0d47a1] transition-all overflow-hidden bg-white">
             <Phone className="w-5 h-5 text-[#6b7c93] flex-shrink-0" />
@@ -118,7 +119,6 @@ export function PremiumContactForm() {
               onChange={handleChange}
               className="h-full px-3 w-full outline-none bg-transparent text-base text-[#1a2332]"
               placeholder="05X-XXX-XXXX"
-              required
             />
           </div>
         </div>
@@ -126,7 +126,7 @@ export function PremiumContactForm() {
         {/* Clinic Name */}
         <div>
           <label className="block text-sm font-medium text-[#1a2332] mb-2">
-            שם הקליניקה
+            שם הקליניקה <span className="text-[#9aa7b8] text-sm font-normal">(לא חובה)</span>
           </label>
           <div className="flex items-center h-12 px-3 border border-[#e1e6ec] rounded-lg focus-within:ring-2 focus-within:ring-[#0d47a1] transition-all overflow-hidden bg-white">
             <Building2 className="w-5 h-5 text-[#6b7c93] flex-shrink-0" />
@@ -137,7 +137,6 @@ export function PremiumContactForm() {
               onChange={handleChange}
               className="h-full px-3 w-full outline-none bg-transparent text-base text-[#1a2332]"
               placeholder="שם הקליניקה"
-              required
             />
           </div>
         </div>
@@ -145,7 +144,7 @@ export function PremiumContactForm() {
         {/* Message */}
         <div>
           <label className="block text-sm font-medium text-[#1a2332] mb-2">
-            הודעה
+            הודעה <span className="text-[#9aa7b8] text-sm font-normal">(לא חובה)</span>
           </label>
           <textarea
             name="message"
@@ -154,7 +153,6 @@ export function PremiumContactForm() {
             rows={4}
             className="w-full px-3 py-3 bg-white border border-[#e1e6ec] rounded-lg resize-none outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all text-base text-[#1a2332]"
             placeholder="ספר/י לנו יותר על הצרכים שלך..."
-            required
           />
         </div>
 
