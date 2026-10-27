@@ -128,6 +128,7 @@ const page: ContentPageData = {
   cta: { label: "לקבלת הדגמה קצרה", to: "/contact?intent=demo" },
   showHeroCta: true,
   related: [
+    { label: "תיק רפואי ממוחשב לרופא פרטי", to: "/electronic-medical-record-private-doctor" },
     { label: "כל התכונות של ClinicFlow", to: "/features" },
     { label: "תוכנה לניהול קליניקה שעובדת אופליין", to: "/offline-clinic-software" },
     { label: "תוכנה לניהול קליניקה ללא מנוי", to: "/clinic-software-no-subscription" },
