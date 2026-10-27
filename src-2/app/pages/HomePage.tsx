@@ -33,7 +33,7 @@ export function HomePage() {
   return (
     <>
       <Seo
-        title="תוכנה לניהול מרפאה פרטית לרופאים – ללא מנוי | ClinicFlow"
+        title="תוכנה לניהול מרפאה פרטית לרופאים – ללא מנוי | ClinicFlow ישראל"
         description={HOME_DESCRIPTION}
         canonicalPath="/"
         jsonLd={[SOFTWARE_APP_JSON_LD]}
