@@ -28,10 +28,10 @@ export function DashboardPreview() {
           {/* Real product screenshot inside the scroll card */}
           <div className="h-full overflow-auto bg-[#f5f7f9] rounded-xl">
             <img
-              src="/preview/app-home-v2.png"
+              src="/preview/app-home-v3.png"
               alt="לוח הבקרה של ClinicFlow"
-              width={1459}
-              height={988}
+              width={1524}
+              height={1032}
               className="w-full h-auto block"
               loading="lazy"
             />
