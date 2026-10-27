@@ -9,6 +9,7 @@
     "build": "vite-react-ssg build && node scripts/postbuild-seo.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "indexnow": "node scripts/submit-indexnow.mjs",
     "email:dev": "email dev --dir emails",
     "email:build": "email export --dir emails --outDir emails/.out"
   },
