@@ -125,7 +125,10 @@ const page: ContentPageData = {
       a: "לא בגרסה הנוכחית. ClinicFlow מיועדת לרופא עצמאי שעובד מעמדה אחת ואינה מסנכרנת עבודה חיה בין כמה מחשבים. מרפאות שצריכות משתמשים נוספים או תהליך עבודה מותאם יכולות לפנות לבדיקת פתרון Enterprise.",
     },
   ],
-  cta: { label: "לקבלת הדגמה קצרה", to: "/contact?intent=demo" },
+  cta: {
+    label: "לקבלת הדגמה קצרה",
+    to: "/contact?intent=demo&utm_source=organic&utm_medium=website&utm_campaign=doctors_landing&utm_content=private_doctors",
+  },
   showHeroCta: true,
   related: [
     { label: "תיק רפואי ממוחשב לרופא פרטי", to: "/electronic-medical-record-private-doctor" },

@@ -21,7 +21,7 @@ export function ContentPage({ data }: { data: ContentPageData }) {
     const [pathname, configuredSearch = ""] = data.cta.to.split("?");
     const params = new URLSearchParams(trackingSearch);
     new URLSearchParams(configuredSearch).forEach((value, key) => {
-      params.set(key, value);
+      if (!params.has(key)) params.set(key, value);
     });
     const search = params.toString();
     return search ? `${pathname}?${search}` : pathname;

@@ -36,9 +36,10 @@ export function ContactPage() {
     const attribution = ["utm_source", "utm_medium", "utm_campaign", "utm_content"]
       .map((key) => [key, searchParams.get(key)] as const)
       .filter((entry): entry is readonly [string, string] => Boolean(entry[1]));
-    const source = attribution.length > 0
-      ? attribution.map(([, value]) => value).join("/")
-      : isDemoRequest ? "doctor-demo-request" : "contact-page";
+    const attributionSource = attribution.map(([, value]) => value).join("/");
+    const source = isDemoRequest
+      ? ["doctor-demo-request", attributionSource].filter(Boolean).join("/")
+      : attributionSource || "contact-page";
     const message = formData.message.trim() || (isDemoRequest
       ? "אשמח לקבל הדגמה קצרה של ClinicFlow."
       : "פנייה מטופס יצירת הקשר.");

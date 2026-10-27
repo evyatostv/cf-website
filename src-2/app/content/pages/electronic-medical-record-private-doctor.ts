@@ -98,7 +98,10 @@ const page: ContentPageData = {
       a: "1,499 ₪ בתשלום חד פעמי לרישיון לצמיתות. כל היכולות כלולות, ללא חבילות מדורגות וללא מנוי חודשי, ויש 30 יום החזר כספי מלא.",
     },
   ],
-  cta: { label: "לקבלת הדגמה של התיק הרפואי", to: "/contact?intent=demo" },
+  cta: {
+    label: "לקבלת הדגמה של התיק הרפואי",
+    to: "/contact?intent=demo&utm_source=organic&utm_medium=website&utm_campaign=doctors_landing&utm_content=medical_record",
+  },
   showHeroCta: true,
   related: [
     { label: "תוכנה לניהול מרפאה פרטית לרופאים", to: "/clinic-software-for-private-doctors" },
