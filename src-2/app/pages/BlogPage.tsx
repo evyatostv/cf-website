@@ -12,7 +12,9 @@ const BLOG_DESCRIPTION =
 export function BlogPage() {
   // Only list posts that actually have content; empty-content entries (drafts)
   // stay in the data file but are not surfaced in the listing.
-  const publishedPosts = blogPosts.filter((p) => !!p.content?.trim());
+  const publishedPosts = blogPosts
+    .filter((p) => !!p.content?.trim())
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const [featured, ...rest] = publishedPosts;
 
   const blogJsonLd = [

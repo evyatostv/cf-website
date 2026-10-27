@@ -105,6 +105,7 @@ const page: ContentPageData = {
   showHeroCta: true,
   related: [
     { label: "תוכנה לניהול מרפאה פרטית לרופאים", to: "/clinic-software-for-private-doctors" },
+    { label: "איך לעבור מ־Word ו־Excel לתיק רפואי מסודר", to: "/blog/word-excel-to-medical-record" },
     { label: "כל התכונות של ClinicFlow", to: "/features" },
     { label: "תוכנה לניהול קליניקה אופליין", to: "/offline-clinic-software" },
     { label: "מחיר ClinicFlow", to: "/pricing" },

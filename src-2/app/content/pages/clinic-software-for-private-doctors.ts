@@ -132,6 +132,7 @@ const page: ContentPageData = {
   showHeroCta: true,
   related: [
     { label: "תיק רפואי ממוחשב לרופא פרטי", to: "/electronic-medical-record-private-doctor" },
+    { label: "איך לעבור מ־Word ו־Excel לתיק רפואי מסודר", to: "/blog/word-excel-to-medical-record" },
     { label: "כל התכונות של ClinicFlow", to: "/features" },
     { label: "תוכנה לניהול קליניקה שעובדת אופליין", to: "/offline-clinic-software" },
     { label: "תוכנה לניהול קליניקה ללא מנוי", to: "/clinic-software-no-subscription" },
