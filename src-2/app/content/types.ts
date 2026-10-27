@@ -61,6 +61,8 @@ export interface ContentPageData {
   related?: ContentLink[];
   /** Outbound sources/citations. */
   sources?: ContentSource[];
+  /** Additional page-specific schema.org objects emitted as JSON-LD. */
+  jsonLd?: object[];
   /** ISO date first published. */
   datePublished: string;
   /** ISO date last modified. */

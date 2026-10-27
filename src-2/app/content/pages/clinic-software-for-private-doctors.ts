@@ -133,6 +133,30 @@ const page: ContentPageData = {
     { label: "תוכנה לניהול קליניקה ללא מנוי", to: "/clinic-software-no-subscription" },
     { label: "תיקון 13 — מה זה אומר למרפאה שלך", to: "/tikun-13-clinic-software" },
   ],
+  jsonLd: [
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: "ClinicFlow",
+      description:
+        "תוכנה לניהול מרפאה פרטית לרופאים: תיקי מטופלים, יומן תורים, תיעוד ביקורים, מסמכים וניהול כספי במקום אחד.",
+      image: "https://www.clinic-flow.co.il/og-image.png",
+      url: "https://www.clinic-flow.co.il/clinic-software-for-private-doctors",
+      category: "תוכנה לניהול מרפאה פרטית",
+      brand: {
+        "@type": "Brand",
+        name: "ClinicFlow",
+      },
+      offers: {
+        "@type": "Offer",
+        name: "ClinicFlow — רישיון לצמיתות",
+        price: "1499",
+        priceCurrency: "ILS",
+        availability: "https://schema.org/InStock",
+        url: "https://www.clinic-flow.co.il/pricing",
+      },
+    },
+  ],
   datePublished: "2026-07-12",
   dateModified: "2026-10-27",
 };

@@ -74,7 +74,12 @@ export function ContentPage({ data }: { data: ContentPageData }) {
         }
       : null;
 
-  const jsonLd = [mainSchema, breadcrumb, ...(faqSchema ? [faqSchema] : [])];
+  const jsonLd = [
+    mainSchema,
+    breadcrumb,
+    ...(faqSchema ? [faqSchema] : []),
+    ...(data.jsonLd ?? []),
+  ];
 
   return (
     <div className="min-h-screen bg-[#f5f7f9]" dir="rtl" style={{ fontFamily: "'Noto Sans Hebrew', sans-serif" }}>
