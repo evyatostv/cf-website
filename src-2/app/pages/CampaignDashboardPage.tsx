@@ -84,10 +84,12 @@ export function CampaignDashboardPage() {
   }, [user?.email]);
 
   const stats = useMemo(() => {
-    const eventContacts = (type: string, includeProxy = true) => new Set(events.filter((e) => e.event_type === type && (includeProxy || !e.is_proxy)).map((e) => e.contact_id)).size;
-    const sent = contacts.filter((c) => c.sent_at || c.status !== 'queued').length;
+    const realContacts = contacts.filter((c) => c.email !== 'pixel-test@clinic-flow.co.il');
+    const realIds = new Set(realContacts.map((c) => c.id));
+    const eventContacts = (type: string, includeProxy = true) => new Set(events.filter((e) => realIds.has(e.contact_id) && e.event_type === type && (includeProxy || !e.is_proxy)).map((e) => e.contact_id)).size;
+    const sent = realContacts.filter((c) => c.sent_at || c.status !== 'queued').length;
     const demoLeads = new Set(
-      contacts
+      realContacts
         .filter((c) => ['demo', 'won'].includes(c.status))
         .map((c) => c.email.toLowerCase()),
     );
@@ -96,19 +98,19 @@ export function CampaignDashboardPage() {
       .forEach((lead) => demoLeads.add(lead.email?.toLowerCase() || `website:${lead.id}`));
     return {
       sent,
-      delivered: contacts.filter((c) => c.status !== 'bounced' && (c.sent_at || c.status !== 'queued')).length,
-      bounced: contacts.filter((c) => c.status === 'bounced').length,
+      delivered: realContacts.filter((c) => c.status !== 'bounced' && (c.sent_at || c.status !== 'queued')).length,
+      bounced: realContacts.filter((c) => c.status === 'bounced').length,
       opens: eventContacts('open', false),
       clicks: eventContacts('click'),
-      replies: contacts.filter((c) => ['replied', 'positive', 'demo', 'won'].includes(c.status)).length,
-      positive: contacts.filter((c) => ['positive', 'demo', 'won'].includes(c.status)).length,
+      replies: realContacts.filter((c) => ['replied', 'positive', 'demo', 'won'].includes(c.status)).length,
+      positive: realContacts.filter((c) => ['positive', 'demo', 'won'].includes(c.status)).length,
       demos: demoLeads.size,
-      sales: contacts.filter((c) => c.status === 'won').length,
+      sales: realContacts.filter((c) => c.status === 'won').length,
     };
   }, [contacts, events, websiteLeads]);
 
   const variants = useMemo(() => ['A', 'B'].map((variant) => {
-    const group = contacts.filter((c) => c.variant === variant);
+    const group = contacts.filter((c) => c.email !== 'pixel-test@clinic-flow.co.il' && c.variant === variant);
     const ids = new Set(group.map((c) => c.id));
     return {
       variant: `גרסה ${variant}`,
@@ -172,7 +174,7 @@ export function CampaignDashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-right text-sm">
               <thead className="bg-slate-50 text-xs text-slate-500"><tr><th className="p-4">רופא/ה</th><th className="p-4">תחום</th><th className="p-4">גרסה</th><th className="p-4">סטטוס</th><th className="p-4">נשלח</th></tr></thead>
-              <tbody>{contacts.slice(0, 50).map((c) => <tr key={c.id} className="border-t border-slate-100"><td className="p-4"><div className="font-medium text-slate-900">{c.name}</div><div className="text-xs text-slate-400">{c.email}</div></td><td className="p-4 text-slate-600">{c.specialty || '—'}</td><td className="p-4"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${c.variant === 'A' ? 'bg-blue-50 text-blue-700' : 'bg-teal-50 text-teal-700'}`}>{c.variant}</span></td><td className="p-4 text-slate-700">{c.status}</td><td className="p-4 text-slate-500">{c.sent_at ? new Date(c.sent_at).toLocaleString('he-IL') : '—'}</td></tr>)}</tbody>
+              <tbody>{contacts.filter((c) => c.email !== 'pixel-test@clinic-flow.co.il').slice(0, 50).map((c) => <tr key={c.id} className="border-t border-slate-100"><td className="p-4"><div className="font-medium text-slate-900">{c.name}</div><div className="text-xs text-slate-400">{c.email}</div></td><td className="p-4 text-slate-600">{c.specialty || '—'}</td><td className="p-4"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${c.variant === 'A' ? 'bg-blue-50 text-blue-700' : 'bg-teal-50 text-teal-700'}`}>{c.variant}</span></td><td className="p-4 text-slate-700">{c.status}</td><td className="p-4 text-slate-500">{c.sent_at ? new Date(c.sent_at).toLocaleString('he-IL') : '—'}</td></tr>)}</tbody>
             </table>
           </div>
           {!busy && contacts.length === 0 && <div className="p-10 text-center text-sm text-slate-500">הדשבורד מוכן. יופיעו כאן לידים לאחר סנכרון הקמפיין.</div>}
