@@ -14,7 +14,7 @@ const clinicFlowTiers = [
     price: "₪1,499",
     description: "כל הכלים לניהול הקליניקה — בתשלום חד־פעמי",
     highlight: true,
-    badge: "המסלול המומלץ",
+    badge: "הרישיון המלא",
     icon: <Zap className="w-6 h-6 text-[#0d47a1]" />,
     buttonText: "רכישת רישיון",
     features: [

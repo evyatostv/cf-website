@@ -75,7 +75,7 @@ function PricingSection({ tiers, className }: PricingSectionProps) {
             <span className="text-[#0d47a1]">בלי מנוי חודשי</span>
           </h2>
           <p className="text-xl text-[#6b7c93] max-w-2xl mx-auto mt-4">
-            המסלול הסטנדרטי כולל את כל יכולות ClinicFlow ברישיון לצמיתות — ללא עלויות חודשיות או שנתיות.
+            רישיון ClinicFlow כולל את כל היכולות לצמיתות — ללא עלויות חודשיות או שנתיות.
             <br />
             <span className="font-semibold">צריכים התאמות מיוחדות? פתרון Enterprise מתומחר לפי הצורך.</span>
           </p>
@@ -140,7 +140,7 @@ function PricingSection({ tiers, className }: PricingSectionProps) {
 
                 <div className="space-y-4 mt-8">
                   <div className="text-lg font-bold text-[#1a2332] mb-4">
-                    {tier.featuresTitle || "מה כלול בחבילה?"}
+                    {tier.featuresTitle || "מה כלול ברישיון?"}
                   </div>
                   {tier.features.map((feature) => (
                     <div key={feature.name} className="flex gap-4">

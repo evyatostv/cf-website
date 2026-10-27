@@ -10,6 +10,7 @@
 //   5. llms.txt / llms-full.txt / robots.txt artifacts
 //   6. no rendering garbage ("undefined</", "[object Object]", "NaN ")
 //   7. internal links resolve to emitted routes or allowed SPA routes
+//   8. public pricing copy stays aligned with the single-license offer
 //
 // Exits 0 with "PASS" when clean; exits 1 and lists every failure otherwise.
 // Plain node, no dependencies.
@@ -150,6 +151,14 @@ function rootText(html) {
 // 2 + 3 + 6 + 7. Per-page checks
 // ---------------------------------------------------------------------------
 const titlesSeen = new Map(); // title -> first route
+const staleOfferCopy = [
+  "1,299",
+  "בחבילה הבסיסית",
+  "בחבילה המקצועית",
+  "בחבילת הניהול המלאה",
+  "בחבילות המתקדמות",
+  "משלמים רק את ההפרש",
+];
 
 for (const p of pages) {
   const { rel, route, html } = p;
@@ -234,6 +243,17 @@ for (const p of pages) {
       const ctx = html.slice(Math.max(0, idx - 60), idx + 60).replace(/\s+/g, " ");
       fail(`${rel}: contains "${needle}" (…${ctx}…)`);
     }
+  }
+
+  // --- single-license public offer: prevent old tiered pricing from resurfacing ---
+  for (const phrase of staleOfferCopy) {
+    if (html.includes(phrase))
+      fail(`${rel}: contains stale pricing/packaging copy "${phrase}"`);
+  }
+
+  if (["/", "/pricing", "/clinic-software-for-private-doctors"].includes(route)) {
+    if (!html.includes("1,499"))
+      fail(`${rel}: primary sales page is missing the current 1,499 ₪ price`);
   }
 
   // --- internal links resolve ---
