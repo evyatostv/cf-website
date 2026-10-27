@@ -126,6 +126,7 @@ const page: ContentPageData = {
     },
   ],
   cta: { label: "לקבלת הדגמה קצרה", to: "/contact?intent=demo" },
+  showHeroCta: true,
   related: [
     { label: "כל התכונות של ClinicFlow", to: "/features" },
     { label: "תוכנה לניהול קליניקה שעובדת אופליין", to: "/offline-clinic-software" },
@@ -133,7 +134,7 @@ const page: ContentPageData = {
     { label: "תיקון 13 — מה זה אומר למרפאה שלך", to: "/tikun-13-clinic-software" },
   ],
   datePublished: "2026-07-12",
-  dateModified: "2026-10-26",
+  dateModified: "2026-10-27",
 };
 
 export default page;

@@ -55,6 +55,8 @@ export interface ContentPageData {
   faq: ContentFaq[];
   /** Primary call-to-action. */
   cta?: ContentLink;
+  /** Repeat the primary CTA in the hero for high-intent landing pages. */
+  showHeroCta?: boolean;
   /** Related internal links. */
   related?: ContentLink[];
   /** Outbound sources/citations. */

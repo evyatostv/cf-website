@@ -14,12 +14,18 @@ export function ContentPage({ data }: { data: ContentPageData }) {
   const location = useLocation();
   const [trackingSearch, setTrackingSearch] = useState("");
   const url = `${SITE_ORIGIN}${data.path}`;
-  const ctaTarget = data.cta?.to === "/contact"
-    ? `/contact?${new URLSearchParams({
-        ...Object.fromEntries(new URLSearchParams(trackingSearch)),
-        intent: "demo",
-      }).toString()}`
-    : data.cta?.to;
+  const ctaTarget = (() => {
+    if (!data.cta) return undefined;
+    if (!data.cta.to.startsWith("/contact")) return data.cta.to;
+
+    const [pathname, configuredSearch = ""] = data.cta.to.split("?");
+    const params = new URLSearchParams(trackingSearch);
+    new URLSearchParams(configuredSearch).forEach((value, key) => {
+      params.set(key, value);
+    });
+    const search = params.toString();
+    return search ? `${pathname}?${search}` : pathname;
+  })();
 
   useEffect(() => {
     setTrackingSearch(window.location.search);
@@ -95,6 +101,18 @@ export function ContentPage({ data }: { data: ContentPageData }) {
             className="blog-content mt-4 text-[#c3d3e0] text-base leading-relaxed [&_a]:text-white [&_a]:underline"
             dangerouslySetInnerHTML={{ __html: data.intro }}
           />
+          {data.showHeroCta && data.cta && (
+            <div className="mt-6 flex flex-col items-start gap-2 sm:flex-row sm:items-center">
+              <Link
+                to={ctaTarget ?? data.cta.to}
+                className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-[#0d47a1] shadow-lg transition-transform hover:scale-[1.02]"
+              >
+                {data.cta.label}
+                <ArrowRight size={18} />
+              </Link>
+              <span className="text-xs text-[#9fb5c5]">ללא התחייבות · טופס קצר</span>
+            </div>
+          )}
           <p className="mt-4 text-xs text-[#7a9db8]">
             עודכן לאחרונה: {data.dateModified}
           </p>
