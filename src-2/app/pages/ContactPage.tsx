@@ -50,6 +50,12 @@ export function ContactPage() {
       message: `${isDemoRequest ? "[בקשת הדגמה]" : "[פנייה מהאתר]"}\n${message}\n\nמקור: ${source}`,
       clinicName: formData.clinicName,
       source,
+      attribution: {
+        source: searchParams.get("utm_source") || undefined,
+        medium: searchParams.get("utm_medium") || undefined,
+        campaign: searchParams.get("utm_campaign") || undefined,
+        content: searchParams.get("utm_content") || undefined,
+      },
     });
 
     setLoading(false);

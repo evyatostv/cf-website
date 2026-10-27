@@ -8,6 +8,12 @@ export type Lead = {
   clinicName?: string;
   message: string;
   source?: string;
+  attribution?: {
+    source?: string;
+    medium?: string;
+    campaign?: string;
+    content?: string;
+  };
 };
 
 // Field caps — the anon key is public, so anyone can POST to contact_messages /
@@ -44,6 +50,11 @@ export async function submitLead(lead: Lead): Promise<{ ok: boolean; error?: str
     email,
     phone: phone || null,
     message,
+    source: clamp(lead.source, 160) || "website",
+    utm_source: clamp(lead.attribution?.source, 160) || null,
+    utm_medium: clamp(lead.attribution?.medium, 160) || null,
+    utm_campaign: clamp(lead.attribution?.campaign, 160) || null,
+    utm_content: clamp(lead.attribution?.content, 160) || null,
   });
 
   if (error) {
