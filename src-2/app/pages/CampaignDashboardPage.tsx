@@ -29,10 +29,27 @@ type WebsiteLead = {
   email: string | null;
   phone: string | null;
   source: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
   utm_campaign: string | null;
   utm_content: string | null;
   created_at: string;
 };
+
+type LeadScore = { score: number; stage: 'קר' | 'מתעניין' | 'חם' | 'הדגמה' | 'נמכר' | 'החרגה' };
+
+function scoreLead(contact: Contact, contactEvents: CampaignEvent[], websiteLead?: WebsiteLead): LeadScore {
+  if (['bounced', 'unsubscribed', 'suppressed'].includes(contact.status)) return { score: -10, stage: 'החרגה' };
+  if (contact.status === 'won') return { score: 10, stage: 'נמכר' };
+  if (['demo'].includes(contact.status) || websiteLead) return { score: 9, stage: 'הדגמה' };
+  const hasReply = ['replied', 'positive'].includes(contact.status);
+  const clicks = contactEvents.filter((event) => event.event_type === 'click').length;
+  const opens = contactEvents.filter((event) => event.event_type === 'open' && !event.is_proxy).length;
+  const score = (hasReply ? 3 : 0) + Math.min(clicks, 2) * 2 + (opens > 0 ? 1 : 0);
+  if (score >= 6) return { score, stage: 'חם' };
+  if (score >= 3) return { score, stage: 'מתעניין' };
+  return { score, stage: 'קר' };
+}
 
 const ADMIN_EMAIL = 'evyatar.druyan@gmail.com';
 
@@ -67,7 +84,7 @@ export function CampaignDashboardPage() {
     const [contactsResult, eventsResult, websiteLeadsResult] = await Promise.all([
       supabase.from('email_campaign_contacts').select('id,name,email,specialty,variant,status,sent_at').order('sent_at', { ascending: false }),
       supabase.from('email_campaign_events').select('id,contact_id,event_type,is_proxy,occurred_at').order('occurred_at', { ascending: false }),
-      supabase.from('contact_messages').select('id,name,email,phone,source,utm_campaign,utm_content,created_at').order('created_at', { ascending: false }).limit(100),
+      supabase.from('contact_messages').select('id,name,email,phone,source,utm_source,utm_medium,utm_campaign,utm_content,created_at').order('created_at', { ascending: false }).limit(100),
     ]);
     if (contactsResult.error || eventsResult.error || websiteLeadsResult.error) {
       setError(contactsResult.error?.message || eventsResult.error?.message || websiteLeadsResult.error?.message || 'טעינת הנתונים נכשלה');
@@ -121,6 +138,18 @@ export function CampaignDashboardPage() {
     };
   }), [contacts, events]);
 
+  const channels = useMemo(() => {
+    const grouped = new Map<string, { leads: number; demos: number }>();
+    websiteLeads.forEach((lead) => {
+      const key = lead.utm_source || lead.source || 'direct';
+      const current = grouped.get(key) || { leads: 0, demos: 0 };
+      current.leads += 1;
+      if (lead.source?.includes('demo') || lead.utm_campaign?.startsWith('doctors_')) current.demos += 1;
+      grouped.set(key, current);
+    });
+    return [...grouped.entries()].sort((a, b) => b[1].leads - a[1].leads);
+  }, [websiteLeads]);
+
   if (loading) return <div className="min-h-screen bg-slate-50 pt-32 text-center">טוען…</div>;
   if (!user) return <Navigate to="/login?redirect=/campaign-dashboard" replace />;
   if (user.email !== ADMIN_EMAIL) return <Navigate to="/dashboard" replace />;
@@ -169,12 +198,20 @@ export function CampaignDashboardPage() {
           </div>
         </section>
 
+        <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-5 flex items-center justify-between gap-3"><div><h2 className="font-bold text-slate-900">השוואת ערוצי מקור</h2><p className="mt-1 text-xs text-slate-500">מבוסס על UTM שנשמרו בפניות מהאתר. ערוצים ללא נתונים לא מוצגים.</p></div><BarChart3 className="h-5 w-5 text-teal-700" /></div>
+          {channels.length === 0 ? <div className="rounded-xl bg-slate-50 p-5 text-sm text-slate-500">עדיין אין פניות עם מקור מדיד. לאחר שהטפסים יקבלו תנועה, הערוצים יופיעו כאן.</div> : <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{channels.map(([channel, values]) => <div key={channel} className="rounded-xl border border-slate-100 bg-slate-50 p-4"><div className="font-semibold text-slate-900">{channel}</div><div className="mt-3 text-2xl font-bold text-blue-700">{values.leads}</div><div className="text-xs text-slate-500">פניות · {values.demos} דמו</div></div>)}</div>}
+        </section>
+
         <section className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-100 p-5"><h2 className="font-bold text-slate-900">לידים אחרונים</h2></div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-right text-sm">
-              <thead className="bg-slate-50 text-xs text-slate-500"><tr><th className="p-4">רופא/ה</th><th className="p-4">תחום</th><th className="p-4">גרסה</th><th className="p-4">סטטוס</th><th className="p-4">נשלח</th></tr></thead>
-              <tbody>{contacts.filter((c) => c.email !== 'pixel-test@clinic-flow.co.il').slice(0, 50).map((c) => <tr key={c.id} className="border-t border-slate-100"><td className="p-4"><div className="font-medium text-slate-900">{c.name}</div><div className="text-xs text-slate-400">{c.email}</div></td><td className="p-4 text-slate-600">{c.specialty || '—'}</td><td className="p-4"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${c.variant === 'A' ? 'bg-blue-50 text-blue-700' : 'bg-teal-50 text-teal-700'}`}>{c.variant}</span></td><td className="p-4 text-slate-700">{c.status}</td><td className="p-4 text-slate-500">{c.sent_at ? new Date(c.sent_at).toLocaleString('he-IL') : '—'}</td></tr>)}</tbody>
+              <thead className="bg-slate-50 text-xs text-slate-500"><tr><th className="p-4">רופא/ה</th><th className="p-4">תחום</th><th className="p-4">גרסה</th><th className="p-4">סטטוס</th><th className="p-4">דירוג</th><th className="p-4">נשלח</th></tr></thead>
+              <tbody>{contacts.filter((c) => c.email !== 'pixel-test@clinic-flow.co.il').slice(0, 50).map((c) => {
+                const score = scoreLead(c, events.filter((event) => event.contact_id === c.id), websiteLeads.find((lead) => lead.email?.toLowerCase() === c.email.toLowerCase()));
+                return <tr key={c.id} className="border-t border-slate-100"><td className="p-4"><div className="font-medium text-slate-900">{c.name}</div><div className="text-xs text-slate-400">{c.email}</div></td><td className="p-4 text-slate-600">{c.specialty || '—'}</td><td className="p-4"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${c.variant === 'A' ? 'bg-blue-50 text-blue-700' : 'bg-teal-50 text-teal-700'}`}>{c.variant}</span></td><td className="p-4 text-slate-700">{c.status}</td><td className="p-4"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${score.stage === 'החרגה' ? 'bg-red-50 text-red-700' : score.stage === 'חם' || score.stage === 'הדגמה' ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-700'}`}>{score.stage} · {score.score}</span></td><td className="p-4 text-slate-500">{c.sent_at ? new Date(c.sent_at).toLocaleString('he-IL') : '—'}</td></tr>;
+              })}</tbody>
             </table>
           </div>
           {!busy && contacts.length === 0 && <div className="p-10 text-center text-sm text-slate-500">הדשבורד מוכן. יופיעו כאן לידים לאחר סנכרון הקמפיין.</div>}
@@ -187,8 +224,8 @@ export function CampaignDashboardPage() {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-right text-sm">
-              <thead className="bg-slate-50 text-xs text-slate-500"><tr><th className="p-4">שם</th><th className="p-4">פרטי קשר</th><th className="p-4">קמפיין</th><th className="p-4">מזהה נמען</th><th className="p-4">התקבל</th></tr></thead>
-              <tbody>{websiteLeads.map((lead) => <tr key={lead.id} className="border-t border-slate-100"><td className="p-4 font-medium text-slate-900">{lead.name || '—'}</td><td className="p-4"><div className="text-slate-700">{lead.email || '—'}</div><div className="text-xs text-slate-400">{lead.phone || 'ללא טלפון'}</div></td><td className="p-4 text-slate-600">{lead.utm_campaign || lead.source || 'אתר'}</td><td className="p-4 font-mono text-xs text-slate-500">{lead.utm_content || '—'}</td><td className="p-4 text-slate-500">{new Date(lead.created_at).toLocaleString('he-IL')}</td></tr>)}</tbody>
+              <thead className="bg-slate-50 text-xs text-slate-500"><tr><th className="p-4">שם</th><th className="p-4">פרטי קשר</th><th className="p-4">מקור / מדיום</th><th className="p-4">קמפיין</th><th className="p-4">תוכן</th><th className="p-4">התקבל</th></tr></thead>
+              <tbody>{websiteLeads.map((lead) => <tr key={lead.id} className="border-t border-slate-100"><td className="p-4 font-medium text-slate-900">{lead.name || '—'}</td><td className="p-4"><div className="text-slate-700">{lead.email || '—'}</div><div className="text-xs text-slate-400">{lead.phone || 'ללא טלפון'}</div></td><td className="p-4 text-slate-600">{[lead.utm_source, lead.utm_medium].filter(Boolean).join(' / ') || lead.source || 'אתר'}</td><td className="p-4 text-slate-600">{lead.utm_campaign || '—'}</td><td className="p-4 font-mono text-xs text-slate-500">{lead.utm_content || '—'}</td><td className="p-4 text-slate-500">{new Date(lead.created_at).toLocaleString('he-IL')}</td></tr>)}</tbody>
             </table>
           </div>
           {!busy && websiteLeads.length === 0 && <div className="p-10 text-center text-sm text-slate-500">עדיין לא התקבלו בקשות הדגמה.</div>}

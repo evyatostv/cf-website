@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { Mail, Phone, User, Building2 } from 'lucide-react';
 import { submitLead } from '@/lib/leads';
 
 export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterprise' }) {
+  const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -28,13 +30,23 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
     setError('');
 
     const isEnterprise = mode === 'enterprise';
+    const attribution = {
+      source: searchParams.get('utm_source') || undefined,
+      medium: searchParams.get('utm_medium') || undefined,
+      campaign: searchParams.get('utm_campaign') || undefined,
+      content: searchParams.get('utm_content') || undefined,
+    };
+    const attributionLabel = Object.values(attribution).filter(Boolean).join('/');
     const res = await submitLead({
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
       clinicName: formData.clinicName,
-      message: `${isEnterprise ? '[פניית Enterprise]' : '[בקשת הדגמה מהאתר]'}\n${formData.message || 'אשמח לקבל הדגמה קצרה של ClinicFlow.'}`,
-      source: isEnterprise ? 'enterprise-lead-form' : 'website-demo-form',
+      message: `${isEnterprise ? '[פניית Enterprise]' : '[בקשת הדגמה מהאתר]'}\n${formData.message || 'אשמח לקבל הדגמה קצרה של ClinicFlow.'}${attributionLabel ? `\n\nמקור: ${attributionLabel}` : ''}`,
+      source: [isEnterprise ? 'enterprise-lead-form' : 'website-demo-form', attributionLabel]
+        .filter(Boolean)
+        .join('/'),
+      attribution,
     });
 
     setLoading(false);
