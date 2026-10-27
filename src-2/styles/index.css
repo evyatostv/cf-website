@@ -44,6 +44,14 @@ html { overflow-x: hidden; }
   font-style: italic;
   color: #6b7c93;
 }
+.blog-content a {
+  color: #0d47a1;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.blog-content a:hover {
+  color: #00838f;
+}
 
 /* Smooth scroll behavior + a base background so the overscroll / rubber-band
    area at the very top (and bottom) shows the site's light background instead
