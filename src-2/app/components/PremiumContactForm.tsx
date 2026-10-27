@@ -57,13 +57,14 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
       content: storedAttribution.utm_content || searchParams.get('utm_content') || undefined,
     };
     const attributionLabel = Object.values(attribution).filter(Boolean).join('/');
+    const landingPath = window.location.pathname;
     const res = await submitLead({
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
       clinicName: formData.clinicName,
       message: `${isEnterprise ? '[פניית Enterprise]' : '[בקשת הדגמה מהאתר]'}\n${formData.message || 'אשמח לקבל הדגמה קצרה של ClinicFlow.'}${attributionLabel ? `\n\nמקור: ${attributionLabel}` : ''}`,
-      source: [isEnterprise ? 'enterprise-lead-form' : 'website-demo-form', attributionLabel]
+      source: [isEnterprise ? 'enterprise-lead-form' : 'website-demo-form', `landing:${landingPath}`, attributionLabel]
         .filter(Boolean)
         .join('/'),
       attribution,
