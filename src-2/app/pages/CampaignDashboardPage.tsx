@@ -36,6 +36,11 @@ type WebsiteLead = {
   created_at: string;
 };
 
+function landingPathFromSource(source: string | null): string {
+  const match = source?.match(/(?:^|\/)landing:(\/[^/]+(?:\/[^/]*)?)/);
+  return match?.[1] || '—';
+}
+
 type LeadScore = { score: number; stage: 'קר' | 'מתעניין' | 'חם' | 'הדגמה' | 'נמכר' | 'החרגה' };
 
 function scoreLead(contact: Contact, contactEvents: CampaignEvent[], websiteLead?: WebsiteLead): LeadScore {
@@ -224,8 +229,8 @@ export function CampaignDashboardPage() {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-right text-sm">
-              <thead className="bg-slate-50 text-xs text-slate-500"><tr><th className="p-4">שם</th><th className="p-4">פרטי קשר</th><th className="p-4">מקור / מדיום</th><th className="p-4">קמפיין</th><th className="p-4">תוכן</th><th className="p-4">התקבל</th></tr></thead>
-              <tbody>{websiteLeads.map((lead) => <tr key={lead.id} className="border-t border-slate-100"><td className="p-4 font-medium text-slate-900">{lead.name || '—'}</td><td className="p-4"><div className="text-slate-700">{lead.email || '—'}</div><div className="text-xs text-slate-400">{lead.phone || 'ללא טלפון'}</div></td><td className="p-4 text-slate-600">{[lead.utm_source, lead.utm_medium].filter(Boolean).join(' / ') || lead.source || 'אתר'}</td><td className="p-4 text-slate-600">{lead.utm_campaign || '—'}</td><td className="p-4 font-mono text-xs text-slate-500">{lead.utm_content || '—'}</td><td className="p-4 text-slate-500">{new Date(lead.created_at).toLocaleString('he-IL')}</td></tr>)}</tbody>
+              <thead className="bg-slate-50 text-xs text-slate-500"><tr><th className="p-4">שם</th><th className="p-4">פרטי קשר</th><th className="p-4">מקור / מדיום</th><th className="p-4">עמוד נחיתה</th><th className="p-4">קמפיין</th><th className="p-4">תוכן</th><th className="p-4">התקבל</th></tr></thead>
+              <tbody>{websiteLeads.map((lead) => <tr key={lead.id} className="border-t border-slate-100"><td className="p-4 font-medium text-slate-900">{lead.name || '—'}</td><td className="p-4"><div className="text-slate-700">{lead.email || '—'}</div><div className="text-xs text-slate-400">{lead.phone || 'ללא טלפון'}</div></td><td className="p-4 text-slate-600">{[lead.utm_source, lead.utm_medium].filter(Boolean).join(' / ') || lead.source || 'אתר'}</td><td className="p-4 font-mono text-xs text-slate-500">{landingPathFromSource(lead.source)}</td><td className="p-4 text-slate-600">{lead.utm_campaign || '—'}</td><td className="p-4 font-mono text-xs text-slate-500">{lead.utm_content || '—'}</td><td className="p-4 text-slate-500">{new Date(lead.created_at).toLocaleString('he-IL')}</td></tr>)}</tbody>
             </table>
           </div>
           {!busy && websiteLeads.length === 0 && <div className="p-10 text-center text-sm text-slate-500">עדיין לא התקבלו בקשות הדגמה.</div>}
