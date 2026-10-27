@@ -12,7 +12,7 @@ const clinicFlowTiers = [
   {
     name: "ClinicFlow — רישיון לצמיתות",
     price: "₪1,499",
-    description: "כל הכלים לניהול הקליניקה — בתשלום חד־פעמי",
+    description: "כל הכלים לניהול הקליניקה — בתשלום חד פעמי",
     highlight: true,
     badge: "הרישיון המלא",
     icon: <Zap className="w-6 h-6 text-[#0d47a1]" />,
@@ -68,7 +68,7 @@ const softwareAppJsonLd = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Windows, macOS",
   description:
-    "ClinicFlow — תוכנה לניהול קליניקה שעובדת אופליין על המחשב שלך, בתשלום חד־פעמי וללא מנוי. הנתונים נשארים אצלך, בהתאם לתיקון 13.",
+    "ClinicFlow — תוכנה לניהול קליניקה שעובדת אופליין על המחשב שלך, בתשלום חד פעמי וללא מנוי. הנתונים נשארים אצלך, בהתאם לתיקון 13.",
   url: `${SITE_ORIGIN}/pricing`,
   offers: [
     {
@@ -190,8 +190,8 @@ export function PricingPage() {
   return (
     <div className="pt-32 pb-20">
       <Seo
-        title="מחיר ClinicFlow – 1,499 ₪ בתשלום חד־פעמי"
-        description="ClinicFlow עולה 1,499 ₪ בתשלום חד־פעמי. כל יכולות המערכת, רישיון לצמיתות, ללא מנוי חודשי ועם 30 יום החזר כספי מלא."
+        title="מחיר ClinicFlow – 1,499 ₪ בתשלום חד פעמי"
+        description="ClinicFlow עולה 1,499 ₪ בתשלום חד פעמי. כל יכולות המערכת, רישיון לצמיתות, ללא מנוי חודשי ועם 30 יום החזר כספי מלא."
         canonicalPath="/pricing"
         jsonLd={[softwareAppJsonLd, faqJsonLd]}
       />
