@@ -46,6 +46,20 @@ const EXCLUDED = new Set([
   "/complete-profile",
   "/beta",
   "/account/orders",
+  "/account/renew",
+  "/checkout/retry",
+  "/download",
+  "/premium",
+  "/unsubscribe",
+  "/whats-new",
+  // These five paths are real permanent redirects in vercel.json. Emitting
+  // duplicate HTML for them creates conflicting canonicals and duplicate
+  // titles, so leave redirect handling to the edge.
+  "/clinicflow-vs-tipulog",
+  "/tipulog-alternatives",
+  "/clinicflow-vs-my-cliniq",
+  "/clinicflow-vs-medform",
+  "/best-clinic-software-israel",
 ]);
 
 export function includedRoutes(paths: string[]): string[] {

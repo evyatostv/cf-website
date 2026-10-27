@@ -11,6 +11,13 @@ Disallow: /calendar
 Disallow: /reset-password
 Disallow: /update-password
 Disallow: /complete-profile
+Disallow: /campaign-dashboard
+Disallow: /account/
+Disallow: /checkout/
+Disallow: /download
+Disallow: /premium
+Disallow: /unsubscribe
+Disallow: /whats-new
 
 # Explicitly welcome AI / answer-engine crawlers (GEO)
 User-agent: GPTBot

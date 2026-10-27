@@ -28,7 +28,22 @@ const ORIGIN = "https://www.clinic-flow.co.il";
 // the pricing-page purchase CTA (/payment?plan=…). It is the same class as
 // /login: catch-all-served, robots-disallowed, excluded from prerender. A link to
 // it resolves to a real page, so it is not a broken/dangling link.
-const ALLOWED_SPA_ROUTES = new Set(["/login", "/signup", "/reset-password", "/payment"]);
+const ALLOWED_SPA_ROUTES = new Set([
+  "/login",
+  "/signup",
+  "/reset-password",
+  "/payment",
+  "/dashboard",
+  "/download",
+  "/account/orders",
+]);
+const ALLOWED_REDIRECT_ROUTES = new Set([
+  "/clinicflow-vs-tipulog",
+  "/tipulog-alternatives",
+  "/clinicflow-vs-my-cliniq",
+  "/clinicflow-vs-medform",
+  "/best-clinic-software-israel",
+]);
 
 const failures = [];
 function fail(msg) {
@@ -229,7 +244,11 @@ for (const p of pages) {
     if (target === "") target = "/";
     // Skip static assets (files with extensions) — only route-shaped links.
     if (/\.[a-z0-9]+$/i.test(target)) continue;
-    if (!emittedRoutes.has(target) && !ALLOWED_SPA_ROUTES.has(target)) badTargets.add(target);
+    if (
+      !emittedRoutes.has(target) &&
+      !ALLOWED_SPA_ROUTES.has(target) &&
+      !ALLOWED_REDIRECT_ROUTES.has(target)
+    ) badTargets.add(target);
   }
   for (const t of badTargets)
     fail(`${rel}: internal link to ${t} — not an emitted route or allowed SPA route`);
