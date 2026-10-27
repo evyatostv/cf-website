@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Mail, Phone, User, Building2 } from 'lucide-react';
 import { submitLead } from '@/lib/leads';
 
 export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterprise' }) {
   const [searchParams] = useSearchParams();
+  const [storedAttribution, setStoredAttribution] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -15,6 +16,25 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'];
+    const fromUrl = Object.fromEntries(keys.flatMap((key) => {
+      const value = searchParams.get(key);
+      return value ? [[key, value]] : [];
+    }));
+    const storageKey = 'clinicflow_attribution';
+    const existing = window.sessionStorage.getItem(storageKey);
+    let saved: Record<string, string> = {};
+    try {
+      saved = existing ? JSON.parse(existing) as Record<string, string> : {};
+    } catch {
+      window.sessionStorage.removeItem(storageKey);
+    }
+    const next = Object.keys(fromUrl).length > 0 ? fromUrl : saved;
+    if (Object.keys(fromUrl).length > 0) window.sessionStorage.setItem(storageKey, JSON.stringify(next));
+    setStoredAttribution(next);
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -31,10 +51,10 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
 
     const isEnterprise = mode === 'enterprise';
     const attribution = {
-      source: searchParams.get('utm_source') || undefined,
-      medium: searchParams.get('utm_medium') || undefined,
-      campaign: searchParams.get('utm_campaign') || undefined,
-      content: searchParams.get('utm_content') || undefined,
+      source: storedAttribution.utm_source || searchParams.get('utm_source') || undefined,
+      medium: storedAttribution.utm_medium || searchParams.get('utm_medium') || undefined,
+      campaign: storedAttribution.utm_campaign || searchParams.get('utm_campaign') || undefined,
+      content: storedAttribution.utm_content || searchParams.get('utm_content') || undefined,
     };
     const attributionLabel = Object.values(attribution).filter(Boolean).join('/');
     const res = await submitLead({
