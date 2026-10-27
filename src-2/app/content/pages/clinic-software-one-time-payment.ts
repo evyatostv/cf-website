@@ -82,7 +82,7 @@ const page: ContentPageData = {
         "<li><strong>הנתונים אצלכם</strong> — התיקים על הדיסק שלכם, עם גיבוי מוצפן ומוגן בסיסמה שמשוחזר על מחשב חדש תוך דקות. ClinicFlow אינה רואה, אוספת או מאחסנת נתוני מטופלים בשום אופן.</li>" +
         "<li><strong>מחיר ברור</strong> — 1,499 ₪ בתשלום חד פעמי, וכל היכולות כלולות.</li>" +
         "</ul>" +
-        "<p>את המחירים המלאים והעדכניים של כל החבילות תמצאו בעמוד <a href='/pricing'>המחירים</a>.</p>",
+        "<p>את פרטי הרישיון והמחיר העדכניים תמצאו בעמוד <a href='/pricing'>המחירים</a>.</p>",
     },
   ],
   table: {
@@ -138,7 +138,7 @@ const page: ContentPageData = {
     { label: "מחירים", to: "/pricing" },
   ],
   datePublished: "2026-07-12",
-  dateModified: "2026-10-26",
+  dateModified: "2026-10-27",
 };
 
 export default page;
