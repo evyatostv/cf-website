@@ -70,12 +70,12 @@ export function CTASection() {
                   whileTap={{ scale: 0.98 }}
                   className="group w-full px-10 py-5 bg-white text-[#0d47a1] rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 text-lg flex items-center justify-center gap-2"
                 >
-                  <span>בחרו חבילה</span>
+                  <span>פרטי הרישיון</span>
                   <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-4px] transition-transform" />
                 </motion.button>
               </Link>
 
-              <Link to="/contact" className="w-full sm:w-auto">
+              <Link to="/contact?intent=demo&utm_source=organic&utm_medium=website&utm_campaign=homepage&utm_content=cta" className="w-full sm:w-auto">
                 <motion.button
                   whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
