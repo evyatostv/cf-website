@@ -155,16 +155,18 @@ export function CampaignDashboardPage() {
   }), [contacts, events]);
 
   const channels = useMemo(() => {
-    const grouped = new Map<string, { leads: number; demos: number }>();
+    const purchasedEmails = new Set(purchases.map((purchase) => purchase.email.toLowerCase()));
+    const grouped = new Map<string, { leads: number; demos: number; purchases: number }>();
     websiteLeads.forEach((lead) => {
       const key = lead.utm_source || lead.source || 'direct';
-      const current = grouped.get(key) || { leads: 0, demos: 0 };
+      const current = grouped.get(key) || { leads: 0, demos: 0, purchases: 0 };
       current.leads += 1;
       if (lead.source?.includes('demo') || lead.utm_campaign?.startsWith('doctors_')) current.demos += 1;
+      if (lead.email && purchasedEmails.has(lead.email.toLowerCase())) current.purchases += 1;
       grouped.set(key, current);
     });
     return [...grouped.entries()].sort((a, b) => b[1].leads - a[1].leads);
-  }, [websiteLeads]);
+  }, [websiteLeads, purchases]);
 
   if (loading) return <div className="min-h-screen bg-slate-50 pt-32 text-center">טוען…</div>;
   if (!user) return <Navigate to="/login?redirect=/campaign-dashboard" replace />;
@@ -216,7 +218,7 @@ export function CampaignDashboardPage() {
 
         <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-5 flex items-center justify-between gap-3"><div><h2 className="font-bold text-slate-900">השוואת ערוצי מקור</h2><p className="mt-1 text-xs text-slate-500">מבוסס על UTM שנשמרו בפניות מהאתר. ערוצים ללא נתונים לא מוצגים.</p></div><BarChart3 className="h-5 w-5 text-teal-700" /></div>
-          {channels.length === 0 ? <div className="rounded-xl bg-slate-50 p-5 text-sm text-slate-500">עדיין אין פניות עם מקור מדיד. לאחר שהטפסים יקבלו תנועה, הערוצים יופיעו כאן.</div> : <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{channels.map(([channel, values]) => <div key={channel} className="rounded-xl border border-slate-100 bg-slate-50 p-4"><div className="font-semibold text-slate-900">{channel}</div><div className="mt-3 text-2xl font-bold text-blue-700">{values.leads}</div><div className="text-xs text-slate-500">פניות · {values.demos} דמו</div></div>)}</div>}
+          {channels.length === 0 ? <div className="rounded-xl bg-slate-50 p-5 text-sm text-slate-500">עדיין אין פניות עם מקור מדיד. לאחר שהטפסים יקבלו תנועה, הערוצים יופיעו כאן.</div> : <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{channels.map(([channel, values]) => <div key={channel} className="rounded-xl border border-slate-100 bg-slate-50 p-4"><div className="font-semibold text-slate-900">{channel}</div><div className="mt-3 text-2xl font-bold text-blue-700">{values.leads}</div><div className="text-xs text-slate-500">פניות · {values.demos} דמו · {values.purchases} רכישות</div><div className="mt-2 text-xs font-semibold text-teal-700">המרת דמו: {values.leads ? Math.round((values.demos / values.leads) * 100) : 0}%</div></div>)}</div>}
         </section>
 
         <section className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
