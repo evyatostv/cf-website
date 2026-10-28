@@ -36,6 +36,14 @@ type WebsiteLead = {
   created_at: string;
 };
 
+type Purchase = {
+  id: string;
+  email: string;
+  plan: string | null;
+  amount: number | null;
+  purchased_at: string;
+};
+
 function landingPathFromSource(source: string | null): string {
   const match = source?.match(/(?:^|\/)landing:(\/[^/]+(?:\/[^/]*)?)/);
   return match?.[1] || '—';
@@ -80,23 +88,26 @@ export function CampaignDashboardPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [events, setEvents] = useState<CampaignEvent[]>([]);
   const [websiteLeads, setWebsiteLeads] = useState<WebsiteLead[]>([]);
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = async () => {
     setBusy(true);
     setError(null);
-    const [contactsResult, eventsResult, websiteLeadsResult] = await Promise.all([
+    const [contactsResult, eventsResult, websiteLeadsResult, purchasesResult] = await Promise.all([
       supabase.from('email_campaign_contacts').select('id,name,email,specialty,variant,status,sent_at').order('sent_at', { ascending: false }),
       supabase.from('email_campaign_events').select('id,contact_id,event_type,is_proxy,occurred_at').order('occurred_at', { ascending: false }),
       supabase.from('contact_messages').select('id,name,email,phone,source,utm_source,utm_medium,utm_campaign,utm_content,created_at').order('created_at', { ascending: false }).limit(100),
+      supabase.from('purchases').select('id,email,plan,amount,purchased_at').order('purchased_at', { ascending: false }).limit(100),
     ]);
-    if (contactsResult.error || eventsResult.error || websiteLeadsResult.error) {
-      setError(contactsResult.error?.message || eventsResult.error?.message || websiteLeadsResult.error?.message || 'טעינת הנתונים נכשלה');
+    if (contactsResult.error || eventsResult.error || websiteLeadsResult.error || purchasesResult.error) {
+      setError(contactsResult.error?.message || eventsResult.error?.message || websiteLeadsResult.error?.message || purchasesResult.error?.message || 'טעינת הנתונים נכשלה');
     } else {
       setContacts((contactsResult.data || []) as Contact[]);
       setEvents((eventsResult.data || []) as CampaignEvent[]);
       setWebsiteLeads((websiteLeadsResult.data || []) as WebsiteLead[]);
+      setPurchases((purchasesResult.data || []) as Purchase[]);
     }
     setBusy(false);
   };
@@ -127,9 +138,9 @@ export function CampaignDashboardPage() {
       replies: realContacts.filter((c) => ['replied', 'positive', 'demo', 'won'].includes(c.status)).length,
       positive: realContacts.filter((c) => ['positive', 'demo', 'won'].includes(c.status)).length,
       demos: demoLeads.size,
-      sales: realContacts.filter((c) => c.status === 'won').length,
+      sales: purchases.length,
     };
-  }, [contacts, events, websiteLeads]);
+  }, [contacts, events, websiteLeads, purchases]);
 
   const variants = useMemo(() => ['A', 'B'].map((variant) => {
     const group = contacts.filter((c) => c.email !== 'pixel-test@clinic-flow.co.il' && c.variant === variant);
@@ -234,6 +245,17 @@ export function CampaignDashboardPage() {
             </table>
           </div>
           {!busy && websiteLeads.length === 0 && <div className="p-10 text-center text-sm text-slate-500">עדיין לא התקבלו בקשות הדגמה.</div>}
+        </section>
+
+        <section className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 p-5"><h2 className="font-bold text-slate-900">רכישות אחרונות</h2><p className="mt-1 text-xs text-slate-500">נתונים מטבלת הרכישות בפועל, לא רק סטטוס ידני של ליד.</p></div>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[620px] text-right text-sm">
+              <thead className="bg-slate-50 text-xs text-slate-500"><tr><th className="p-4">אימייל</th><th className="p-4">רישיון</th><th className="p-4">סכום</th><th className="p-4">תאריך</th></tr></thead>
+              <tbody>{purchases.slice(0, 50).map((purchase) => <tr key={purchase.id} className="border-t border-slate-100"><td className="p-4 text-slate-700">{purchase.email}</td><td className="p-4 text-slate-700">{purchase.plan || '—'}</td><td className="p-4 font-bold text-teal-700">{typeof purchase.amount === 'number' ? `₪${purchase.amount.toLocaleString('he-IL')}` : '—'}</td><td className="p-4 text-slate-500">{new Date(purchase.purchased_at).toLocaleString('he-IL')}</td></tr>)}</tbody>
+            </table>
+          </div>
+          {!busy && purchases.length === 0 && <div className="p-10 text-center text-sm text-slate-500">עדיין לא נמצאו רכישות.</div>}
         </section>
       </div>
     </main>
