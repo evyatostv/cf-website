@@ -92,6 +92,10 @@ export async function submitLead(lead: Lead): Promise<{ ok: boolean; error?: str
           clinicName: clinicName || "",
           message: body,
           source: clamp(lead.source, 60) || "website",
+          utm_source: record.utm_source || "",
+          utm_medium: record.utm_medium || "",
+          utm_campaign: record.utm_campaign || "",
+          utm_content: record.utm_content || "",
           ts: new Date().toISOString(),
         }),
       });
