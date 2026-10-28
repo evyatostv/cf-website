@@ -12,8 +12,12 @@ const RESEND_ENDPOINT = "https://api.resend.com/emails";
 
 /** Verified sender. Requires clinic-flow.co.il to be verified in Resend. */
 export const DEFAULT_FROM = "ClinicFlow <info@clinic-flow.co.il>";
-/** Replies to any transactional email land in the shared support inbox. */
-export const DEFAULT_REPLY_TO = "info@clinic-flow.co.il";
+/**
+ * Replies land in the owner's working Gmail until a real mailbox/forwarder is
+ * provisioned for the custom domain. The visible sender remains the verified
+ * ClinicFlow domain address.
+ */
+export const DEFAULT_REPLY_TO = "evyatar.druyan@gmail.com";
 
 export interface SendEmailParams {
   /** One or more recipient addresses. */
