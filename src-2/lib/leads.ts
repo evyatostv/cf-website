@@ -45,7 +45,7 @@ export async function submitLead(lead: Lead): Promise<{ ok: boolean; error?: str
   // contact_messages has no clinic column, so fold the clinic name into the body.
   const message = clinicName ? `קליניקה: ${clinicName}\n\n${body}` : body;
 
-  const { error } = await supabase.from("contact_messages").insert({
+  const record = {
     name,
     email,
     phone: phone || null,
@@ -55,11 +55,25 @@ export async function submitLead(lead: Lead): Promise<{ ok: boolean; error?: str
     utm_medium: clamp(lead.attribution?.medium, 160) || null,
     utm_campaign: clamp(lead.attribution?.campaign, 160) || null,
     utm_content: clamp(lead.attribution?.content, 160) || null,
-  });
+  };
+  const { error } = await supabase.from("contact_messages").insert(record);
 
   if (error) {
     console.error("Lead insert failed:", error);
     return { ok: false, error: "שגיאה בשליחה. נסו שוב מאוחר יותר." };
+  }
+
+  // The production database webhook is optional; invoke the notifier directly
+  // as a browser fallback so contact requests still reach the inbox when the
+  // dashboard webhook has not been configured yet. The Edge Function validates
+  // the site Origin and performs the actual Resend send server-side.
+  try {
+    const { error: notifyError } = await supabase.functions.invoke("notify-contact", {
+      body: { record: { ...record, created_at: new Date().toISOString() } },
+    });
+    if (notifyError) console.warn("Contact notification failed (lead was saved):", notifyError);
+  } catch (e) {
+    console.warn("Contact notification invocation failed (lead was saved):", e);
   }
 
   // Best-effort mirror to a Google Apps Script Web App. Apps Script doesn't send

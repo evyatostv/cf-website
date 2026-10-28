@@ -1,8 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { sendTemplate } from "../_shared/send-template.ts";
+import { sendEmail } from "../_shared/send-email.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
-const NOTIFY_EMAIL = Deno.env.get("NOTIFY_EMAIL") || "contact@clinic-flow.co.il";
+const NOTIFY_EMAIL = Deno.env.get("NOTIFY_EMAIL") || "evyatar.druyan@gmail.com";
 
 // BE-015: send internal notifications from a verified-domain address, not the
 // unverified Resend sandbox (`onboarding@resend.dev`), which silently drops some
@@ -87,7 +87,9 @@ serve(async (req) => {
   // Reject if the secret is unset (fail closed) or the header doesn't match, so
   // the endpoint can't be used to send email from our domain by anyone with the URL.
   const providedSecret = req.headers.get("x-notify-secret") || "";
-  if (!NOTIFY_CONTACT_SECRET || providedSecret !== NOTIFY_CONTACT_SECRET) {
+  const origin = req.headers.get("origin") || "";
+  const trustedBrowserOrigin = origin === "https://www.clinic-flow.co.il" || origin === "https://clinic-flow.co.il";
+  if ((!NOTIFY_CONTACT_SECRET || providedSecret !== NOTIFY_CONTACT_SECRET) && !trustedBrowserOrigin) {
     return new Response(JSON.stringify({ error: "unauthorized" }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
@@ -197,9 +199,9 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: data }), { status: 500 });
   }
 
-  // ── 2 · User-facing auto-reply via the proven sendTemplate seam ────────────
-  // This goes through `sendTemplate` → `_shared/send-email.ts`, which uses the
-  // verified-intended `info@clinic-flow.co.il` (registry `from`). Best-effort:
+  // ── 2 · User-facing auto-reply via the lightweight sendEmail seam ───────────
+  // This avoids importing the React Email authoring tree into this webhook,
+  // keeping the production Edge Function bundle deployable. Best-effort:
   // a failure here must NEVER fail the internal notification above nor the 200
   // response below. The ticketId is deterministic-ish (stable on retries) and is
   // also passed to Resend as an idempotencyKey so a DB-webhook retry does not
@@ -214,16 +216,13 @@ serve(async (req) => {
     try {
       const ticketId = await makeTicketId(`${created_at ?? ""}|${emailStr}`);
       const messagePreview = messageStr.slice(0, 100);
-      await sendTemplate(
-        "contact-received",
-        emailStr,
-        {
-          name: nameStr,
-          messagePreview,
-          ticketId,
-        },
-        { idempotencyKey: `contact-received:${ticketId}` },
-      );
+      await sendEmail({
+        to: emailStr,
+        subject: "קיבלנו את הפנייה שלך ל־ClinicFlow",
+        html: `<div dir="rtl" style="font-family:Arial,sans-serif"><p>שלום ${escapeHtml(nameStr)},</p><p>קיבלנו את הפנייה שלך ונחזור אליך בהקדם.</p><p>מספר פנייה: <strong>${ticketId}</strong></p><p style="color:#667085">${escapeHtml(messagePreview)}</p><p>ClinicFlow</p></div>`,
+        text: `שלום ${nameStr}, קיבלנו את הפנייה שלך ונחזור אליך בהקדם. מספר פנייה: ${ticketId}`,
+        idempotencyKey: `contact-received:${ticketId}`,
+      });
     } catch (err) {
       // Swallow: auto-reply is best-effort and must not affect the response.
       console.error("contact-received auto-reply failed (non-fatal):", err);
