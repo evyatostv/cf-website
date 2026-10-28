@@ -138,9 +138,15 @@ serve(async (req) => {
     : escapeHtml(email ? String(email) : "—");
 
   const emailHtml = `
-    <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #0d47a1;">פנייה חדשה מאתר ClinicFlow</h2>
-      <table style="width: 100%; border-collapse: collapse;">
+    <div dir="rtl" style="margin:0;background:#f4f8fb;padding:28px 12px;font-family:Arial,'Noto Sans Hebrew',sans-serif;color:#172b4d;">
+      <div style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #e2eaf1;border-radius:18px;overflow:hidden;box-shadow:0 4px 18px rgba(16,55,92,.08);">
+        <div style="background:linear-gradient(135deg,#0d47a1,#007f99);padding:24px 28px;text-align:right;">
+          <img src="https://www.clinic-flow.co.il/logo/cf-lockup-horizontal.png" width="170" alt="ClinicFlow" style="display:block;max-width:170px;height:auto;filter:brightness(0) invert(1);" />
+          <h1 style="margin:20px 0 0;color:#ffffff;font-size:24px;line-height:1.35;">פנייה חדשה מאתר ClinicFlow</h1>
+          <p style="margin:6px 0 0;color:#dff8fc;font-size:14px;">נכנסה פנייה חדשה — כדאי לחזור אליה בהקדם</p>
+        </div>
+        <div style="padding:26px 28px;">
+        <table role="presentation" style="width:100%;border-collapse:collapse;">
         <tr>
           <td style="padding: 8px 12px; font-weight: bold; color: #1a2332;">שם:</td>
           <td style="padding: 8px 12px;">${escapeHtml(nameStr)}</td>
@@ -157,9 +163,14 @@ serve(async (req) => {
           <td style="padding: 8px 12px; font-weight: bold; color: #1a2332;">נשלח ב:</td>
           <td style="padding: 8px 12px;">${escapeHtml(formatCreatedAt(created_at))}</td>
         </tr>
-      </table>
-      <div style="margin-top: 16px; padding: 16px; background: #f5f7f9; border-radius: 8px; border-right: 4px solid #0d47a1;">
-        <p style="margin: 0; color: #1a2332; white-space: pre-wrap;">${escapeHtml(messageStr)}</p>
+        </table>
+        <div style="margin-top:22px;padding:18px 20px;background:#f5f8fb;border-radius:12px;border-right:4px solid #00a6b2;">
+          <div style="font-size:13px;color:#5c6f82;margin-bottom:8px;">תוכן הפנייה</div>
+          <p style="margin:0;color:#172b4d;white-space:pre-wrap;line-height:1.7;">${escapeHtml(messageStr)}</p>
+        </div>
+        <a href="mailto:${emailValid ? escapeHtml(emailStr) : escapeHtml(NOTIFY_EMAIL)}" style="display:inline-block;margin-top:22px;background:#0d47a1;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:bold;">השב לפונה</a>
+        </div>
+        <div style="padding:16px 28px;background:#f8fafc;border-top:1px solid #e8eef4;color:#718096;font-size:12px;">ClinicFlow · ניהול פעילות פרטית לרופאים · <a href="https://www.clinic-flow.co.il" style="color:#0d47a1;">clinic-flow.co.il</a></div>
       </div>
     </div>
   `;
@@ -219,8 +230,8 @@ serve(async (req) => {
       await sendEmail({
         to: emailStr,
         subject: "קיבלנו את הפנייה שלך ל־ClinicFlow",
-        html: `<div dir="rtl" style="font-family:Arial,sans-serif"><p>שלום ${escapeHtml(nameStr)},</p><p>קיבלנו את הפנייה שלך ונחזור אליך בהקדם.</p><p>מספר פנייה: <strong>${ticketId}</strong></p><p style="color:#667085">${escapeHtml(messagePreview)}</p><p>ClinicFlow</p></div>`,
-        text: `שלום ${nameStr}, קיבלנו את הפנייה שלך ונחזור אליך בהקדם. מספר פנייה: ${ticketId}`,
+        html: `<div dir="rtl" style="margin:0;background:#f4f8fb;padding:28px 12px;font-family:Arial,'Noto Sans Hebrew',sans-serif;color:#172b4d"><div style="max-width:600px;margin:0 auto;background:#fff;border:1px solid #e2eaf1;border-radius:18px;overflow:hidden"><div style="background:linear-gradient(135deg,#0d47a1,#007f99);padding:24px;text-align:right"><img src="https://www.clinic-flow.co.il/logo/cf-lockup-horizontal.png" width="160" alt="ClinicFlow" style="display:block;max-width:160px;height:auto;filter:brightness(0) invert(1)" /></div><div style="padding:28px"><p style="font-size:18px;margin:0 0 12px">שלום ${escapeHtml(nameStr)},</p><p style="font-size:16px;line-height:1.7;margin:0 0 14px">קיבלנו את הפנייה שלך ונחזור אליך בהקדם.</p><div style="padding:14px 16px;background:#f5f8fb;border-right:4px solid #00a6b2;border-radius:10px"><div style="font-size:12px;color:#718096">מספר פנייה</div><strong style="font-size:18px;color:#0d47a1">${ticketId}</strong></div><p style="font-size:13px;line-height:1.6;color:#667085;margin:18px 0 0">${escapeHtml(messagePreview)}</p></div><div style="padding:14px 24px;background:#f8fafc;border-top:1px solid #e8eef4;color:#718096;font-size:12px">ClinicFlow · <a href="https://www.clinic-flow.co.il" style="color:#0d47a1">clinic-flow.co.il</a></div></div></div>`,
+        text: `שלום ${nameStr}, קיבלנו את הפנייה שלך ונחזור אליך בהקדם. מספר פנייה: ${ticketId}. ClinicFlow`,
         idempotencyKey: `contact-received:${ticketId}`,
       });
     } catch (err) {
