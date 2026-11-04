@@ -53,7 +53,7 @@ export function Navigation() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
           scrolled ? "bg-white/95 backdrop-blur-lg shadow-sm border-b border-[#e1e6ec]" : "bg-transparent"
         }`}
       >
@@ -109,13 +109,13 @@ export function Navigation() {
                 <>
                   <Link
                     to="/login"
-                    className="px-6 py-2.5 rounded-xl transition-all font-medium text-[#0d47a1] hover:bg-[#f5f7f9]"
+                    className="px-6 py-2.5 rounded-xl transition-colors font-medium text-[#0d47a1] hover:bg-[#f5f7f9]"
                   >
                     כניסה
                   </Link>
                   <Link
                     to="/signup"
-                    className="px-5 py-2.5 bg-[#0d47a1] hover:bg-[#0a3880] text-white rounded-xl shadow-xs hover:shadow-sm transition-all font-medium text-sm"
+                    className="px-5 py-2.5 bg-[#0d47a1] hover:bg-[#0a3880] text-white rounded-xl shadow-xs hover:shadow-sm transition-colors font-medium text-sm"
                   >
                     הרשמה
                   </Link>
@@ -123,7 +123,7 @@ export function Navigation() {
               ) : (
                 <Link
                   to="/dashboard"
-                  className="px-5 py-2.5 bg-[#0d47a1] hover:bg-[#0a3880] text-white rounded-xl shadow-xs hover:shadow-sm transition-all font-medium text-sm"
+                  className="px-5 py-2.5 bg-[#0d47a1] hover:bg-[#0a3880] text-white rounded-xl shadow-xs hover:shadow-sm transition-colors font-medium text-sm"
                 >
                   {user?.user_metadata?.full_name || user?.email}
                 </Link>

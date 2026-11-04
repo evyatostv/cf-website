@@ -9,6 +9,27 @@ function RedirectToNoSubscription() {
   }, []);
   return <meta httpEquiv="refresh" content="0; url=/clinic-software-no-subscription" />;
 }
+function RedirectToDemo() {
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const source = params.get("utm_source") || "organic";
+      const medium = params.get("utm_medium") || "social";
+      const campaign = params.get("utm_campaign") || "doctor_hospital_private";
+      const content = params.get("utm_content") || "short_demo_link";
+      const target = `/contact?intent=demo&utm_source=${encodeURIComponent(source)}&utm_medium=${encodeURIComponent(medium)}&utm_campaign=${encodeURIComponent(campaign)}&utm_content=${encodeURIComponent(content)}`;
+      window.location.replace(target);
+    }
+  }, []);
+  return (
+    <>
+      <title data-rh="true">ClinicFlow — דמו</title>
+      <meta data-rh="true" name="description" content="בקשו הדגמה קצרה של ClinicFlow — תוכנה מקומית לניהול הפעילות הפרטית של רופאים בישראל." />
+      <link data-rh="true" rel="canonical" href="https://www.clinic-flow.co.il/demo" />
+      <meta httpEquiv="refresh" content="0; url=/contact?intent=demo" />
+    </>
+  );
+}
 import { Layout } from "@/app/components/Layout";
 import { RequireAuth } from "@/app/components/RequireAuth";
 import { AuthProvider } from "@/lib/auth-context";
@@ -18,6 +39,7 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 import { ContentPage } from "@/app/components/ContentPage";
 import { contentPages } from "@/app/content/registry";
 import { blogPosts } from "@/app/data/blog-posts";
+import { AttributionCapture } from "@/app/components/AttributionCapture";
 
 // Root element for every route: the app-wide providers + error boundary wrap
 // the visual <Layout /> (which itself renders <Navigation/>, <Outlet/>,
@@ -48,6 +70,7 @@ function RootProviders() {
       <AuthProvider>
         <PaymentProvider>
           <Layout />
+          <AttributionCapture />
           <Analytics />
           <SpeedInsights />
         </PaymentProvider>
@@ -90,6 +113,7 @@ export const routes: RouteRecord[] = [
         path: "contact",
         lazy: () => import("@/app/pages/ContactPage").then((m) => ({ Component: m.ContactPage })),
       },
+      { path: "demo", element: <RedirectToDemo /> },
       {
         path: "terms",
         lazy: () => import("@/app/pages/TermsPage").then((m) => ({ Component: m.TermsPage })),
@@ -175,6 +199,8 @@ export const routes: RouteRecord[] = [
           </RequireAuth>
         ),
       },
+      { path: "checkout/success", element: <CheckoutSuccessLazy /> },
+      { path: "checkout/cancel", element: <CheckoutCancelLazy /> },
       {
         path: "reset-password",
         lazy: () => import("@/app/pages/ResetPasswordPage").then((m) => ({ Component: m.ResetPasswordPage })),
@@ -242,6 +268,8 @@ const SpaFallback = () => (
 const DashboardPage = lazy(() => import("@/app/pages/DashboardPage").then((m) => ({ default: m.DashboardPage })));
 const CampaignDashboardPage = lazy(() => import("@/app/pages/CampaignDashboardPage").then((m) => ({ default: m.CampaignDashboardPage })));
 const PaymentPage = lazy(() => import("@/app/pages/PaymentPage").then((m) => ({ default: m.PaymentPage })));
+const CheckoutSuccessPage = lazy(() => import("@/app/pages/CheckoutStatusPages").then((m) => ({ default: m.CheckoutSuccessPage })));
+const CheckoutCancelPage = lazy(() => import("@/app/pages/CheckoutStatusPages").then((m) => ({ default: m.CheckoutCancelPage })));
 const ThankYouPage = lazy(() => import("@/app/pages/ThankYouPage").then((m) => ({ default: m.ThankYouPage })));
 const CompleteProfilePage = lazy(() => import("@/app/pages/CompleteProfilePage").then((m) => ({ default: m.CompleteProfilePage })));
 const DownloadPage = lazy(() => import("@/app/pages/EmailDestinationPages").then((m) => ({ default: m.DownloadPage })));
@@ -258,6 +286,8 @@ function CampaignDashboardLazy() {
 function PaymentLazy() {
   return <Suspense fallback={<SpaFallback />}><PaymentPage /></Suspense>;
 }
+function CheckoutSuccessLazy() { return <Suspense fallback={<SpaFallback />}><CheckoutSuccessPage /></Suspense>; }
+function CheckoutCancelLazy() { return <Suspense fallback={<SpaFallback />}><CheckoutCancelPage /></Suspense>; }
 function ThankYouLazy() {
   return <Suspense fallback={<SpaFallback />}><ThankYouPage /></Suspense>;
 }

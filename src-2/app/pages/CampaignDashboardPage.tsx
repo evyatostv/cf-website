@@ -139,6 +139,7 @@ export function CampaignDashboardPage() {
       positive: realContacts.filter((c) => ['positive', 'demo', 'won'].includes(c.status)).length,
       demos: demoLeads.size,
       sales: purchases.length,
+      bounceRate: sent ? (realContacts.filter((c) => c.status === 'bounced').length / sent) * 100 : 0,
     };
   }, [contacts, events, websiteLeads, purchases]);
 
@@ -194,6 +195,10 @@ export function CampaignDashboardPage() {
           <Metric title="לחיצות" value={stats.clicks} note="לחיצה היא אות אמין יותר מפתיחה" icon={MousePointerClick} tone="green" />
           <Metric title="תגובות" value={stats.replies} note={`${stats.positive} חיוביות`} icon={Reply} tone="amber" />
         </section>
+
+        <div className={`mt-4 rounded-xl border p-4 text-sm ${stats.bounceRate > 2 ? 'border-red-200 bg-red-50 text-red-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'}`}>
+          <strong>שיעור החזרות:</strong> {stats.bounceRate.toFixed(1)}% — {stats.bounceRate > 2 ? 'מעל סף 2%; לעצור שליחות חדשות עד אימות הכתובות.' : 'מתחת לסף 2%; אפשר להמשיך רק עם כתובות מאומתות.'}
+        </div>
 
         <section className="mt-6 grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

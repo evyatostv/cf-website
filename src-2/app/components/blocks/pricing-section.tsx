@@ -87,7 +87,7 @@ function PricingSection({ tiers, className }: PricingSectionProps) {
               key={tier.name}
               className={cn(
                 "relative group backdrop-blur-sm",
-                "rounded-3xl transition-all duration-300",
+                "rounded-3xl transition-colors duration-300",
                 "flex flex-col",
                 tier.highlight
                   ? "bg-[#f8fcff] md:scale-105 z-10"
@@ -174,7 +174,7 @@ function PricingSection({ tiers, className }: PricingSectionProps) {
                   <a href={tier.href} className="w-full block" onClick={tier.onClick}>
                     <Button
                       className={cn(
-                        "w-full relative transition-all duration-300",
+                        "w-full relative transition-colors duration-300",
                         tier.highlight
                           ? buttonStyles.highlight
                           : buttonStyles.default,
@@ -190,7 +190,7 @@ function PricingSection({ tiers, className }: PricingSectionProps) {
                     onClick={tier.onClick}
                     disabled={tier.disabled}
                     className={cn(
-                      "w-full relative transition-all duration-300",
+                      "w-full relative transition-colors duration-300",
                       tier.highlight
                         ? buttonStyles.highlight
                         : buttonStyles.default,

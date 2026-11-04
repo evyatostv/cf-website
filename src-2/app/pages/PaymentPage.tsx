@@ -84,7 +84,7 @@ export function PaymentPage() {
       }
 
       const res = await fetch(
-        `${SUPABASE_URL}/functions/v1/create-allpay-payment`,
+        `${SUPABASE_URL}/functions/v1/create-grow-payment`,
         {
           method: 'POST',
           headers: {
@@ -98,7 +98,7 @@ export function PaymentPage() {
 
       const data = await res.json();
 
-      if (!res.ok || !data.payment_url) {
+      if (!res.ok || !data.paymentUrl) {
         // Edge-function errors may be raw/English — route through the Hebrew map.
         setError(data.error ? mapAuthError(data.error) : 'שגיאה ביצירת תשלום');
         // A 401/expired token surfaces here too — offer the re-login CTA.
@@ -108,7 +108,7 @@ export function PaymentPage() {
       }
 
       // Redirect to AllPay payment page
-      window.location.href = data.payment_url;
+      window.location.href = data.paymentUrl;
     } catch (err: any) {
       setError(mapAuthError(err) || 'שגיאה ביצירת תשלום');
       setProcessing(false);

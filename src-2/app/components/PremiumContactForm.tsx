@@ -31,8 +31,11 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
     } catch {
       window.sessionStorage.removeItem(storageKey);
     }
-    const next = Object.keys(fromUrl).length > 0 ? fromUrl : saved;
-    if (Object.keys(fromUrl).length > 0) window.sessionStorage.setItem(storageKey, JSON.stringify(next));
+    const next = { ...saved, ...fromUrl };
+    if (!next.landing_path) next.landing_path = window.location.pathname;
+    if (Object.keys(fromUrl).length > 0 || !saved.landing_path) {
+      window.sessionStorage.setItem(storageKey, JSON.stringify(next));
+    }
     setStoredAttribution(next);
   }, [searchParams]);
 
@@ -57,7 +60,7 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
       content: storedAttribution.utm_content || searchParams.get('utm_content') || undefined,
     };
     const attributionLabel = Object.values(attribution).filter(Boolean).join('/');
-    const landingPath = window.location.pathname;
+    const landingPath = storedAttribution.landing_path || window.location.pathname;
     const res = await submitLead({
       name: formData.name,
       email: formData.email,
@@ -105,7 +108,7 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
           <label className="block text-sm font-medium text-[#1a2332] mb-2">
             שם מלא
           </label>
-          <div className="flex items-center h-12 px-3 border border-[#e1e6ec] rounded-lg focus-within:ring-2 focus-within:ring-[#0d47a1] transition-all overflow-hidden bg-white">
+          <div className="flex items-center h-12 px-3 border border-[#e1e6ec] rounded-lg focus-within:ring-2 focus-within:ring-[#0d47a1] transition-colors overflow-hidden bg-white">
             <User className="w-5 h-5 text-[#6b7c93] flex-shrink-0" />
             <input
               type="text"
@@ -124,7 +127,7 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
           <label className="block text-sm font-medium text-[#1a2332] mb-2">
             דוא"ל
           </label>
-          <div className="flex items-center h-12 px-3 border border-[#e1e6ec] rounded-lg focus-within:ring-2 focus-within:ring-[#0d47a1] transition-all overflow-hidden bg-white">
+          <div className="flex items-center h-12 px-3 border border-[#e1e6ec] rounded-lg focus-within:ring-2 focus-within:ring-[#0d47a1] transition-colors overflow-hidden bg-white">
             <Mail className="w-5 h-5 text-[#6b7c93] flex-shrink-0" />
             <input
               type="email"
@@ -143,7 +146,7 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
           <label className="block text-sm font-medium text-[#1a2332] mb-2">
             טלפון <span className="text-[#9aa7b8] text-sm font-normal">(לא חובה)</span>
           </label>
-          <div className="flex items-center h-12 px-3 border border-[#e1e6ec] rounded-lg focus-within:ring-2 focus-within:ring-[#0d47a1] transition-all overflow-hidden bg-white">
+          <div className="flex items-center h-12 px-3 border border-[#e1e6ec] rounded-lg focus-within:ring-2 focus-within:ring-[#0d47a1] transition-colors overflow-hidden bg-white">
             <Phone className="w-5 h-5 text-[#6b7c93] flex-shrink-0" />
             <input
               type="tel"
@@ -161,7 +164,7 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
           <label className="block text-sm font-medium text-[#1a2332] mb-2">
             שם הקליניקה <span className="text-[#9aa7b8] text-sm font-normal">(לא חובה)</span>
           </label>
-          <div className="flex items-center h-12 px-3 border border-[#e1e6ec] rounded-lg focus-within:ring-2 focus-within:ring-[#0d47a1] transition-all overflow-hidden bg-white">
+          <div className="flex items-center h-12 px-3 border border-[#e1e6ec] rounded-lg focus-within:ring-2 focus-within:ring-[#0d47a1] transition-colors overflow-hidden bg-white">
             <Building2 className="w-5 h-5 text-[#6b7c93] flex-shrink-0" />
             <input
               type="text"
@@ -184,7 +187,7 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
             value={formData.message}
             onChange={handleChange}
             rows={4}
-            className="w-full px-3 py-3 bg-white border border-[#e1e6ec] rounded-lg resize-none outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all text-base text-[#1a2332]"
+            className="w-full px-3 py-3 bg-white border border-[#e1e6ec] rounded-lg resize-none outline-none focus:ring-2 focus:ring-[#0d47a1] transition-colors text-base text-[#1a2332]"
             placeholder="ספר/י לנו יותר על הצרכים שלך..."
           />
         </div>
@@ -193,7 +196,7 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
         <button
           type="submit"
           disabled={loading}
-          className="flex items-center justify-center gap-2 w-full bg-[#0d47a1] hover:bg-[#0a3880] text-white font-semibold py-3.5 rounded-xl shadow-xs hover:shadow-md transition-all disabled:opacity-50 cursor-pointer text-base"
+          className="flex items-center justify-center gap-2 w-full bg-[#0d47a1] hover:bg-[#0a3880] text-white font-semibold py-3.5 rounded-xl shadow-xs hover:shadow-md transition-colors disabled:opacity-50 cursor-pointer text-base"
         >
           {loading ? 'שולח...' : 'שליחת פנייה להדגמה'}
         </button>

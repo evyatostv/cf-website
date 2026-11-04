@@ -126,8 +126,8 @@ const page: ContentPageData = {
     },
   ],
   cta: {
-    label: "לקבלת הדגמה קצרה",
-    to: "/contact?intent=demo&utm_source=organic&utm_medium=website&utm_campaign=doctors_landing&utm_content=private_doctors",
+    label: "למדו עוד על ClinicFlow",
+    to: "/pricing?utm_source=organic&utm_medium=website&utm_campaign=doctors_landing&utm_content=private_doctors",
   },
   showHeroCta: true,
   related: [
@@ -163,7 +163,7 @@ const page: ContentPageData = {
     },
   ],
   datePublished: "2026-07-12",
-  dateModified: "2026-10-27",
+  dateModified: "2026-11-04",
 };
 
 export default page;

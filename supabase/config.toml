@@ -9,6 +9,12 @@ verify_jwt = false
 [functions.create-allpay-payment]
 verify_jwt = false
 
+[functions.create-grow-payment]
+verify_jwt = false
+
+[functions.grow-webhook]
+verify_jwt = false
+
 [functions.allpay-webhook]
 verify_jwt = false
 

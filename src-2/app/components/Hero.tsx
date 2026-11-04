@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
-import { ShieldCheck, WifiOff } from "lucide-react";
+import { ArrowLeft, ShieldCheck, WifiOff } from "lucide-react";
+import { Link } from "react-router";
 
 export function Hero() {
   return (
@@ -35,8 +36,6 @@ export function Hero() {
             className="text-base sm:text-lg md:text-2xl text-[#6b7c93] mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-2"
           >
             תיקי מטופלים, יומן תורים, תיעוד ביקורים, מסמכים וניהול כספי — במערכת פשוטה שנבנתה לרופא העצמאי.
-            <br />
-            1,499 ₪ בתשלום חד פעמי. הנתונים נשארים אצלך, והמחשב ממשיך לעבוד גם בלי אינטרנט.
           </motion.p>
 
           {/* CTA Buttons */}
@@ -46,24 +45,25 @@ export function Hero() {
             transition={{ delay: 0.5, duration: 0.6 }}
             className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4"
           >
-            <a href="#lead-form">
+            <Link to="/pricing" className="w-full sm:w-auto">
               <motion.button
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                className="group relative w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-2xl shadow-lg shadow-[#0d47a1]/20 hover:shadow-xl hover:shadow-[#0d47a1]/30 transition-all duration-300 text-lg font-medium"
+                className="group relative w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-2xl shadow-lg shadow-[#0d47a1]/20 hover:shadow-xl hover:shadow-[#0d47a1]/30 transition-colors duration-300 text-lg font-medium"
               >
-                <span className="relative z-10">לקבלת הדגמה קצרה</span>
+                <span className="relative z-10">למדו עוד על ClinicFlow</span>
+                <ArrowLeft className="relative z-10 inline-block mr-2 w-5 h-5" aria-hidden="true" />
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#0a3a85] to-[#006d77] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </motion.button>
-            </a>
+            </Link>
 
-            <a href="#features">
+            <a href="#product-video" className="w-full sm:w-auto">
               <motion.button
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full sm:w-auto px-10 py-5 bg-white text-[#1a2332] rounded-2xl border-2 border-[#e1e6ec] hover:border-[#0d47a1] hover:bg-[#f8fafb] transition-all duration-300 text-lg font-medium shadow-sm"
+                className="w-full sm:w-auto px-10 py-5 bg-white text-[#1a2332] rounded-2xl border-2 border-[#e1e6ec] hover:border-[#0d47a1] hover:bg-[#f8fafb] transition-colors duration-300 text-lg font-medium shadow-sm"
               >
-                גלו עוד
+                צפו במערכת בפעולה
               </motion.button>
             </a>
           </motion.div>

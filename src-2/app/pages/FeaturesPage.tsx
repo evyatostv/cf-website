@@ -11,7 +11,6 @@ import {
   Database,
   Lock,
   WifiOff,
-  CheckCircle2,
   ArrowLeft,
 } from "lucide-react";
 import { Link } from "react-router";
@@ -133,17 +132,13 @@ export function FeaturesPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="bg-white rounded-2xl p-6 sm:p-8 border border-[#e2e8f0] flex flex-col hover:border-[#0d47a1]/40 hover:shadow-lg transition-all"
+              className="bg-white rounded-2xl p-6 sm:p-8 border border-[#e2e8f0] flex flex-col hover:border-[#0d47a1]/40 hover:shadow-lg transition-colors"
             >
               <div className="w-12 h-12 rounded-xl bg-[#e8f4f8] flex items-center justify-center mb-5">
                 <feature.icon className="w-6 h-6 text-[#0d47a1]" />
               </div>
               <h3 className="text-lg sm:text-xl font-bold text-[#0f172a] mb-2">{feature.title}</h3>
               <p className="text-sm sm:text-base text-[#64748b] leading-relaxed flex-grow">{feature.description}</p>
-              <div className="mt-4 pt-3 border-t border-[#f1f5f9] flex items-center gap-1.5 text-xs font-medium text-emerald-700">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>כלול ברישיון המלא</span>
-              </div>
             </motion.div>
           ))}
         </div>
@@ -158,14 +153,14 @@ export function FeaturesPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               to="/pricing"
-              className="w-full sm:w-auto px-8 py-3.5 bg-[#0d47a1] hover:bg-[#0a3880] text-white rounded-xl font-semibold shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 py-3.5 bg-[#0d47a1] hover:bg-[#0a3880] text-white rounded-xl font-semibold shadow-sm hover:shadow-md transition-colors flex items-center justify-center gap-2"
             >
               <span>לרכישת רישיון</span>
               <ArrowLeft className="w-4 h-4" />
             </Link>
             <Link
               to="/contact"
-              className="w-full sm:w-auto px-8 py-3.5 bg-white text-[#1e293b] border border-[#cbd5e1] hover:bg-[#f8fafc] rounded-xl font-medium transition-all"
+              className="w-full sm:w-auto px-8 py-3.5 bg-white text-[#1e293b] border border-[#cbd5e1] hover:bg-[#f8fafc] rounded-xl font-medium transition-colors"
             >
               שאלות? דברו איתנו
             </Link>

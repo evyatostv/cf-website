@@ -123,13 +123,13 @@ export function AboutPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/pricing"
-              className="px-8 py-3.5 bg-white text-[#0d47a1] rounded-xl font-bold hover:bg-[#f8fafc] transition-all shadow-md text-base"
+              className="px-8 py-3.5 bg-white text-[#0d47a1] rounded-xl font-bold hover:bg-[#f8fafc] transition-colors shadow-md text-base"
             >
               לרכישת רישיון לצמיתות
             </Link>
             <Link
               to="/contact"
-              className="px-8 py-3.5 bg-white/10 hover:bg-white/20 text-white rounded-xl border border-white/30 transition-all font-medium text-base"
+              className="px-8 py-3.5 bg-white/10 hover:bg-white/20 text-white rounded-xl border border-white/30 transition-colors font-medium text-base"
             >
               צרו קשר להדגמה
             </Link>

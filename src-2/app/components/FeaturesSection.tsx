@@ -1,6 +1,5 @@
 import { motion, useInView } from "motion/react";
 import { useRef } from "react";
-import { Link } from "react-router";
 import {
   FileText,
   Calendar,
@@ -109,10 +108,6 @@ export function FeaturesSection() {
           </p>
         </motion.div>
 
-        <p className="text-sm text-[#475569] text-center mb-10 bg-[#f1f5f9] rounded-xl px-6 py-3 max-w-2xl mx-auto border border-[#cbd5e1]">
-          * כל היכולות כלולות במלואן ברישיון ClinicFlow לצמיתות (1,499 ₪) — ללא פיצול לחבילות, ללא עלויות חודשיות וללא תשלומים נוספים.{" "}
-          <Link to="/pricing" className="text-[#0d47a1] font-semibold hover:underline">ראו פרטי תמחור מלאים.</Link>
-        </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
           {features.map((feature, index) => (
             <Feature key={index} {...feature} delay={0} />
@@ -134,7 +129,7 @@ export function FeaturesSection() {
             <a href="#lead-form" className="flex-shrink-0">
               <button
                 type="button"
-                className="px-8 py-3.5 bg-[#0d47a1] hover:bg-[#0a3880] text-white rounded-xl font-semibold shadow-sm hover:shadow-md transition-all whitespace-nowrap cursor-pointer"
+                className="px-8 py-3.5 bg-[#0d47a1] hover:bg-[#0a3880] text-white rounded-xl font-semibold shadow-sm hover:shadow-md transition-colors whitespace-nowrap cursor-pointer"
               >
                 תיאום הדגמה מהירה
               </button>

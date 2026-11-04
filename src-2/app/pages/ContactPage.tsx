@@ -5,6 +5,7 @@ import { useSearchParams } from "react-router";
 import { submitLead } from "@/lib/leads";
 import { CONTACT_EMAIL, CONTACT_WHATSAPP_URL } from "@/app/config/site";
 import { Seo, SITE_NAME, SITE_ORIGIN } from "@/app/components/Seo";
+import { readStoredAttribution } from "@/app/components/AttributionCapture";
 
 export function ContactPage() {
   const [searchParams] = useSearchParams();
@@ -33,13 +34,15 @@ export function ContactPage() {
     setError("");
     setSuccess(false);
 
+    const storedAttribution = readStoredAttribution();
     const attribution = ["utm_source", "utm_medium", "utm_campaign", "utm_content"]
-      .map((key) => [key, searchParams.get(key)] as const)
+      .map((key) => [key, searchParams.get(key) || storedAttribution[key]] as const)
       .filter((entry): entry is readonly [string, string] => Boolean(entry[1]));
     const attributionSource = attribution.map(([, value]) => value).join("/");
+    const landingPath = storedAttribution.landing_path || window.location.pathname;
     const source = isDemoRequest
-      ? ["doctor-demo-request", attributionSource].filter(Boolean).join("/")
-      : attributionSource || "contact-page";
+      ? ["doctor-demo-request", attributionSource, `landing:${landingPath}`].filter(Boolean).join("/")
+      : [attributionSource || "contact-page", `landing:${landingPath}`].join("/");
     const message = formData.message.trim() || (isDemoRequest
       ? "אשמח לקבל הדגמה קצרה של ClinicFlow."
       : "פנייה מטופס יצירת הקשר.");
@@ -52,10 +55,10 @@ export function ContactPage() {
       clinicName: formData.clinicName,
       source,
       attribution: {
-        source: searchParams.get("utm_source") || undefined,
-        medium: searchParams.get("utm_medium") || undefined,
-        campaign: searchParams.get("utm_campaign") || undefined,
-        content: searchParams.get("utm_content") || undefined,
+        source: searchParams.get("utm_source") || storedAttribution.utm_source || undefined,
+        medium: searchParams.get("utm_medium") || storedAttribution.utm_medium || undefined,
+        campaign: searchParams.get("utm_campaign") || storedAttribution.utm_campaign || undefined,
+        content: searchParams.get("utm_content") || storedAttribution.utm_content || undefined,
       },
     });
 
@@ -176,7 +179,7 @@ export function ContactPage() {
                   autoComplete="name"
                   value={formData.name}
                   onChange={(e) => updateField("name", e.target.value)}
-                  className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all"
+                  className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-colors"
                   placeholder="הכנס/י את שמך"
                 />
               </div>
@@ -194,7 +197,7 @@ export function ContactPage() {
                   spellCheck={false}
                   value={formData.email}
                   onChange={(e) => updateField("email", e.target.value)}
-                  className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all"
+                  className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-colors"
                   placeholder="your@email.com"
                 />
               </div>
@@ -208,7 +211,7 @@ export function ContactPage() {
                   inputMode="tel"
                   value={formData.phone}
                   onChange={(e) => updateField("phone", e.target.value)}
-                  className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all"
+                  className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-colors"
                   placeholder="050-1234567"
                 />
               </div>
@@ -221,7 +224,7 @@ export function ContactPage() {
                   autoComplete="organization"
                   value={formData.clinicName}
                   onChange={(e) => updateField("clinicName", e.target.value)}
-                  className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all"
+                  className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-colors"
                   placeholder="שם המרפאה שלך"
                 />
               </div>
@@ -233,7 +236,7 @@ export function ContactPage() {
                   value={formData.message}
                   onChange={(e) => updateField("message", e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-all resize-y min-h-[120px] sm:min-h-[150px]"
+                  className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-colors resize-y min-h-[120px] sm:min-h-[150px]"
                   placeholder={isDemoRequest ? "אפשר לציין שעה נוחה או שאלה שחשוב לך שנראה בהדגמה" : "ספר/י לנו איך נוכל לעזור..."}
                 />
               </div>
@@ -247,7 +250,7 @@ export function ContactPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-[#0d47a1]/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-4 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-[#0d47a1]/30 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Send className="w-5 h-5" />
                 {loading ? "שולח/ת..." : isDemoRequest ? "בקשת הדגמה קצרה" : "שלח/י הודעה"}

@@ -1,12 +1,26 @@
+/* Hallmark v2.0.0 · existing system audit · preserve ClinicFlow RTL palette and wiring */
+/* Critique: keep the product-first layout; remove motion and overflow surprises before ship. */
 @import "./tailwind.css";
 @import "./theme.css";
 @import "./fonts.css";
 @import "./carousel.css";
 
+/* Hallmark floor: honor reduced-motion preferences globally. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Mobile safety net: never allow horizontal scrolling. The fixed nav and the
    off-canvas drawer are position:fixed (not sticky), so clipping x-overflow here
    has no layout side-effects. */
-html { overflow-x: hidden; }
+html, body { overflow-x: clip; }
 
 /* Blog post content */
 .blog-content {

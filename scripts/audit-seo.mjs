@@ -254,7 +254,9 @@ for (const p of pages) {
       fail(`${rel}: contains stale pricing/packaging copy "${phrase}"`);
   }
 
-  if (["/", "/pricing", "/clinic-software-for-private-doctors"].includes(route)) {
+  // The homepage intentionally introduces the product without leading with price;
+  // pricing remains required on the pricing and doctor landing pages.
+  if (["/pricing", "/clinic-software-for-private-doctors"].includes(route)) {
     if (!html.includes("1,499"))
       fail(`${rel}: primary sales page is missing the current 1,499 ₪ price`);
   }

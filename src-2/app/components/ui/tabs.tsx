@@ -118,7 +118,7 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
         {isSelected && (
           <span
             className={cn(
-              "absolute bg-primary transition-all",
+              "absolute bg-primary transition-colors",
               orientation === "vertical"
                 ? "left-0 top-0 bottom-0 w-0.5"
                 : "bottom-0 left-0 right-0 h-0.5"

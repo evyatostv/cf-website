@@ -12,7 +12,7 @@ const SecurityFeature = ({ icon: Icon, title, description, delay }: any) => {
       initial={{ opacity: 0, y: 30 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
       transition={{ duration: 0.5, delay }}
-      className="group relative bg-white rounded-3xl p-6 sm:p-8 border border-[#e1e6ec] hover:border-[#0d47a1]/30 hover:shadow-xl hover:shadow-[#0d47a1]/5 transition-all duration-300"
+      className="group relative bg-white rounded-3xl p-6 sm:p-8 border border-[#e1e6ec] hover:border-[#0d47a1]/30 hover:shadow-xl hover:shadow-[#0d47a1]/5 transition-colors duration-300"
     >
       <div className="flex flex-col items-center text-center">
         <div className="w-16 h-16 rounded-2xl bg-[#e8f4f8] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
