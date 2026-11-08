@@ -131,6 +131,7 @@ const page: ContentPageData = {
   ],
   cta: { label: "למחיר ולרכישת רישיון", to: "/pricing" },
   related: [
+    { label: "השוואת תוכנות לניהול מרפאה פרטית", to: "/clinic-software-comparison" },
     { label: "תוכנה לניהול קליניקה ללא מנוי", to: "/clinic-software-no-subscription" },
     { label: "תוכנת קליניקה אופליין", to: "/offline-clinic-software" },
     { label: "כל התכונות", to: "/features" },

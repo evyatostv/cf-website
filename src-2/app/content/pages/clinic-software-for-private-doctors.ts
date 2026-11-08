@@ -136,6 +136,7 @@ const page: ContentPageData = {
     { label: "כל התכונות של ClinicFlow", to: "/features" },
     { label: "תוכנה לניהול קליניקה שעובדת אופליין", to: "/offline-clinic-software" },
     { label: "תוכנה לניהול קליניקה ללא מנוי", to: "/clinic-software-no-subscription" },
+    { label: "איך לבחור תוכנה לניהול מרפאה פרטית", to: "/clinic-software-comparison" },
     { label: "תיקון 13 — מה זה אומר למרפאה שלך", to: "/tikun-13-clinic-software" },
   ],
   jsonLd: [
