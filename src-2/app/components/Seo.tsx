@@ -37,6 +37,21 @@ export function Seo({ title, description, canonicalPath, ogImage, jsonLd, noinde
   const fullTitle = title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;
   const canonical = absolute(canonicalPath);
   const image = absolute(ogImage ?? DEFAULT_OG_IMAGE);
+  const organization = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: SITE_NAME,
+    url: SITE_ORIGIN,
+    logo: image,
+    email: "contact@clinic-flow.co.il",
+    areaServed: { "@type": "Country", name: "Israel" },
+    knowsAbout: [
+      "תוכנה לניהול מרפאה פרטית",
+      "תיק רפואי ממוחשב",
+      "ניהול יומן תורים לרופאים",
+      "תיעוד ביקורים ומסמכים רפואיים",
+    ],
+  };
 
   return (
     <Head>
@@ -64,6 +79,7 @@ export function Seo({ title, description, canonicalPath, ogImage, jsonLd, noinde
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={image} />
 
+      <script type="application/ld+json">{JSON.stringify(organization)}</script>
       {jsonLd?.map((obj, i) => (
         <script key={i} type="application/ld+json">
           {JSON.stringify(obj)}
