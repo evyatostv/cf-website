@@ -134,6 +134,11 @@ export function Footer() {
                 </a>
               </li>
               <li>
+                <a href="/clinic-management-software" className="text-[#b8d4e6] hover:text-white transition-colors">
+                  תוכנה לניהול קליניקה
+                </a>
+              </li>
+              <li>
                 <a href="/tikun-13-clinic-software" className="text-[#b8d4e6] hover:text-white transition-colors">
                   אבטחת מידע ותיקון 13
                 </a>
