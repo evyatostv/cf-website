@@ -45,6 +45,7 @@ export function Seo({ title, description, canonicalPath, ogImage, jsonLd, noinde
     logo: image,
     email: "contact@clinic-flow.co.il",
     areaServed: { "@type": "Country", name: "Israel" },
+    sameAs: ["https://www.facebook.com/clinicflowisrael"],
     knowsAbout: [
       "תוכנה לניהול מרפאה פרטית",
       "תיק רפואי ממוחשב",
