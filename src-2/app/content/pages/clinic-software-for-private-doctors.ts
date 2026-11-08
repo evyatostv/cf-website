@@ -126,8 +126,8 @@ const page: ContentPageData = {
     },
   ],
   cta: {
-    label: "למדו עוד על ClinicFlow",
-    to: "/pricing?utm_source=organic&utm_medium=website&utm_campaign=doctors_landing&utm_content=private_doctors",
+    label: "בקשת הדגמה קצרה",
+    to: "/contact?intent=demo&utm_source=organic&utm_medium=website&utm_campaign=doctors_landing&utm_content=private_doctors",
   },
   showHeroCta: true,
   related: [
