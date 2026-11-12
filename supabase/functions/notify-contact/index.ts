@@ -251,7 +251,7 @@ serve(async (req) => {
   const corsHeaders: Record<string, string> = allowed ? {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
+    "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info, baggage, sentry-trace",
     "Vary": "Origin",
   } : {};
   if (req.method === "OPTIONS") {
