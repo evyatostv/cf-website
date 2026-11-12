@@ -1,27 +1,41 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
+import { MARKETING_CONSENT_KEY, COOKIE_SETTINGS_EVENT, syncMetaPixel } from '@/lib/meta-pixel';
 import { Cookie, X } from 'lucide-react';
 
-const STORAGE_KEY = 'clinicflow_cookie_consent';
+const STORAGE_KEY = MARKETING_CONSENT_KEY;
 
 export function CookieBanner() {
   const [visible, setVisible] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => { syncMetaPixel(); }, [location.pathname, location.search, location.hash]);
 
   useEffect(() => {
     try {
       if (!localStorage.getItem(STORAGE_KEY)) setVisible(true);
     } catch {
-      // ignore — private browsing etc.
+      setVisible(true);
     }
+    const open = () => setVisible(true);
+    const sync = () => syncMetaPixel();
+    window.addEventListener(COOKIE_SETTINGS_EVENT, open);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener(COOKIE_SETTINGS_EVENT, open);
+      window.removeEventListener('storage', sync);
+    };
   }, []);
 
   const accept = () => {
     try { localStorage.setItem(STORAGE_KEY, 'accepted'); } catch {}
+    syncMetaPixel();
     setVisible(false);
   };
 
   const reject = () => {
     try { localStorage.setItem(STORAGE_KEY, 'rejected'); } catch {}
+    syncMetaPixel();
     setVisible(false);
   };
 
@@ -42,7 +56,7 @@ export function CookieBanner() {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-[#1a2332] mb-1">אנחנו משתמשים בעוגיות</p>
           <p className="text-xs text-[#6b7c93] leading-relaxed mb-3">
-            אנחנו משתמשים בעוגיות חיוניות לתפקוד האתר ובכלי אנליטיקה לשיפור החוויה.
+            אנחנו משתמשים בעוגיות חיוניות לתפקוד האתר. באישורכם נשתמש גם בפיקסל של Meta למדידת פרסום בעמודי השיווק.
             לפרטים נוספים ניתן לעיין ב<Link to="/privacy" className="text-[#0d47a1] underline">מדיניות הפרטיות</Link>.
           </p>
           <div className="flex gap-2">

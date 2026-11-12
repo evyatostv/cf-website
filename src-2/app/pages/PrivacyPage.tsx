@@ -1,4 +1,5 @@
 import { Seo } from "@/app/components/Seo";
+import { COOKIE_SETTINGS_EVENT } from '@/lib/meta-pixel';
 
 export function PrivacyPage() {
   return (
@@ -10,7 +11,7 @@ export function PrivacyPage() {
       />
       <div className="container mx-auto px-6 max-w-4xl">
         <h1 className="text-4xl font-bold text-[#1a2332] mb-2">מדיניות פרטיות</h1>
-        <p className="text-sm text-[#6b7c93] mb-10">עדכון אחרון: אפריל 2026 | גרסת מדיניות: 1.0</p>
+        <p className="text-sm text-[#6b7c93] mb-10">עדכון אחרון: נובמבר 2026 | גרסת מדיניות: 1.1</p>
 
         <div className="space-y-10 text-[#1a2332]">
 
@@ -97,9 +98,15 @@ export function PrivacyPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-3">7. עוגיות (Cookies)</h2>
             <p className="text-[#4a5568] leading-relaxed">
-              האתר משתמש בעוגיות טכניות לניהול ההתחברות ובאחסון מקומי לצורכי אנליטיקה אנונימית.
-              אנו לא משתמשים בעוגיות שיווקיות או עוקבות.
+              האתר משתמש בעוגיות חיוניות לניהול ההתחברות ובכלי אנליטיקה.
+              רק לאחר אישורכם, פיקסל של Meta מודד צפיות בעמודי שיווק נבחרים לצורך מדידת פרסום.
+              Meta עשויה לקבל כתובת IP, פרטי דפדפן ומזהי עוגיות ולקשר את הפעילות לחשבון שלכם אצלה.
+              איננו שולחים לפיקסל תוכן טפסים, נתוני מטופלים או אירועי חשבון ותשלום.
+              אפשר לסרב למדידה השיווקית או לשנות את הבחירה בכל עת באמצעות הכפתור הבא.
             </p>
+            <button className="text-[#0d47a1] underline mt-3" onClick={() => window.dispatchEvent(new Event(COOKIE_SETTINGS_EVENT))}>
+              שינוי העדפות עוגיות
+            </button>
           </section>
 
           <section>
