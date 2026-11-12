@@ -79,7 +79,7 @@ function formatCreatedAt(value: unknown): string {
   }
 }
 
-serve(async (req) => {
+async function handleContact(req: Request): Promise<Response> {
   // This function is called by a Supabase Database Webhook on INSERT into contact_messages
 
   // BE-009: authenticate the caller via a shared secret. The DB webhook must be
@@ -241,4 +241,27 @@ serve(async (req) => {
   }
 
   return new Response(JSON.stringify({ success: true, id: data.id }), { status: 200 });
+
+}
+
+// Browser submissions require a preflight response; webhook callers need no CORS.
+serve(async (req) => {
+  const origin = req.headers.get("origin") || "";
+  const allowed = ["https://www.clinic-flow.co.il", "https://clinic-flow.co.il"].includes(origin);
+  const corsHeaders: Record<string, string> = allowed ? {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
+    "Vary": "Origin",
+  } : {};
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: allowed ? 204 : 403, headers: corsHeaders });
+  }
+  if (req.method !== "POST") {
+    return new Response("Method not allowed", { status: 405, headers: { ...corsHeaders, Allow: "POST, OPTIONS" } });
+  }
+  const response = await handleContact(req);
+  const headers = new Headers(response.headers);
+  for (const [name, value] of Object.entries(corsHeaders)) headers.set(name, value);
+  return new Response(response.body, { status: response.status, headers });
 });
