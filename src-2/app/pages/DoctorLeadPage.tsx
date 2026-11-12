@@ -38,7 +38,7 @@ export function DoctorLeadPage() {
     event.preventDefault();
     if (sending.current) return;
     const normalized = phone.replace(/[\s()-]/g, '');
-    if (!/^(?:0[2-9]\d{7,8}|\+972[2-9]\d{7,8})$/.test(normalized)) {
+    if (!/^(?:0|\+972)(?:[23489]\d{7}|[57]\d{8})$/.test(normalized)) {
       setError('בדקו שמספר הטלפון הישראלי מלא ותקין.'); return;
     }
     if (!name.trim() || !consent || !practice || !system) { setError('נא להשלים את הפרטים ולאשר שנוכל לחזור אליכם.'); return; }
