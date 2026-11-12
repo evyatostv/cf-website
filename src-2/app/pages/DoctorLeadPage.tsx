@@ -65,10 +65,10 @@ export function DoctorLeadPage() {
   const selected = step === 0 ? practice : system;
   const inputClass = 'w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-600';
   return (
-    <div dir="rtl" className="min-h-screen bg-[#f5f8fc] text-[#172b45] px-5 py-7 sm:py-10">
+    <div dir="rtl" className="min-h-screen min-h-[100svh] bg-[#f5f8fc] text-[#172b45] px-4 py-4 sm:px-5 sm:py-10">
       <Seo title={done ? 'תודה על הפנייה | ClinicFlow' : 'פחות ניירת בקליניקה הפרטית | ClinicFlow'} description="בואו נבדוק איך ClinicFlow יכולה להתאים לפעילות הפרטית שלכם. כמה שאלות קצרות ונחזור אליכם." canonicalPath={done ? '/start/thanks' : '/start'} />
       <div className="mx-auto max-w-xl">
-        <img src="/logo/cf-lockup-horizontal.svg" alt="ClinicFlow" className="h-10 w-auto mx-auto mb-8" />
+        <img src="/logo/cf-lockup-horizontal.svg" alt="ClinicFlow" className="h-8 sm:h-10 w-auto max-w-full mx-auto mb-4 sm:mb-8" />
         {done ? (
           <section className="rounded-3xl bg-white border border-slate-200 p-6 sm:p-9 shadow-sm text-center">
             <CheckCircle2 className="mx-auto mb-4 text-teal-600" size={42} />
@@ -83,26 +83,26 @@ export function DoctorLeadPage() {
           </section>
         ) : (
           <>
-            <p className="text-center text-sm font-semibold text-teal-700 mb-3">לרופאים פרטיים ולקליניקות קטנות</p>
-            <h1 className="text-center text-3xl sm:text-4xl font-bold leading-tight">פחות ניירת.<br />יותר זמן לרפואה.</h1>
-            <p className="text-center text-slate-600 mt-4 mb-7 leading-relaxed">תיקי מטופלים, תורים ומסמכים במקום אחד.<br />נכיר את הפעילות שלכם ונבדוק יחד אם ClinicFlow מתאימה.</p>
-            <section className="rounded-3xl bg-white border border-slate-200 p-6 sm:p-8 shadow-sm">
+            <p className="text-center text-sm font-semibold text-teal-700 mb-2 sm:mb-3">לרופאים פרטיים ולקליניקות קטנות</p>
+            <h1 className="text-center text-[1.75rem] sm:text-4xl font-bold leading-tight">פחות ניירת.<br />יותר זמן לרפואה.</h1>
+            <p className={`${step > 0 ? 'hidden sm:block' : ''} text-center text-sm sm:text-base text-slate-600 mt-3 mb-4 sm:mb-7 leading-relaxed`}>תיקי מטופלים, תורים ומסמכים במקום אחד.<br />נכיר את הפעילות שלכם ונבדוק יחד אם ClinicFlow מתאימה.</p>
+            <section className="rounded-3xl bg-white border border-slate-200 p-4 sm:p-8 shadow-sm mt-4">
               <div className="flex justify-between text-xs text-slate-500 mb-3"><span>היכרות קצרה</span><span>שלב {step + 1} מתוך 3</span></div>
-              <div role="progressbar" aria-label="התקדמות הטופס" aria-valuemin={1} aria-valuemax={3} aria-valuenow={step + 1} className="flex gap-2 mb-8">{[0, 1, 2].map(i => <div key={i} className={`h-1.5 flex-1 rounded-full ${i <= step ? 'bg-teal-600' : 'bg-slate-100'}`} />)}</div>
-              <h2 ref={title} tabIndex={-1} className="text-2xl font-bold mb-5 outline-none">{step === 0 ? 'איך נראית הפעילות הפרטית שלכם?' : step === 1 ? 'איך מנהלים היום תיקים ותורים?' : 'לאן נוכל לחזור אליכם?'}</h2>
+              <div role="progressbar" aria-label="התקדמות הטופס" aria-valuemin={1} aria-valuemax={3} aria-valuenow={step + 1} className="flex gap-2 mb-5 sm:mb-8">{[0, 1, 2].map(i => <div key={i} className={`h-1.5 flex-1 rounded-full ${i <= step ? 'bg-teal-600' : 'bg-slate-100'}`} />)}</div>
+              <h2 ref={title} tabIndex={-1} className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5 outline-none">{step === 0 ? 'איך נראית הפעילות הפרטית שלכם?' : step === 1 ? 'איך מנהלים היום תיקים ותורים?' : 'לאן נוכל לחזור אליכם?'}</h2>
               {step < 2 ? <>
-                <div role="radiogroup" aria-label={step === 0 ? 'מבנה הפעילות' : 'ניהול כיום'} className="space-y-3">{choices.map(option => <label key={option} className={`flex items-center gap-3 rounded-xl border p-4 cursor-pointer ${selected === option ? 'border-teal-600 bg-teal-50' : 'border-slate-200 hover:bg-slate-50'}`}><input type="radio" name={`step-${step}`} value={option} checked={selected === option} onChange={() => step === 0 ? setPractice(option) : setSystem(option)} className="accent-teal-700 w-4 h-4" /><span>{option}</span>{selected === option && <Check size={18} className="mr-auto text-teal-700" />}</label>)}</div>
-                <button type="button" disabled={!selected} onClick={advance} className="w-full flex justify-center items-center gap-2 mt-7 rounded-xl bg-[#0d47a1] text-white font-semibold py-3.5 disabled:opacity-40">ממשיכים <ArrowLeft size={18} /></button>
+                <div role="radiogroup" aria-label={step === 0 ? 'מבנה הפעילות' : 'ניהול כיום'} className="space-y-3">{choices.map(option => <label key={option} className={`flex items-center gap-3 rounded-xl border min-h-14 p-3 sm:p-4 cursor-pointer ${selected === option ? 'border-teal-600 bg-teal-50' : 'border-slate-200 hover:bg-slate-50'}`}><input type="radio" name={`step-${step}`} value={option} checked={selected === option} onChange={() => step === 0 ? setPractice(option) : setSystem(option)} className="accent-teal-700 w-4 h-4" /><span>{option}</span>{selected === option && <Check size={18} className="mr-auto text-teal-700" />}</label>)}</div>
+                <button type="button" disabled={!selected} onClick={advance} className="w-full flex justify-center items-center gap-2 mt-5 sm:mt-7 rounded-xl bg-[#0d47a1] text-white font-semibold py-3.5 disabled:opacity-40">ממשיכים <ArrowLeft size={18} /></button>
               </> : <form onSubmit={send} className="space-y-4">
                 <label className="block text-sm font-medium">שם מלא<input required maxLength={120} autoComplete="name" value={name} onChange={e => setName(e.target.value)} className={`${inputClass} mt-1.5`} /></label>
                 <label className="block text-sm font-medium">טלפון לחזרה<input required type="tel" inputMode="tel" dir="ltr" autoComplete="tel" maxLength={25} value={phone} onChange={e => setPhone(e.target.value)} className={`${inputClass} mt-1.5 text-right`} /></label>
-                <label className="block text-sm font-medium">אימייל<input required type="email" dir="ltr" autoComplete="email" maxLength={254} value={email} onChange={e => setEmail(e.target.value)} className={`${inputClass} mt-1.5 text-right`} /></label>
+                <label className="block text-sm font-medium">אימייל<input required type="email" inputMode="email" autoCapitalize="none" spellCheck={false} dir="ltr" autoComplete="email" maxLength={254} value={email} onChange={e => setEmail(e.target.value)} className={`${inputClass} mt-1.5 text-right`} /></label>
                 <label className="flex items-start gap-2 text-sm leading-relaxed text-slate-600"><input required type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} className="mt-1 w-4 h-4 accent-teal-700 shrink-0" /><span>מאשר/ת ל־ClinicFlow לחזור אליי בטלפון או באימייל בקשר לפנייה, בהתאם ל<Link to="/privacy" target="_blank" className="underline">מדיניות הפרטיות</Link>.</span></label>
                 {error && <p role="alert" className="text-red-700 text-sm">{error}</p>}
                 <button disabled={busy} className="w-full flex justify-center items-center gap-2 rounded-xl bg-[#0d47a1] text-white font-semibold py-3.5 disabled:opacity-60">{busy ? 'שומרים את הפנייה…' : 'שלחו פרטים וחזרו אליי'}<Phone size={17} /></button>
                 <p className="text-xs text-center text-slate-500">לאחר השליחה ייפתח סרטון ההיכרות. ללא התחייבות.</p>
               </form>}
-              {step > 0 && <button type="button" disabled={busy} onClick={() => { setStep(step - 1); setError(''); }} className="mt-5 inline-flex items-center gap-1 text-sm text-slate-600"><ArrowRight size={16} /> חזרה</button>}
+              {step > 0 && <button type="button" disabled={busy} onClick={() => { setStep(step - 1); setError(''); }} className="mt-3 min-h-11 inline-flex items-center gap-1 px-2 text-sm text-slate-600"><ArrowRight size={16} /> חזרה</button>}
             </section>
             <p className="flex justify-center items-center gap-2 mt-5 text-sm text-slate-500"><ShieldCheck size={16} /> בלי מנוי חודשי · על המחשב שלכם</p>
           </>
