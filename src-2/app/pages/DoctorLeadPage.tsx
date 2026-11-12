@@ -50,7 +50,7 @@ export function DoctorLeadPage() {
       const result = await submitLead({
         name: name.trim(), email: email.trim(), phone: normalized,
         source: 'doctor-lead-website-ab',
-        message: `[פניית התאמה — טופס אתר]\nמבנה הפעילות: ${practice}\nניהול כיום: ${system}\nאישור לחזרה בקשר לפנייה: כן\nמועד האישור: ${new Date().toISOString()}\nגרסת טופס: website-v1`,
+        message: `[פניית התאמה — טופס אתר]\nמבנה הפעילות: ${practice}\nניהול כיום: ${system}\nאישור לחזרה בקשר לפנייה: כן\nמועד האישור: ${new Date().toISOString()}\nגרסת טופס: website-v2`,
         attribution: { source: sourceValue('utm_source'), medium: sourceValue('utm_medium'), campaign: sourceValue('utm_campaign'), content: sourceValue('utm_content') },
       });
       if (!result.ok) { setError(result.error || 'הפנייה לא נשמרה. נסו שוב.'); return; }
@@ -89,17 +89,17 @@ export function DoctorLeadPage() {
             <section className="rounded-3xl bg-white border border-slate-200 p-4 sm:p-8 shadow-sm mt-4">
               <div className="flex justify-between text-xs text-slate-500 mb-3"><span>היכרות קצרה</span><span>שלב {step + 1} מתוך 3</span></div>
               <div role="progressbar" aria-label="התקדמות הטופס" aria-valuemin={1} aria-valuemax={3} aria-valuenow={step + 1} className="flex gap-2 mb-5 sm:mb-8">{[0, 1, 2].map(i => <div key={i} className={`h-1.5 flex-1 rounded-full ${i <= step ? 'bg-teal-600' : 'bg-slate-100'}`} />)}</div>
-              <h2 ref={title} tabIndex={-1} className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5 outline-none">{step === 0 ? 'איך נראית הפעילות הפרטית שלכם?' : step === 1 ? 'איך מנהלים היום תיקים ותורים?' : 'לאן נוכל לחזור אליכם?'}</h2>
+              <h2 ref={title} tabIndex={-1} className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5 outline-none">{step === 0 ? 'איך נראית הפעילות הפרטית שלכם?' : step === 1 ? 'איך מנהלים היום תיקים ותורים?' : 'נשאר רק למלא פרטים'}</h2>
               {step < 2 ? <>
                 <div role="radiogroup" aria-label={step === 0 ? 'מבנה הפעילות' : 'ניהול כיום'} className="space-y-3">{choices.map(option => <label key={option} className={`flex items-center gap-3 rounded-xl border min-h-14 p-3 sm:p-4 cursor-pointer ${selected === option ? 'border-teal-600 bg-teal-50' : 'border-slate-200 hover:bg-slate-50'}`}><input type="radio" name={`step-${step}`} value={option} checked={selected === option} onChange={() => step === 0 ? setPractice(option) : setSystem(option)} className="accent-teal-700 w-4 h-4" /><span>{option}</span>{selected === option && <Check size={18} className="mr-auto text-teal-700" />}</label>)}</div>
                 <button type="button" disabled={!selected} onClick={advance} className="w-full flex justify-center items-center gap-2 mt-5 sm:mt-7 rounded-xl bg-[#0d47a1] text-white font-semibold py-3.5 disabled:opacity-40">ממשיכים <ArrowLeft size={18} /></button>
               </> : <form onSubmit={send} className="space-y-4">
                 <label className="block text-sm font-medium">שם מלא<input required maxLength={120} autoComplete="name" value={name} onChange={e => setName(e.target.value)} className={`${inputClass} mt-1.5`} /></label>
-                <label className="block text-sm font-medium">טלפון לחזרה<input required type="tel" inputMode="tel" dir="ltr" autoComplete="tel" maxLength={25} value={phone} onChange={e => setPhone(e.target.value)} className={`${inputClass} mt-1.5 text-right`} /></label>
+                <label className="block text-sm font-medium">מספר טלפון<input required type="tel" inputMode="tel" dir="ltr" autoComplete="tel" maxLength={25} value={phone} onChange={e => setPhone(e.target.value)} className={`${inputClass} mt-1.5 text-right`} /></label>
                 <label className="block text-sm font-medium">אימייל<input required type="email" inputMode="email" autoCapitalize="none" spellCheck={false} dir="ltr" autoComplete="email" maxLength={254} value={email} onChange={e => setEmail(e.target.value)} className={`${inputClass} mt-1.5 text-right`} /></label>
-                <label className="flex items-start gap-2 text-sm leading-relaxed text-slate-600"><input required type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} className="mt-1 w-4 h-4 accent-teal-700 shrink-0" /><span>מאשר/ת ל־ClinicFlow לחזור אליי בטלפון או באימייל בקשר לפנייה, בהתאם ל<Link to="/privacy" target="_blank" className="underline">מדיניות הפרטיות</Link>.</span></label>
+                <label className="flex items-start gap-2 text-sm leading-relaxed text-slate-600"><input required type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} className="mt-1 w-4 h-4 accent-teal-700 shrink-0" /><span>אפשר ליצור איתי קשר לגבי הפנייה, בהתאם ל<Link to="/privacy" target="_blank" className="underline">מדיניות הפרטיות</Link>.</span></label>
                 {error && <p role="alert" className="text-red-700 text-sm">{error}</p>}
-                <button disabled={busy} className="w-full flex justify-center items-center gap-2 rounded-xl bg-[#0d47a1] text-white font-semibold py-3.5 disabled:opacity-60">{busy ? 'שומרים את הפנייה…' : 'שלחו פרטים וחזרו אליי'}<Phone size={17} /></button>
+                <button disabled={busy} className="w-full flex justify-center items-center gap-2 rounded-xl bg-[#0d47a1] text-white font-semibold py-3.5 disabled:opacity-60">{busy ? 'שומרים את הפנייה…' : 'שליחת פרטים'}<Phone size={17} /></button>
                 <p className="text-xs text-center text-slate-500">לאחר השליחה ייפתח סרטון ההיכרות. ללא התחייבות.</p>
               </form>}
               {step > 0 && <button type="button" disabled={busy} onClick={() => { setStep(step - 1); setError(''); }} className="mt-3 min-h-11 inline-flex items-center gap-1 px-2 text-sm text-slate-600"><ArrowRight size={16} /> חזרה</button>}
