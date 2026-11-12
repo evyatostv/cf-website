@@ -93,6 +93,8 @@ export const routes: RouteRecord[] = [
     path: "/",
     element: <RootProviders />,
     children: [
+      { path: "start", lazy: () => import("@/app/pages/DoctorLeadPage").then((m) => ({ Component: m.DoctorLeadPage })) },
+      { path: "start/thanks", lazy: () => import("@/app/pages/DoctorLeadPage").then((m) => ({ Component: m.DoctorLeadPage })) },
       {
         index: true,
         lazy: () => import("@/app/pages/HomePage").then((m) => ({ Component: m.HomePage })),

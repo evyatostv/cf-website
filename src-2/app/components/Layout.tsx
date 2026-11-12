@@ -15,6 +15,10 @@ export function Layout() {
     };
   }, []);
 
+  if (location.pathname === '/start' || location.pathname === '/start/thanks') {
+    return <main style={{ fontFamily: "'Noto Sans Hebrew', sans-serif" }}><Outlet /><CookieBanner /></main>;
+  }
+
   return (
     <div className="min-h-screen bg-white" dir="rtl" style={{ fontFamily: "'Noto Sans Hebrew', sans-serif" }}>
       <Navigation />

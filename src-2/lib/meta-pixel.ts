@@ -2,7 +2,7 @@
 export const META_PIXEL_ID = '1060618490333688';
 export const MARKETING_CONSENT_KEY = 'clinicflow_marketing_consent_v1';
 export const COOKIE_SETTINGS_EVENT = 'clinicflow:cookie-settings';
-const PUBLIC_PATHS = new Set(['/', '/features', '/pricing', '/about',
+const PUBLIC_PATHS = new Set(['/', '/start', '/start/thanks', '/features', '/pricing', '/about',
   '/clinic-software-for-private-doctors', '/clinic-software-no-subscription',
   '/clinic-management-software']);
 type Pixel = ((...args: unknown[]) => void) & {
@@ -14,6 +14,13 @@ let initialized = false;
 let loading = false;
 let scriptReady = false;
 let lastPath: string | null = null;
+const pendingEvents: Array<'LeadFormStart' | 'Lead'> = [];
+
+export function trackLeadEvent(event: 'LeadFormStart' | 'Lead') {
+  if (typeof window === 'undefined' || location.pathname !== '/start' || !hasMarketingConsent() || !hasSafeCampaignUrl(location.search, location.hash)) return;
+  pendingEvents.push(event);
+  syncMetaPixel();
+}
 
 export function hasMarketingConsent() {
   try { return localStorage.getItem(MARKETING_CONSENT_KEY) === 'accepted'; }
@@ -34,6 +41,7 @@ export function syncMetaPixel() {
     && hasSafeCampaignUrl(location.search, location.hash)
     && ['clinic-flow.co.il', 'www.clinic-flow.co.il'].includes(location.hostname);
   if (!allowed) {
+    pendingEvents.length = 0;
     if (initialized) window.fbq?.('consent', 'revoke');
     lastPath = null;
     return;
@@ -66,5 +74,9 @@ export function syncMetaPixel() {
   if (lastPath !== location.pathname) {
     window.fbq('trackSingle', META_PIXEL_ID, 'PageView');
     lastPath = location.pathname;
+  }
+  while (pendingEvents.length) {
+    const event = pendingEvents.shift()!;
+    window.fbq(event === 'Lead' ? 'trackSingle' : 'trackSingleCustom', META_PIXEL_ID, event);
   }
 }
