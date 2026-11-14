@@ -9,6 +9,10 @@ if (typeof window !== "undefined") {
     dsn: "https://e8c3eb0d82a37bcfdc86f6a8abdb7a3a@o4511219015024640.ingest.de.sentry.io/4511219016925264",
     environment: import.meta.env.MODE,
     sendDefaultPii: true,
+    // Chrome DevTools / automation extensions can reject a stale protocol
+    // object after a signup navigation. It is not an application exception
+    // and otherwise creates a misleading unhandled-rejection issue in Sentry.
+    ignoreErrors: [/^Object Not Found Matching Id:\d+, MethodName:update, ParamCount:\d+$/],
     integrations: [
       Sentry.browserTracingIntegration(),
       Sentry.replayIntegration({
