@@ -30,8 +30,12 @@ export function PaymentPage() {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
   const [sessionExpired, setSessionExpired] = useState(false);
+  const [licenseAlreadyActive, setLicenseAlreadyActive] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [termsLogged, setTermsLogged] = useState(false);
+  const [needsCheckoutContact, setNeedsCheckoutContact] = useState(false);
+  const [checkoutName, setCheckoutName] = useState('');
+  const [checkoutPhone, setCheckoutPhone] = useState('');
 
   const plan = searchParams.get('plan') || '';
   const isUpgrade = searchParams.get('upgrade') === 'true';
@@ -66,15 +70,24 @@ export function PaymentPage() {
   };
 
   const handlePayment = async () => {
-    if (!user || !planInfo) return;
+    if (!user || !planInfo || !termsAccepted || processing) return;
 
     setProcessing(true);
     setError('');
     setSessionExpired(false);
 
     try {
-      const { data: refreshData } = await supabase.auth.refreshSession();
-      const token = refreshData.session?.access_token;
+      // Prefer the current session. A refresh can fail transiently (blocked
+      // third-party storage, a short network interruption, or an already
+      // rotated refresh token); that must not turn a valid checkout into a
+      // misleading generic network error.
+      const { data: sessionData } = await supabase.auth.getSession();
+      let token = sessionData.session?.access_token;
+      if (!token) {
+        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) throw refreshError;
+        token = refreshData.session?.access_token;
+      }
 
       if (!token) {
         setError('פג תוקף ההתחברות — אנא התחבר/י מחדש');
@@ -92,22 +105,34 @@ export function PaymentPage() {
             'Authorization': `Bearer ${token}`,
             'apikey': SUPABASE_ANON_KEY,
           },
-          body: JSON.stringify({ plan, isUpgrade }),
+          body: JSON.stringify({
+            plan,
+            isUpgrade,
+            contact: needsCheckoutContact ? { fullName: checkoutName, phone: checkoutPhone } : undefined,
+          }),
         }
       );
 
-      const data = await res.json();
+      const raw = await res.text();
+      let data: { paymentUrl?: string; error?: string; code?: string } = {};
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        data = { error: 'שירות התשלום החזיר תשובה לא תקינה' };
+      }
 
       if (!res.ok || !data.paymentUrl) {
         // Edge-function errors may be raw/English — route through the Hebrew map.
         setError(data.error ? mapAuthError(data.error) : 'שגיאה ביצירת תשלום');
         // A 401/expired token surfaces here too — offer the re-login CTA.
         if (res.status === 401) setSessionExpired(true);
+        if (data.code === 'CHECKOUT_CONTACT_REQUIRED') setNeedsCheckoutContact(true);
+        if (data.code === 'LICENSE_ALREADY_ACTIVE') setLicenseAlreadyActive(true);
         setProcessing(false);
         return;
       }
 
-      // Redirect to AllPay payment page
+      // Redirect to the provider checkout page.
       window.location.href = data.paymentUrl;
     } catch (err: any) {
       setError(mapAuthError(err) || 'שגיאה ביצירת תשלום');
@@ -200,11 +225,44 @@ export function PaymentPage() {
 
               <p className="text-center text-xs text-[#6b7c93] mb-5">עד 3 תשלומים ללא ריבית</p>
 
+              {needsCheckoutContact && (
+                <fieldset className="border border-[#e1e6ec] rounded-xl p-4 mb-5 space-y-3" disabled={processing}>
+                  <legend className="px-1 text-sm font-semibold">פרטי קשר לתשלום</legend>
+                  <label className="block text-sm">
+                    שם מלא
+                    <input
+                      className="block w-full mt-1 rounded-lg border border-[#e1e6ec] p-2.5 text-base"
+                      autoComplete="name"
+                      maxLength={150}
+                      value={checkoutName}
+                      onChange={(event) => setCheckoutName(event.target.value)}
+                    />
+                  </label>
+                  <label className="block text-sm">
+                    מספר נייד ישראלי
+                    <input
+                      type="tel"
+                      dir="ltr"
+                      className="block w-full mt-1 rounded-lg border border-[#e1e6ec] p-2.5 text-base"
+                      autoComplete="tel"
+                      maxLength={30}
+                      value={checkoutPhone}
+                      onChange={(event) => setCheckoutPhone(event.target.value)}
+                    />
+                  </label>
+                </fieldset>
+              )}
+
               {error && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-red-600 text-sm">{error}</p>
+                    <p role="alert" className="text-red-600 text-sm">{error}</p>
+                    {licenseAlreadyActive && (
+                      <Link to="/dashboard" className="inline-block mt-1 text-sm font-medium text-[#0d47a1] underline">
+                        המשך לאזור האישי
+                      </Link>
+                    )}
                     {sessionExpired && (
                       <Link
                         to={loginWithRedirect}
@@ -241,7 +299,10 @@ export function PaymentPage() {
 
               <button
                 onClick={handlePayment}
-                disabled={processing || !termsAccepted}
+                disabled={
+                  processing || !termsAccepted || licenseAlreadyActive ||
+                  (needsCheckoutContact && (!checkoutName.trim() || !checkoutPhone.trim()))
+                }
                 aria-busy={processing}
                 className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white font-bold py-4 rounded-xl hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed text-lg mb-3 min-h-[56px]"
               >
