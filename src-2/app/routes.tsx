@@ -115,6 +115,10 @@ export const routes: RouteRecord[] = [
         path: "contact",
         lazy: () => import("@/app/pages/ContactPage").then((m) => ({ Component: m.ContactPage })),
       },
+      {
+        path: "partners",
+        lazy: () => import("@/app/pages/PartnersPage").then((m) => ({ Component: m.PartnersPage })),
+      },
       { path: "demo", element: <RedirectToDemo /> },
       {
         path: "terms",

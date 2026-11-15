@@ -7,9 +7,47 @@ import { CONTACT_EMAIL, CONTACT_WHATSAPP_URL } from "@/app/config/site";
 import { Seo, SITE_NAME, SITE_ORIGIN } from "@/app/components/Seo";
 import { readStoredAttribution } from "@/app/components/AttributionCapture";
 
+const CONTACT_COPY = {
+  general: {
+    heading: "בוא נדבר",
+    accent: "איך נוכל לעזור?",
+    intro: "שאלה על האפליקציה, על ההתקנה, או רוצים לראות אותה עובדת? כתבו ונחזור אליכם.",
+    formHeading: "שלח/י הודעה",
+    submitLabel: "שלח/י הודעה",
+    messagePlaceholder: "ספר/י לנו איך נוכל לעזור...",
+    defaultMessage: "פנייה מטופס יצירת הקשר.",
+    messageTag: "פנייה מהאתר",
+    source: "",
+  },
+  demo: {
+    heading: "בואו לראות את ClinicFlow",
+    accent: "בהדגמה קצרה",
+    intro: "השאירו שם ואימייל ונחזור אליכם לתיאום — בלי התחייבות.",
+    formHeading: "בקשת הדגמה",
+    submitLabel: "בקשת הדגמה קצרה",
+    messagePlaceholder: "אפשר לציין שעה נוחה או שאלה שחשוב לך שנראה בהדגמה",
+    defaultMessage: "אשמח לקבל הדגמה קצרה של ClinicFlow.",
+    messageTag: "בקשת הדגמה",
+    source: "doctor-demo-request",
+  },
+  partnership: {
+    heading: "בואו נכיר",
+    accent: "ונדבר על שיתוף פעולה",
+    intro: "השאירו פרטים ונחזור אליכם לתיאום שיחת היכרות קצרה.",
+    formHeading: "פנייה לשיתוף פעולה",
+    submitLabel: "שליחת פנייה",
+    messagePlaceholder: "אפשר לספר בקצרה על חדרי הקליניקה שאתם משכירים",
+    defaultMessage: "נשמח לתאם שיחת היכרות לבדיקת שיתוף פעולה.",
+    messageTag: "פנייה לשיתוף פעולה",
+    source: "partnership-request",
+  },
+};
+
 export function ContactPage() {
   const [searchParams] = useSearchParams();
-  const isDemoRequest = searchParams.get("intent") === "demo";
+  const intent = searchParams.get("intent");
+  const copy = intent === "demo" || intent === "partnership" ? CONTACT_COPY[intent] : CONTACT_COPY.general;
+  const isPartnershipRequest = intent === "partnership";
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -40,18 +78,16 @@ export function ContactPage() {
       .filter((entry): entry is readonly [string, string] => Boolean(entry[1]));
     const attributionSource = attribution.map(([, value]) => value).join("/");
     const landingPath = storedAttribution.landing_path || window.location.pathname;
-    const source = isDemoRequest
-      ? ["doctor-demo-request", attributionSource, `landing:${landingPath}`].filter(Boolean).join("/")
+    const source = copy.source
+      ? [copy.source, attributionSource, `landing:${landingPath}`].filter(Boolean).join("/")
       : [attributionSource || "contact-page", `landing:${landingPath}`].join("/");
-    const message = formData.message.trim() || (isDemoRequest
-      ? "אשמח לקבל הדגמה קצרה של ClinicFlow."
-      : "פנייה מטופס יצירת הקשר.");
+    const message = formData.message.trim() || copy.defaultMessage;
 
     const res = await submitLead({
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
-      message: `${isDemoRequest ? "[בקשת הדגמה]" : "[פנייה מהאתר]"}\n${message}\n\nמקור: ${source}`,
+      message: `[${copy.messageTag}]\n${message}\n\nמקור: ${source}`,
       clinicName: formData.clinicName,
       source,
       attribution: {
@@ -105,16 +141,14 @@ export function ContactPage() {
           className="text-center mb-16"
         >
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-[#1a2332] mb-6">
-            {isDemoRequest ? "בואו לראות את ClinicFlow" : "בוא נדבר"}
+            {copy.heading}
             <br />
             <span className="text-[#0d47a1]">
-              {isDemoRequest ? "בהדגמה קצרה" : "איך נוכל לעזור?"}
+              {copy.accent}
             </span>
           </h1>
           <p className="text-xl text-[#6b7c93] max-w-2xl mx-auto">
-            {isDemoRequest
-              ? "השאירו שם ואימייל ונחזור אליכם לתיאום — בלי התחייבות."
-              : "שאלה על האפליקציה, על ההתקנה, או רוצים לראות אותה עובדת? כתבו ונחזור אליכם."}
+            {copy.intro}
           </p>
         </motion.div>
 
@@ -167,7 +201,7 @@ export function ContactPage() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="bg-white rounded-3xl p-5 sm:p-8 border border-[#e1e6ec]"
           >
-            <h2 className="text-2xl font-bold text-[#1a2332] mb-6">{isDemoRequest ? "בקשת הדגמה" : "שלח/י הודעה"}</h2>
+            <h2 className="text-2xl font-bold text-[#1a2332] mb-6">{copy.formHeading}</h2>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
@@ -217,7 +251,7 @@ export function ContactPage() {
               </div>
 
               <div>
-                <label htmlFor="contact-clinic" className="block text-[#1a2332] mb-2">שם המרפאה <span className="text-[#9aa7b8] text-sm font-normal">(לא חובה)</span></label>
+                <label htmlFor="contact-clinic" className="block text-[#1a2332] mb-2">{isPartnershipRequest ? "שם החברה" : "שם המרפאה"} <span className="text-[#9aa7b8] text-sm font-normal">(לא חובה)</span></label>
                 <input
                   id="contact-clinic"
                   type="text"
@@ -225,7 +259,7 @@ export function ContactPage() {
                   value={formData.clinicName}
                   onChange={(e) => updateField("clinicName", e.target.value)}
                   className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-colors"
-                  placeholder="שם המרפאה שלך"
+                  placeholder={isPartnershipRequest ? "שם החברה שלכם" : "שם המרפאה שלך"}
                 />
               </div>
 
@@ -237,7 +271,7 @@ export function ContactPage() {
                   onChange={(e) => updateField("message", e.target.value)}
                   rows={4}
                   className="w-full px-4 py-3 text-base bg-[#f5f7f9] border border-[#e1e6ec] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0d47a1] transition-colors resize-y min-h-[120px] sm:min-h-[150px]"
-                  placeholder={isDemoRequest ? "אפשר לציין שעה נוחה או שאלה שחשוב לך שנראה בהדגמה" : "ספר/י לנו איך נוכל לעזור..."}
+                  placeholder={copy.messagePlaceholder}
                 />
               </div>
 
@@ -253,7 +287,7 @@ export function ContactPage() {
                 className="w-full py-4 bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-[#0d47a1]/30 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Send className="w-5 h-5" />
-                {loading ? "שולח/ת..." : isDemoRequest ? "בקשת הדגמה קצרה" : "שלח/י הודעה"}
+                {loading ? "שולח/ת..." : copy.submitLabel}
               </button>
             </form>
 
