@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import { MARKETING_CONSENT_KEY, COOKIE_SETTINGS_EVENT, syncMetaPixel } from '@/lib/meta-pixel';
+import { syncGoogleAnalytics } from '@/lib/google-analytics';
 import { Cookie, X } from 'lucide-react';
 
 const STORAGE_KEY = MARKETING_CONSENT_KEY;
@@ -9,7 +10,7 @@ export function CookieBanner() {
   const [visible, setVisible] = useState(false);
   const location = useLocation();
 
-  useEffect(() => { syncMetaPixel(); }, [location.pathname, location.search, location.hash]);
+  useEffect(() => { syncMetaPixel(); syncGoogleAnalytics(); }, [location.pathname, location.search, location.hash]);
 
   useEffect(() => {
     try {
@@ -18,7 +19,7 @@ export function CookieBanner() {
       setVisible(true);
     }
     const open = () => setVisible(true);
-    const sync = () => syncMetaPixel();
+    const sync = () => { syncMetaPixel(); syncGoogleAnalytics(); };
     window.addEventListener(COOKIE_SETTINGS_EVENT, open);
     window.addEventListener('storage', sync);
     return () => {
@@ -30,12 +31,14 @@ export function CookieBanner() {
   const accept = () => {
     try { localStorage.setItem(STORAGE_KEY, 'accepted'); } catch {}
     syncMetaPixel();
+    syncGoogleAnalytics();
     setVisible(false);
   };
 
   const reject = () => {
     try { localStorage.setItem(STORAGE_KEY, 'rejected'); } catch {}
     syncMetaPixel();
+    syncGoogleAnalytics();
     setVisible(false);
   };
 
@@ -56,7 +59,7 @@ export function CookieBanner() {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-[#1a2332] mb-1">אנחנו משתמשים בעוגיות</p>
           <p className="text-xs text-[#6b7c93] leading-relaxed mb-3">
-            אנחנו משתמשים בעוגיות חיוניות לתפקוד האתר. באישורכם נשתמש גם בפיקסל של Meta למדידת פרסום בעמודי השיווק.
+            אנחנו משתמשים בעוגיות חיוניות לתפקוד האתר. באישורכם נשתמש גם ב־Google Analytics ובפיקסל של Meta למדידה בעמודי השיווק.
             לפרטים נוספים ניתן לעיין ב<Link to="/privacy" className="text-[#0d47a1] underline">מדיניות הפרטיות</Link>.
           </p>
           <div className="flex gap-2">
