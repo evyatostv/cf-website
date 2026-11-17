@@ -18,7 +18,7 @@ export function RenewalUpcoming({
   plan = 'ClinicFlow Full',
   renewDate = '1 באוגוסט 2026',
   renewUrl = 'https://clinic-flow.co.il/account/renew',
-  amount = '₪149',
+  amount = 'המחיר שיוצג בעמוד החידוש',
 }: RenewalUpcomingProps) {
   return (
     <EmailLayout preheader="העדכונים ותאימות תיקון 13 — כדי שהכל יישאר עדכני." unsubscribe>
@@ -51,7 +51,7 @@ RenewalUpcoming.PreviewProps = {
   plan: 'ClinicFlow Full',
   renewDate: '1 באוגוסט 2026',
   renewUrl: 'https://clinic-flow.co.il/account/renew',
-  amount: '₪149',
+  amount: 'המחיר שיוצג בעמוד החידוש',
 } as RenewalUpcomingProps;
 
 export default RenewalUpcoming;

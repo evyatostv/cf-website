@@ -16,7 +16,7 @@ export interface RenewalConfirmationProps {
 export function RenewalConfirmation({
   name = 'ד״ר שרון לוי',
   plan = 'ClinicFlow Full',
-  amount = '₪149',
+  amount = 'הסכום ששולם בפועל',
   newPeriodEnd = '1 באוגוסט 2027',
   invoiceUrl,
 }: RenewalConfirmationProps) {
@@ -47,7 +47,7 @@ export function RenewalConfirmation({
 RenewalConfirmation.PreviewProps = {
   name: 'ד״ר שרון לוי',
   plan: 'ClinicFlow Full',
-  amount: '₪149',
+  amount: 'הסכום ששולם בפועל',
   newPeriodEnd: '1 באוגוסט 2027',
   invoiceUrl: 'https://clinic-flow.co.il/account/invoices',
 } as RenewalConfirmationProps;

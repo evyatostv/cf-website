@@ -49,8 +49,8 @@ const EXPECT: { [Id in EmailId]: string[] } = {
   "trial-ended": ["/pricing", "קריאה בלבד"], // adapted pricingUrl→buyUrl
   "win-back": ["/pricing?ref=winback"], // adapted pricingUrl→resumeUrl
 
-  "renewal-upcoming": ["1 באוגוסט 2026", "₪149", "account/renew"], // receipt + CTA
-  "renewal-confirmation": ["1 באוגוסט 2027", "₪149"], // receipt
+  "renewal-upcoming": ["1 באוגוסט 2026", "המחיר שיוצג בעמוד החידוש", "account/renew"], // receipt + CTA
+  "renewal-confirmation": ["1 באוגוסט 2027", "הסכום ששולם בפועל"], // receipt
   "updates-lapsed": ["account/renew", "לתמיד"], // CTA
 
   "contact-received": ["SUP-4471", "לייבא רשומות מטופלים"], // ticket + preview

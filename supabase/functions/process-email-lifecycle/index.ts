@@ -313,10 +313,10 @@ Deno.serve(async (req) => {
           name: nameFor(row),
           plan: String(row.plan ?? ""),
           renewDate: fmtDate(row.updates_period_ends),
-          // Amount is unknown here (no renewal-pricing source in this fn). Empty
-          // string keeps the template render honest until a pricing source is
-          // wired; the future renewal flow supplies the real figure at pay time.
-          amount: "",
+          // There is intentionally no hard-coded renewal price here. The
+          // renewal checkout must supply the actual amount at payment time;
+          // reminders must never invent a price.
+          amount: "המחיר שיוצג בעמוד החידוש",
           renewUrl: RENEW_URL,
         },
       });

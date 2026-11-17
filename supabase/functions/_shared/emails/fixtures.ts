@@ -100,14 +100,14 @@ export const FIXTURES: { [Id in EmailId]: EmailPropMap[Id] } = {
     name: "ד״ר שרון לוי",
     plan: "ClinicFlow Full",
     renewDate: "1 באוגוסט 2026",
-    amount: "₪149",
+    amount: "המחיר שיוצג בעמוד החידוש",
     renewUrl: "https://clinic-flow.co.il/account/renew",
   },
   "renewal-confirmation": {
     name: "ד״ר שרון לוי",
     plan: "ClinicFlow Full",
     newPeriodEnd: "1 באוגוסט 2027",
-    amount: "₪149",
+    amount: "הסכום ששולם בפועל",
   },
   "updates-lapsed": {
     name: "ד״ר שרון לוי",
