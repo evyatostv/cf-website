@@ -42,5 +42,20 @@ begin
       or (select is_active from public.user_access where user_id=buyer) then raise exception 'last reversal'; end if;
     delete from public.paid_device_claims where user_id=buyer;
   end loop;
+  -- A customer can buy both computers before upgrading a legacy first PC.
+  buyer:=gen_random_uuid();tx_one:='legacy-a-'||buyer;tx_two:='legacy-b-'||buyer;
+  insert into auth.users(id,email) values(buyer,buyer||'@example.invalid');
+  perform set_config('request.jwt.claim.sub',buyer::text,true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',buyer)::text,true);
+  order_one:=(public.open_grow_order(buyer,'forever',149900)->>'id')::uuid;
+  perform public.fulfill_grow_order(order_one,tx_one,'PAID',149900,'ILS','{}','key-'||buyer);
+  update public.user_access set machine_fingerprint='legacy-home' where user_id=buyer;
+  order_two:=(public.open_additional_grow_order(buyer,2)->>'id')::uuid;
+  perform public.fulfill_grow_order(order_two,tx_two,'PAID',149900,'ILS','{}','unused');
+  if exists(select 1 from public.paid_device_claims where user_id=buyer) then raise exception 'fixture already enrolled'; end if;
+  perform public.support_reconcile_grow_reversal(order_one,tx_one,149900,'ILS','full_refund','legacy-case-'||buyer,true);
+  if (select machine_fingerprint from public.user_access where user_id=buyer) is not null
+    or public.resolve_paid_device('legacy-home',null,'check',null)<>'unbound'
+    or public.resolve_paid_device('office',null,'claim',office_digest)<>'active' then raise exception 'legacy fingerprint rebound during refund'; end if;
 end $$;
 rollback;

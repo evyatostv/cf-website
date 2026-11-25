@@ -15,6 +15,16 @@ begin
   -- Coordinate with claims/transfers, which lock this account row before
   -- assigning a payment to a fingerprint.
   perform 1 from public.user_access where user_id=checkout.customer_id for update;
+  -- Before the first device-aware client runs, preserve the same legacy
+  -- binding resolve_paid_device would create from the pre-refund receipt list.
+  insert into public.paid_device_claims(user_id,payment_id,fingerprint)
+  select a.user_id,original.payment_id,a.machine_fingerprint from public.user_access a
+  cross join lateral (
+    select r.payment_id from public.account_paid_seat_receipts(a.user_id,a.plan::text)
+      with ordinality r(payment_id,position) order by r.position limit 1
+  ) original
+  where a.user_id=checkout.customer_id and nullif(a.machine_fingerprint,'') is not null
+    and not exists(select 1 from public.paid_device_claims c where c.user_id=a.user_id);
   update public.orders set status='REFUNDED' where id=p_order_id;
   if public.grow_paid_seat_count(checkout.customer_id)=0 then
     -- Restore a qualifying previous license when the last Grow seat is refunded.
