@@ -19,6 +19,22 @@ alter table public.grow_receipt_attempts enable row level security;
 revoke all on public.grow_receipt_attempts from public,anon,authenticated;
 grant select,insert,update on public.grow_receipt_attempts to service_role;
 
+create function public.pending_grow_receipt_count() returns bigint language sql stable set search_path='' as $$
+  select count(*)
+    from public.orders o
+    join public.purchases p on p.user_id=o.customer_id and p.payment_id=o.external_transaction_id
+      and p.amount=o.amount and p.plan='full' and p.version='forever'
+    left join public.grow_receipt_attempts a on a.order_id=o.id
+    where o.paid_at >= (select starts_at from public.grow_receipt_cutover)
+      and o.status='PAID' and o.payment_provider='grow_make'
+      and o.package_id='forever' and o.currency='ILS' and o.amount=149900
+      and p.email is not null and trim(p.email)<>''
+      and not exists(select 1 from public.email_log l where l.payment_id in (o.id::text,o.external_transaction_id) and l.template='order-confirmation')
+      and (a.order_id is null or (a.retry_after<=now() and a.first_attempt > now()-interval '23 hours'))
+$$;
+revoke all on function public.pending_grow_receipt_count() from public,anon,authenticated;
+grant execute on function public.pending_grow_receipt_count() to service_role;
+
 create function public.claim_grow_receipts() returns table(order_id uuid, recipient text, amount integer)
 language sql set search_path='' as $$
   with eligible as (

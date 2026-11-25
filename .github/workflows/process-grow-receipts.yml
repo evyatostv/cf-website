@@ -19,9 +19,11 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
           curl --silent --show-error --fail-with-body --max-time 180 --request POST \
             --header "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            --header "x-receipt-dry-run: $DRY_RUN" \
             --header "x-cron-secret: $CRON_SECRET" \
             "$SUPABASE_URL/functions/v1/process-grow-receipts"

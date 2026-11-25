@@ -9,6 +9,10 @@ Deno.serve(async (req) => {
   if (!Deno.env.get('RESEND_API_KEY')) return new Response('Email transport unavailable', { status: 503 });
 
   const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+  if (req.headers.get('x-receipt-dry-run') === 'true') {
+    const { data: pending, error } = await db.rpc('pending_grow_receipt_count');
+    return Response.json({ dryRun: true, pending }, { status: error ? 503 : 200 });
+  }
   const { data: batch, error } = await db.rpc('claim_grow_receipts');
   if (error) return new Response('Receipt queue unavailable', { status: 503 });
   let failed = 0;
