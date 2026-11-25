@@ -37,13 +37,11 @@ export async function getPaidUserAccess(userId: string): Promise<UserAccess | nu
     .maybeSingle();
 
   if (error) throw error;
-  if (!data?.is_active || !['forever', 'basic', 'professional', 'full', 'premium'].includes(data.plan)) return null;
+  if (!data?.is_active || (data.expires_at && Date.parse(data.expires_at) <= Date.now()) || !['forever', 'basic', 'professional', 'full', 'premium'].includes(data.plan)) return null;
 
-  const { data: purchase, error: purchaseError } = await supabase.from('purchases')
-    .select('id').eq('user_id', userId).eq('plan', data.plan)
-    .gt('amount', 0).not('payment_id', 'is', null).neq('payment_id', '').limit(1).maybeSingle();
+  const { data: hasPurchase, error: purchaseError } = await supabase.rpc('my_verified_desktop_purchase', { p_plan: data.plan });
   if (purchaseError) throw purchaseError;
-  if (!purchase) return null;
+  if (hasPurchase !== true) return null;
   return data;
 }
 
