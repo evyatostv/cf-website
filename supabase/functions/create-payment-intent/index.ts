@@ -1,7 +1,6 @@
+import { inactivePaymentProvider } from '../_shared/payment-provider.ts';
 import Stripe from 'npm:stripe@17';
 import { createClient } from 'npm:@supabase/supabase-js@2';
-
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
 
 // Amounts in agorot (ILS cents)
 const PLAN_AMOUNTS: Record<string, number> = {
@@ -39,6 +38,9 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
+
+  const inactive = inactivePaymentProvider('stripe', corsHeaders);
+  if (inactive) return inactive;
 
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) {
@@ -127,6 +129,7 @@ Deno.serve(async (req) => {
       );
     }
 
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
     const paymentIntent = await stripe.paymentIntents.create({
       amount: finalAmount,
       currency: 'ils',
