@@ -50,6 +50,12 @@ begin
     select id::text from public.orders where customer_id=account.id
     union all select payment_id from public.purchases where user_id=account.id
   );
+  -- Lifecycle dedupe keys may include the email itself; redact the key too.
+  update public.email_log set recipient=null,payment_id='archived:'||id
+  where template in ('trial-ending','trial-ended','win-back','renewal-upcoming','updates-lapsed')
+    and (payment_id=template||':'||account.id or starts_with(payment_id,template||':'||account.id||':')
+      or (account.email_confirmed_at is not null and sent_at>=account.created_at and
+        (payment_id=template||':'||account.email or starts_with(payment_id,template||':'||account.email||':'))));
   delete from public.grow_receipt_attempts where order_id in (select id from public.orders where customer_id=account.id);
   update public.orders set customer_id=null,archived_at=now(),payment_url=null,provider_payload=null where customer_id=account.id;
   update public.purchases set user_id=null,email='deleted@redacted.invalid' where user_id=account.id;

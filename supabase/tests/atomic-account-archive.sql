@@ -19,6 +19,7 @@ begin
   if public.archive_due_account(request_id)<>'SKIPPED'
      or not exists(select 1 from public.deletion_requests where id=request_id and user_email=email) then raise exception 'request identity/grace'; end if;
   update public.deletion_requests set requested_at=now()-interval '10 days',scheduled_for=now()-interval '3 days' where id=request_id;
+  insert into public.email_log(payment_id,template,recipient) values('win-back:'||email,'win-back',email);
   create table public.archive_blocker(user_id uuid references auth.users(id));
   insert into archive_blocker values(account_id);
   begin
@@ -29,6 +30,7 @@ begin
   delete from archive_blocker;
   if public.archive_due_account(request_id)<>'COMPLETED' or public.archive_due_account(request_id)<>'COMPLETED' then raise exception 'retry'; end if;
   if exists(select 1 from auth.users where id=account_id) or not exists(select 1 from public.purchases where payment_id='archive-capture' and user_id is null and amount=149900) then raise exception 'financial history'; end if;
+  if exists(select 1 from public.email_log where payment_id='win-back:'||email or recipient=email) then raise exception 'lifecycle identity retained'; end if;
   insert into auth.users(id,email) values(new_account_id,email);
   if public.grow_paid_seat_count(new_account_id)<>0 then raise exception 'reused email granted access'; end if;
   result:=public.fulfill_grow_order(pending_order,'late-capture','PAID',149900,'ILS','{}','no-key');
