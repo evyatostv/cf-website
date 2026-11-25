@@ -104,18 +104,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // BE-019 (expiry gating decision): expiry is intentionally enforced ONLY for
-    // trials. Paid plans are perpetual licences (offline, pay-once — see product
-    // model), so a non-trial `expires_at` is not a download gate. If future plans
-    // gain a real subscription expiry, extend this check to those plans too; the
-    // current single-plan check is deliberate, not an oversight.
-    if (access.plan === 'trial' && access.expires_at && new Date(access.expires_at) < new Date()) {
-      const adminClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
-      await recordAuditEvent(adminClient, { eventType: 'download_attempt', outcome: 'blocked', userId: user.id, metadata: { reason: 'trial_expired', os } });
-      return new Response(
-        JSON.stringify({ error: 'Trial expired', code: 'TRIAL_EXPIRED' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-      );
+    if (!['forever', 'basic', 'professional', 'full', 'premium'].includes(access.plan)) {
+      return new Response(JSON.stringify({ error: 'נדרש תשלום מאושר', code: 'PAYMENT_REQUIRED' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Service-role client — needed to create signed URLs against a private bucket
@@ -124,6 +116,14 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
+    const { data: purchases, error: purchaseError } = await adminClient.from('purchases')
+      .select('payment_id').eq('user_id', user.id).eq('plan', access.plan)
+      .gt('amount', 0).not('payment_id', 'is', null).neq('payment_id', '').limit(1);
+    if (purchaseError || !purchases?.length) {
+      return new Response(JSON.stringify({ code: purchaseError ? 'PAYMENT_LOOKUP_FAILED' : 'PAYMENT_REQUIRED' }), {
+        status: purchaseError ? 503 : 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     const { data: signed, error: signError } = await adminClient
       .storage
       .from(BUCKET)
