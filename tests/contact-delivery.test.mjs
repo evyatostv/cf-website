@@ -7,13 +7,17 @@ import ts from 'typescript';
 const source = readFileSync(new URL('../supabase/functions/notify-contact/index.ts', import.meta.url), 'utf8');
 const code = ts.transpile(source, { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 });
 const id = '00000000-0000-4000-a000-000000000001';
-function fixture({ saved = true, failReply = false, staleLease = false } = {}) {
+function fixture({ saved = true, failReply = false, staleLease = false, proofMode = null } = {}) {
   let handler;
-  const sent = [], completed = [], lookups = [];
+  const sent = [], completed = [], lookups = [], claimIds = [];
   const contact = { id, name:'Saved name', message:'Private text from saved inquiry', email:'fixture@example.invalid' };
   const db = {
-    rpc: async (_fn, args) => ({ data: args.p_contact === id && saved
-      ? ['internal','reply'].map(channel => ({contact_id:id, channel, lease_id:'lease'})) : [] }),
+    rpc: async (fn, args) => {
+      if (fn === 'redeem_contact_wake') return {data:proofMode};
+      claimIds.push(args.p_contact);
+      return {data: args.p_contact === id && saved
+        ? ['internal','reply'].map(channel => ({contact_id:id, channel, lease_id:'lease'})) : [] };
+    },
     from(table) {
       if (table === 'contact_messages') return { select: () => ({eq: (_key,value) => {
         lookups.push(value); return {maybeSingle: async () => ({data:contact})};
@@ -42,7 +46,7 @@ function fixture({ saved = true, failReply = false, staleLease = false } = {}) {
     headers:{origin:'https://www.clinic-flow.co.il','x-notify-secret':secret},
     body:JSON.stringify({schema:'public',table:'contact_messages',type:'INSERT',
       record:{id,name:'Injected display name',email:'wrong@example.invalid'}}) });
-  return {handler,request,sent,lookups,completed};
+  return {handler,request,sent,lookups,completed,claimIds};
 }
 
 test('the public site origin and unsaved contact cannot trigger dispatch', async () => {
@@ -108,4 +112,16 @@ test('expired lease acknowledgement never reports accepted work as complete', as
   const f = fixture({staleLease:true});
   assert.equal((await f.handler(f.request('test-secret'))).status,503);
   assert.deepEqual(f.completed,[]);
+});
+
+test('one-time proof restricts delivery to one row and dry runs cannot claim work', async () => {
+  for (const mode of [null,'DRY_RUN','DELIVER']) {
+    const f = fixture({proofMode:mode});
+    const response = await f.handler(new Request('https://example.invalid',{
+      method:'POST',body:JSON.stringify({contactId:id,proof:'00000000-0000-4000-a000-000000000002'}),
+    }));
+    assert.equal(response.status, mode ? 200 : 401);
+    assert.deepEqual(f.claimIds,mode==='DELIVER' ? [id] : []);
+    if(mode==='DRY_RUN') { assert.equal(f.sent.length,0); assert.deepEqual(await response.json(),{dryRun:true}); }
+  }
 });
