@@ -75,7 +75,7 @@ export const registry: EmailEntry[] = [
     id: 6, file: 'order-confirmation.tsx', component: 'OrderConfirmation', group: 'B · Purchase & Licensing', from: FROM,
     subject: 'אישור הרכישה שלך ב-ClinicFlow',
     preheader: 'תודה על הרכישה — הנה סיכום ההזמנה שלך.',
-    props: ['name', 'plan', 'amount', 'vat', 'total', 'orderId', 'invoiceUrl?'],
+    props: ['name', 'plan', 'total', 'orderId', 'invoiceUrl?'],
     trigger: 'Stripe · payment succeeded', unsubscribe: false,
   },
   {
