@@ -7,6 +7,7 @@ ClinicFlow uses the existing Supabase Edge Function architecture. The public pay
 Set these as server-side Supabase Edge Function secrets (never `VITE_` and never browser-exposed):
 
 - `MAKE_PAYMENT_WEBHOOK_URL`: the Make Custom Webhook URL that starts the payment-link scenario.
+- `MAKE_GROW_NOTIFY_URL`: the HTTPS Make notification trigger from scenario 2, distinct from the link-creation trigger. Grow posts its event here.
 - `MAKE_CALLBACK_SECRET`: long random secret shared only with Make’s HTTP callback module.
 - `NEXT_PUBLIC_APP_URL`: `https://www.clinic-flow.co.il` (used server-side here for return URLs; despite the name it must not be placed in client-exposed Vite env files).
 - `SITE_URL`: optional backward-compatible fallback for the return URL.
@@ -24,10 +25,10 @@ The Grow connection is created in Make via Grow (production) or Grow Sandbox. Gr
 
 1. Add **Grow → Notify URL Webhook** and configure the same Grow connection.
 2. Map the Grow notification’s order/custom field, transaction identifier, status, amount, and currency.
-3. Add **Grow → Approve Transaction** after the notification is received.
-4. Add **HTTP → Make a request** to `https://<supabase-project>.supabase.co/functions/v1/grow-webhook`, POST JSON `{ orderId, transactionId, status, amount, currency }`, and add header `x-make-callback-secret: <MAKE_CALLBACK_SECRET>`.
+3. Use **Grow → Approve Transaction** to acknowledge the notification. Before forwarding a paid event, independently verify the captured transaction, order reference, charged amount and currency using the merchant connection. If the integration cannot supply that evidence, hold the order for reconciliation.
+4. Add **HTTP → Make a request** to `https://<supabase-project>.supabase.co/functions/v1/grow-webhook`, POST JSON `{ orderId, transactionId, status, amount, currency }`, and add header `x-make-callback-secret: <MAKE_CALLBACK_SECRET>`. Send canonical `paid` only for a verified capture and express the charged amount in agorot. A generic approval, a successful API request and the customer’s return URL each carry insufficient evidence of settlement.
 
-If a notification lacks a transaction ID or the amount/currency does not match the pending order, ClinicFlow records `MANUAL_REVIEW` and does not activate a license.
+A notification missing its transaction ID is rejected. An authenticated settled transaction with a mismatched amount or currency places a pending order in manual review.
 
 ## Testing
 

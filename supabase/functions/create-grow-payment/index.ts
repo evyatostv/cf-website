@@ -40,6 +40,13 @@ Deno.serve(async (req) => {
   const webhookUrl = Deno.env.get('MAKE_PAYMENT_WEBHOOK_URL');
   if (!webhookUrl) return json({ error: 'Payment service unavailable' }, 503);
 
+  const notifyUrl = URL.parse(Deno.env.get('MAKE_GROW_NOTIFY_URL') || '');
+  if (!notifyUrl || notifyUrl.protocol !== 'https:' || !/^hook(?:\.[a-z0-9-]+)?\.make\.com$/.test(notifyUrl.hostname)
+      || notifyUrl.username || notifyUrl.password || notifyUrl.port || notifyUrl.pathname.length < 2
+      || notifyUrl.href === URL.parse(webhookUrl)?.href) {
+    return json({ error: 'שירות התשלום אינו זמין כרגע. אפשר לנסות שוב מאוחר יותר.', code: 'PAYMENT_NOTIFICATION_UNAVAILABLE' }, 503);
+  }
+
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const db = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
   const userDb = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
@@ -111,7 +118,7 @@ Deno.serve(async (req) => {
     }
     if (order?.result === 'PENDING') {
       if (order.payment_url) return json({ orderId: order.id, paymentUrl: order.payment_url });
-      return json({ error: 'יש הזמנה פתוחה. נסו שוב בעוד רגע או פנו לתמיכה אם הקישור אינו זמין.' }, 409);
+      return json({ error: 'יש הזמנה פתוחה. נסו שוב בעוד רגע או פנו לתמיכה אם הקישור אינו זמין.', orderId: order.id, code: 'ORDER_LINK_PENDING' }, 409);
     }
     if (order?.result !== 'NEW') throw new Error('Order creation failed');
 
@@ -119,19 +126,25 @@ Deno.serve(async (req) => {
     successUrl.searchParams.set('order', order.id);
     const cancelUrl = new URL('/checkout/cancel', SITE_URL);
     cancelUrl.searchParams.set('order', order.id);
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        orderId: order.id, packageId: order.package_id, packageName: PACKAGE.name,
-        amount: order.amount, price: order.amount / 100, currency: 'ILS',
-        customer: { email: user.email, fullName: fullName.trim(), phone },
-        customerName: fullName.trim(), customerEmail: user.email, customerPhone: phone,
-        notifyUrl: supabaseUrl + '/functions/v1/grow-webhook',
-        successUrl: successUrl.href, cancelUrl: cancelUrl.href,
-      }),
-      signal: AbortSignal.timeout(25_000),
-    });
+    let response: Response;
+    try {
+      response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: order.id, packageId: order.package_id, packageName: PACKAGE.name,
+          amount: order.amount, price: order.amount / 100, currency: 'ILS',
+          customer: { email: user.email, fullName: fullName.trim(), phone },
+          customerName: fullName.trim(), customerEmail: user.email, customerPhone: phone,
+          notifyUrl: notifyUrl.href,
+          successUrl: successUrl.href, cancelUrl: cancelUrl.href,
+        }),
+        signal: AbortSignal.timeout(25_000),
+      });
+    } catch {
+      await recordAuditEvent(db, { eventType: 'checkout_start', outcome: 'failure', userId: user.id, orderId: order.id, provider: 'grow', metadata: { reason: 'provider_unreachable' } });
+      return json({ error: 'טרם התקבל קישור להזמנה. אפשר לבדוק את מצבה או לפנות לתמיכה.', code: 'ORDER_LINK_PENDING', orderId: order.id }, 503);
+    }
     const payload = await response.json().catch(() => null);
     let paymentUrl: URL | null = null;
     if (typeof payload?.paymentUrl === 'string') {
@@ -144,7 +157,8 @@ Deno.serve(async (req) => {
     if (!response.ok || !paymentUrl || paymentUrl.protocol !== 'https:' || paymentUrl.username || paymentUrl.password) {
       // The provider may have created a link even when its response is unusable.
       // Keep the order for reconciliation instead of creating a second link.
-      return json({ error: 'לא ניתן ליצור קישור תשלום כרגע', orderId: order.id }, 502);
+      await recordAuditEvent(db, { eventType: 'checkout_start', outcome: 'failure', userId: user.id, orderId: order.id, provider: 'grow', metadata: { reason: 'invalid_provider_response' } });
+      return json({ error: 'לא ניתן ליצור קישור תשלום כרגע', code: 'ORDER_LINK_PENDING', orderId: order.id }, 502);
     }
 
     const { data: savedOrder, error: saveError } = await db.from('orders').update({ payment_url: paymentUrl.href })

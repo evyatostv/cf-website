@@ -30,7 +30,7 @@ for (const [label, os, size, status] of [
       },
     };
     vm.runInNewContext(stripTypeScriptTypes(source), {
-      Deno: {env: {get: key => key === 'MAKE_PAYMENT_WEBHOOK_URL' ? 'https://example.test' : undefined},
+      Deno: {env: {get: key => key === 'MAKE_PAYMENT_WEBHOOK_URL' ? 'https://example.test' : key === 'MAKE_GROW_NOTIFY_URL' ? 'https://hook.eu2.make.com/synthetic-notify' : undefined},
         serve: callback => {handler = callback;}},
       createClient: () => db, inactivePaymentProvider: () => null, recordAuditEvent: async () => {},
       URL, Response, Headers, console,
