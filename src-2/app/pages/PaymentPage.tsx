@@ -250,15 +250,20 @@ export function PaymentPage() {
               <p className="text-center text-xs text-[#6b7c93] mb-5">עד 3 תשלומים ללא ריבית</p>
 
               <label className="block text-sm mb-5">
-                באיזו מערכת הפעלה תותקן התוכנה?
+                על איזה מחשב תותקן התוכנה?
                 <select value={targetOs} onChange={(event) => setTargetOs(event.target.value)}
                   className="block w-full mt-1 rounded-lg border border-[#e1e6ec] p-2.5 text-base">
-                  <option value="">בחירת מערכת הפעלה</option>
-                  <option value="win">Windows</option>
-                  <option value="mac">macOS</option>
-                  <option value="linux">Linux</option>
+                  <option value="">בחירת מחשב</option>
+                  <option value="win">Windows 10 או 11 עם מעבד Intel או AMD ‏(64 סיביות)</option>
+                  <option value="mac">macOS 12 ומעלה עם שבב Apple Silicon</option>
                 </select>
               </label>
+
+              {targetOs === 'mac' && (
+                <p className="text-sm mb-5 text-[#1a2332]">
+                  לבדיקת סוג השבב ב־Mac, פתחו את תפריט Apple ובחרו ״אודות Mac זה״.
+                </p>
+              )}
 
               {needsCheckoutContact && (
                 <fieldset className="border border-[#e1e6ec] rounded-xl p-4 mb-5 space-y-3" disabled={processing}>
