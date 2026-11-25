@@ -3,7 +3,6 @@ import { Link, useSearchParams } from 'react-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import { Seo } from '@/app/components/Seo';
-import { trackMarketingEvent } from '@/lib/marketing-analytics';
 
 const CHECKOUT_STATUS = {
   loading: ['בודקים את סטטוס התשלום', 'הבדיקה עשויה להימשך כמה רגעים.'],
@@ -45,9 +44,9 @@ export function CheckoutSuccessPage() {
         return;
       }
       switch (data?.status) {
-        case 'PAID': setStatus('paid'); trackMarketingEvent('checkout_success'); break;
+        case 'PAID': setStatus('paid'); break;
         case 'FAILED':
-        case 'CANCELLED': setStatus('failed'); trackMarketingEvent('checkout_failed', { status: String(data.status).toLowerCase() }); break;
+        case 'CANCELLED': setStatus('failed'); break;
         case 'MANUAL_REVIEW':
         case 'REFUNDED': setStatus('review'); break;
         case 'PENDING':

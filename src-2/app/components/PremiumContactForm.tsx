@@ -51,7 +51,6 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    trackMarketingEvent('contact_cta_clicked', { intent: mode, source: 'premium_contact_form' });
     setLoading(true);
     setError('');
 
@@ -81,6 +80,7 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
       setError(res.error || 'שגיאה בשליחה. נסו שוב מאוחר יותר.');
       return;
     }
+    trackMarketingEvent('contact_submitted', 'premium_contact_form');
     setSuccess(true);
     setFormData({ name: '', email: '', phone: '', clinicName: '', message: '' });
     setTimeout(() => setSuccess(false), 5000);

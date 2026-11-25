@@ -110,7 +110,12 @@ export function PricingPage() {
   const enterpriseTriggerRef = useRef<HTMLElement | null>(null);
   const navigate = useNavigate();
 
-  useEffect(() => { trackMarketingEvent('pricing_viewed'); }, []);
+  const measuredView = useRef(false);
+  useEffect(() => {
+    if (measuredView.current) return;
+    measuredView.current = true;
+    trackMarketingEvent('pricing_viewed');
+  }, []);
 
   // There is one product and one checkout path.
   const tiersWithActions = clinicFlowTiers.map(tier => {

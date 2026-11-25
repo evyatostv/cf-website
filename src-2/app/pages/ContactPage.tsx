@@ -70,7 +70,6 @@ export function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    trackMarketingEvent('contact_cta_clicked', { intent: intent || 'general', source: 'contact_form' });
     setLoading(true);
     setError("");
     setSuccess(false);
@@ -108,6 +107,7 @@ export function ContactPage() {
       return;
     }
 
+    trackMarketingEvent('contact_submitted', 'contact_form');
     setSuccess(true);
     setFormData({ name: "", email: "", phone: "", clinicName: "", message: "" });
   };

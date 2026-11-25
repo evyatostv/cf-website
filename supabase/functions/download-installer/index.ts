@@ -104,22 +104,21 @@ Deno.serve(async (req) => {
       );
     }
 
+    const adminClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
     if (!['forever', 'basic', 'professional', 'full', 'premium'].includes(access.plan)) {
+      await recordAuditEvent(adminClient, {eventType: 'download_attempt', outcome: 'blocked', userId: user.id, metadata: {reason: 'paid_plan_required', os}});
       return new Response(JSON.stringify({ error: 'נדרש תשלום מאושר', code: 'PAYMENT_REQUIRED' }), {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Service-role client — needed to create signed URLs against a private bucket
-    const adminClient = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    );
 
     const { data: purchases, error: purchaseError } = await adminClient.from('purchases')
       .select('payment_id').eq('user_id', user.id).eq('plan', access.plan)
       .gt('amount', 0).not('payment_id', 'is', null).neq('payment_id', '').limit(1);
     if (purchaseError || !purchases?.length) {
+      await recordAuditEvent(adminClient, {eventType: 'download_attempt', outcome: purchaseError ? 'failure' : 'blocked',
+        userId: user.id, metadata: {reason: purchaseError ? 'purchase_lookup_failed' : 'purchase_required', os}});
       return new Response(JSON.stringify({ code: purchaseError ? 'PAYMENT_LOOKUP_FAILED' : 'PAYMENT_REQUIRED' }), {
         status: purchaseError ? 503 : 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -130,7 +129,8 @@ Deno.serve(async (req) => {
       .createSignedUrl(installerKey, SIGNED_URL_TTL);
 
     if (signError || !signed?.signedUrl) {
-      console.error('createSignedUrl failed:', signError?.message);
+      await recordAuditEvent(adminClient, {eventType: 'download_attempt', outcome: 'failure', userId: user.id,
+        metadata: {reason: 'link_signing_failed', os}});
       return new Response(
         JSON.stringify({ error: 'Failed to generate download link' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
