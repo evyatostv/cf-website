@@ -86,11 +86,11 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-  } catch (err) {
+  } catch {
     // BE-004: never leak internal error text to the client — log with a
     // correlation id, return a generic Hebrew message.
     const correlationId = crypto.randomUUID();
-    console.error(`create-checkout-session error [${correlationId}]:`, err);
+    console.error(`create-checkout-session error [${correlationId}]`);
     return new Response(JSON.stringify({
       error: 'אירעה שגיאה ביצירת התשלום. נסה/י שוב או פנה/י לתמיכה עם מזהה השגיאה.',
       correlationId,

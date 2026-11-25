@@ -157,12 +157,12 @@ Deno.serve(async (req) => {
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
-  } catch (err) {
+  } catch {
     // BE-004: never leak internal error text (Stripe/DB internals, English) to the
     // client. Log the full error server-side with a correlation id, return a
     // generic Hebrew message + the id the user can quote to support.
     const correlationId = crypto.randomUUID();
-    console.error(`create-payment-intent error [${correlationId}]:`, err);
+    console.error(`create-payment-intent error [${correlationId}]`);
     return new Response(
       JSON.stringify({
         error: 'אירעה שגיאה ביצירת התשלום. נסה/י שוב או פנה/י לתמיכה עם מזהה השגיאה.',
