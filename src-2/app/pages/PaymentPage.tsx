@@ -33,7 +33,9 @@ export function PaymentPage() {
   const [licenseAlreadyActive, setLicenseAlreadyActive] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [termsLogged, setTermsLogged] = useState(false);
-  const [needsCheckoutContact, setNeedsCheckoutContact] = useState(false);
+  // Grow requires a full name and Israeli mobile number. Collect them before
+  // the first request instead of waiting for a server validation error.
+  const [needsCheckoutContact, setNeedsCheckoutContact] = useState(true);
   const [checkoutName, setCheckoutName] = useState('');
   const [checkoutPhone, setCheckoutPhone] = useState('');
 
@@ -49,6 +51,12 @@ export function PaymentPage() {
   useEffect(() => {
     if (!loading && !user) navigate(loginWithRedirect);
   }, [user, loading, navigate, loginWithRedirect]);
+
+  useEffect(() => {
+    if (!user) return;
+    setCheckoutName((current) => current || user.user_metadata?.full_name || '');
+    setCheckoutPhone((current) => current || user.user_metadata?.phone || '');
+  }, [user]);
 
   // AllPay can bounce the user back to /payment on a declined/failed charge
   // (e.g. ?status=failed or ?payment=failed). Surface a Hebrew failure banner
