@@ -27,7 +27,7 @@ export function OrderConfirmation({
       <Text style={{ ...s.muted, margin: '0 0 6px', color: brand.primary, fontWeight: 600 }}>
         אישור הזמנה
       </Text>
-      <Text style={s.h1}>שלום {name}, תודה על הרכישה 🎉</Text>
+      <Text style={s.h1}>{name ? `שלום ${name}, ` : ''}תודה על הרכישה 🎉</Text>
       <Text style={s.p}>
         התשלום התקבל. אפשר להיכנס לאזור האישי עם החשבון ששימש לרכישה כדי להוריד את התוכנה.
       </Text>

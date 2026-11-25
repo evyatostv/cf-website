@@ -47,13 +47,14 @@ export async function sendOnce<T extends EmailId>(
 ): Promise<SendOnceResult> {
   try {
     // 1 · Already sent for this payment+template? Skip.
-    const { data: existing } = await supabaseAdmin
+    const { data: existing, error: lookupError } = await supabaseAdmin
       .from("email_log")
       .select("id")
       .eq("payment_id", paymentId)
       .eq("template", template)
       .maybeSingle();
 
+    if (lookupError) return { skipped: false, error: 'Email delivery log unavailable' };
     if (existing) {
       return { skipped: true };
     }
@@ -70,11 +71,12 @@ export async function sendOnce<T extends EmailId>(
       template,
       recipient: to,
     });
-    if (logError) {
+    if (logError && logError.code !== "23505") {
       console.error(
         `sendOnce: sent ${template} for ${paymentId} but failed to log:`,
-        logError.message ?? logError,
+        logError.code ?? "database error",
       );
+      return { skipped: false, sent: true, id: res.id, error: "Delivery log not confirmed" };
     }
 
     return { skipped: false, sent: true, id: res.id };
