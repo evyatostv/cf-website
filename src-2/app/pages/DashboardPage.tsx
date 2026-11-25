@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
-import { getUserAccess, UserAccess, PLAN_LABELS, supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase';
+import { getPaidUserAccess, UserAccess, PLAN_LABELS, supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase';
 import { DeleteAccountSection } from '@/app/components/DeleteAccountSection';
 import { DataExportSection } from '@/app/components/DataExportSection';
 import { TwoFactorSection } from '@/app/components/TwoFactorSection';
@@ -46,6 +46,8 @@ export function DashboardPage() {
   const navigate = useNavigate();
   const { user, loading, signOut } = useAuth();
   const [access, setAccess] = useState<UserAccess | null | undefined>(undefined);
+  const [lookupFailed, setLookupFailed] = useState(false);
+  const [lookupAttempt, setLookupAttempt] = useState(0);
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
@@ -59,20 +61,17 @@ export function DashboardPage() {
   }, []);
 
   const handleDownload = async (targetOs?: 'mac' | 'win') => {
-    // Never start an installer download from a client-side action unless the
-    // access record has been positively confirmed as active.  The dashboard is
-    // reachable by authenticated users who have not paid yet, and a stale
-    // session must not turn the public Keygen artifact URL into a free trial.
-    const currentAccess = access;
-    const currentTrialExpired = currentAccess?.plan === 'trial' && currentAccess.expires_at
-      ? new Date(currentAccess.expires_at) < new Date()
-      : false;
-    if (!currentAccess?.is_active || currentTrialExpired) {
+    if (downloading) return;
+    if (!user || !access || access.user_id !== user.id) {
       setDownloadError('הורדת התוכנה זמינה רק לאחר אישור תשלום.');
       navigate('/payment?plan=forever');
       return;
     }
     const finalOs = targetOs || osType;
+    if (finalOs === 'unknown') {
+      document.getElementById('installer-options')?.scrollIntoView({ block: 'center' });
+      return;
+    }
     setDownloadError(null);
     setDownloading(true);
 
@@ -111,24 +110,24 @@ export function DashboardPage() {
 
 
   useEffect(() => {
-    if (!loading && !user) { navigate('/login'); return; }
-    if (user) {
-      getUserAccess(user.id).then((acc) => {
-        if (!acc || !acc.is_active || (acc.plan as string) === 'none' ||
-            (acc.plan === 'trial' && acc.expires_at && new Date(acc.expires_at) < new Date())) {
-          navigate('/payment?plan=forever', { replace: true });
-        } else {
-          setAccess(acc);
-        }
-      });
-    }
-  }, [user, loading, navigate]);
+    if (loading) return;
+    if (!user) { navigate('/login'); return; }
+    let current = true;
+    setAccess(undefined);
+    setLookupFailed(false);
+    getPaidUserAccess(user.id).then(result => {
+      if (current) setAccess(result);
+    }).catch(() => {
+      if (current) setLookupFailed(true);
+    });
+    return () => { current = false; };
+  }, [user, loading, navigate, lookupAttempt]);
 
   const handleSignOut = async () => {
     try { await signOut(); navigate('/'); } catch (err) { console.error(err); }
   };
 
-  if (loading || access === undefined) {
+  if (loading || (!lookupFailed && access === undefined) || (access && access.user_id !== user?.id)) {
     return (
       <div className="min-h-screen bg-[#f5f7f9] flex items-center justify-center">
         <div className="text-center">
@@ -141,12 +140,8 @@ export function DashboardPage() {
 
   if (!user) return null;
 
-  const isTrialExpired = access?.plan === 'trial' && access?.expires_at && new Date(access.expires_at) < new Date();
-  const hasActiveAccess = access?.is_active && !isTrialExpired;
+  const hasActiveAccess = Boolean(access);
   const planLabel = access ? PLAN_LABELS[access.plan] ?? access.plan : null;
-
-  const trialDaysLeft = access?.plan === 'trial' && access.expires_at && !isTrialExpired
-    ? Math.ceil((new Date(access.expires_at).getTime() - Date.now()) / 86400000) : null;
   const memberSince = user.created_at ? new Date(user.created_at).toLocaleDateString('he-IL') : '—';
   const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'משתמש';
 
@@ -183,34 +178,21 @@ export function DashboardPage() {
               {/* Access Status */}
               <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                 <Card className="p-6">
-                  {!access ? (
+                  {lookupFailed ? (
+                    <div className="text-center space-y-3" role="alert">
+                      <p>בדיקת הרישיון נכשלה. אפשר לנסות שוב.</p>
+                      <button className="underline" onClick={() => setLookupAttempt(value => value + 1)}>בדיקה חוזרת</button>
+                    </div>
+                  ) : !access ? (
                     <div className="text-center py-6">
                       <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <Clock className="w-8 h-8 text-amber-500" />
                       </div>
-                      <h2 className="text-lg font-bold text-[#1a2332] mb-2">ממתין לאישור</h2>
+                      <h2 className="text-lg font-bold text-[#1a2332] mb-2">אין רישיון מאומת</h2>
                       <p className="text-[#6b7c93] text-sm max-w-sm mx-auto">
-                        החשבון שלך נוצר. ברגע שהרכישה תאושר תוכל/י להפעיל את האפליקציה.
+                        ההורדה זמינה לבעלי רישיון פעיל עם תשלום מאושר. אם כבר שילמת, אפשר לפנות לתמיכה.
                       </p>
-                    </div>
-                  ) : !access.is_active ? (
-                    <div className="text-center py-6">
-                      <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <XCircle className="w-8 h-8 text-red-400" />
-                      </div>
-                      <h2 className="text-lg font-bold text-[#1a2332] mb-2">גישה מושהית</h2>
-                      <p className="text-[#6b7c93] text-sm">הגישה שלך הושהתה. לפרטים נוספים צור/י קשר.</p>
-                    </div>
-                  ) : isTrialExpired ? (
-                    <div className="text-center py-6">
-                      <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <AlertCircle className="w-8 h-8 text-red-400" />
-                      </div>
-                      <h2 className="text-lg font-bold text-[#1a2332] mb-2">תקופת הניסיון הסתיימה</h2>
-                      <p className="text-[#6b7c93] text-sm mb-4">רכוש/י רישיון כדי להמשיך להשתמש באפליקציה.</p>
-                      <Link to="/pricing" className="inline-block bg-gradient-to-r from-[#0d47a1] to-[#00838f] text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:shadow-md transition">
-                        לבחירת חבילה
-                      </Link>
+                      <Link to="/payment?plan=forever" className="underline">לרכישת רישיון</Link>
                     </div>
                   ) : (
                     <div>
@@ -220,9 +202,6 @@ export function DashboardPage() {
                         </div>
                         <div>
                           <h2 className="font-bold text-[#1a2332]">גישה פעילה</h2>
-                          {trialDaysLeft !== null && (
-                            <p className="text-xs text-amber-600 font-medium">ניסיון חינם — {trialDaysLeft} ימים נותרו</p>
-                          )}
                         </div>
                         <span className="mr-auto text-xs font-semibold bg-green-100 text-green-700 px-3 py-1 rounded-full">פעיל</span>
                       </div>
@@ -233,16 +212,14 @@ export function DashboardPage() {
                           <p className="font-bold">{planLabel}</p>
                         </div>
                         <div className="bg-[#f5f7f9] rounded-xl p-4">
-                          <p className="text-xs text-[#6b7c93] mb-0.5">{access.plan === 'trial' ? 'תוקף' : 'סוג רישיון'}</p>
-                          <p className="font-bold text-[#1a2332]">
-                            {access.plan === 'trial' && access.expires_at
-                              ? new Date(access.expires_at).toLocaleDateString('he-IL')
-                              : <span>לנצח <span className="text-2xl">♾</span></span>}
-                          </p>
+                          <p className="text-xs text-[#6b7c93] mb-0.5">סוג רישיון</p>
+                          <p className="font-bold text-[#1a2332]">לצמיתות</p>
                         </div>
                       </div>
 
                       
+                      <div id="installer-options">
+                      {downloadError && <p role="alert">{downloadError}</p>}
                       {osType === 'unknown' ? (
                         <div className="flex flex-col gap-3">
                           <button
@@ -295,8 +272,7 @@ export function DashboardPage() {
                           </button>
                         </div>
                       )}
-
-
+                      </div>
                     </div>
                   )}
                 </Card>
@@ -310,7 +286,7 @@ export function DashboardPage() {
                     פעולות מהירות
                   </h3>
                   <div className="flex flex-col gap-3">
-                    {QUICK_ACTIONS.map(({ icon: Icon, title, desc, action }) => (
+                    {QUICK_ACTIONS.filter(item => hasActiveAccess || item.action !== 'download').map(({ icon: Icon, title, desc, action }) => (
                       <button
                         key={title}
                         onClick={() => {
@@ -356,7 +332,7 @@ export function DashboardPage() {
                       <p className="text-sm font-medium">
                         {hasActiveAccess
                           ? <span className="text-green-600">פעיל</span>
-                          : <span className="text-amber-500">ממתין לאישור</span>}
+                          : <span className="text-amber-500">{lookupFailed ? 'הבדיקה נכשלה' : 'אין רישיון מאומת'}</span>}
                       </p>
                     </div>
                     {planLabel && (

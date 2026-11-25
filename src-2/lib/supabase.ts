@@ -14,14 +14,10 @@ export const SUPABASE_URL = supabaseUrl;
 export const SUPABASE_ANON_KEY = supabaseAnonKey;
 
 export type UserAccess = {
-  id: string;
   user_id: string;
-  email: string;
   plan: 'forever' | 'basic' | 'professional' | 'full' | 'premium' | 'trial';
   is_active: boolean;
   expires_at: string | null;
-  notes: string | null;
-  granted_at: string;
 };
 
 export const PLAN_LABELS: Record<string, string> = {
@@ -33,19 +29,21 @@ export const PLAN_LABELS: Record<string, string> = {
   trial: 'ניסיון חינם',
 };
 
-export async function getUserAccess(userId: string): Promise<UserAccess | null> {
+export async function getPaidUserAccess(userId: string): Promise<UserAccess | null> {
   const { data, error } = await supabase
     .from('user_access')
-    .select('*')
+    .select('user_id,plan,is_active,expires_at')
     .eq('user_id', userId)
-    .limit(1)
     .maybeSingle();
 
-  if (error) {
-    console.error('Failed to fetch user access:', error);
-    return null;
-  }
+  if (error) throw error;
+  if (!data?.is_active || !['forever', 'basic', 'professional', 'full', 'premium'].includes(data.plan)) return null;
 
+  const { data: purchase, error: purchaseError } = await supabase.from('purchases')
+    .select('id').eq('user_id', userId).eq('plan', data.plan)
+    .gt('amount', 0).not('payment_id', 'is', null).neq('payment_id', '').limit(1).maybeSingle();
+  if (purchaseError) throw purchaseError;
+  if (!purchase) return null;
   return data;
 }
 
