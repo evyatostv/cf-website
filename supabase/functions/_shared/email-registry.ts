@@ -72,8 +72,8 @@ export interface EmailPropMap {
     name: string;
     plan: string;
     orderId: string;
-    amount: string; // pre-VAT, formatted
-    vat: string; // formatted
+    amount?: string; // accepted from legacy payment providers
+    vat?: string; // accepted from legacy payment providers
     total: string; // formatted
     ordersUrl?: string;
   };

@@ -35,9 +35,7 @@ export const FIXTURES: { [Id in EmailId]: EmailPropMap[Id] } = {
     name: "ד״ר שרון לוי",
     plan: "ClinicFlow Full",
     orderId: "CF-10428",
-    amount: "₪1,196",
-    vat: "₪215",
-    total: "₪1,411",
+    total: "₪1,499",
     ordersUrl: "https://clinic-flow.co.il/account/orders",
   },
   "license-delivery": {
