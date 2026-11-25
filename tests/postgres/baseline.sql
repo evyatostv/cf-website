@@ -6,7 +6,7 @@ create role service_role bypassrls;
 create schema auth;
 create schema storage;
 create table auth.users (
-  id uuid primary key, email text, created_at timestamptz default now(), email_confirmed_at timestamptz
+  id uuid primary key, email text, created_at timestamptz default now(), email_confirmed_at timestamptz, banned_until timestamptz
 );
 create table auth.sessions (
   id uuid primary key, user_id uuid references auth.users on delete cascade,
@@ -32,7 +32,10 @@ create table public.purchases (
   user_id uuid unique references auth.users on delete cascade, email text not null, version text not null,
   plan text, amount integer, payment_id text unique, discount_eligible boolean, purchased_at timestamptz
 );
-create table public.contact_messages (email text, created_at timestamptz);
+create table public.contact_messages (name text, email text, message text, created_at timestamptz);
+alter table public.contact_messages enable row level security;
+grant select on public.contact_messages to authenticated;
+create policy "Authenticated can read" on public.contact_messages for select to authenticated using(true);
 create table public.download_log (user_id uuid references auth.users on delete set null, email text);
 create table public.policy_acceptances (user_id uuid references auth.users on delete set null, user_email text, user_agent text);
 create table public.users (id uuid references auth.users on delete cascade);
