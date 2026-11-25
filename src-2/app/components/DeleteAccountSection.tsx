@@ -88,7 +88,10 @@ export function DeleteAccountSection() {
       scheduled_for: scheduledFor,
       status: 'pending',
     });
-    if (insErr) { setError(mapAuthError(insErr)); return false; }
+    if (insErr) {
+      setError(insErr.message.includes('RECENT_SIGN_IN_REQUIRED') ? 'יש להתחבר שוב לפני שליחת בקשת המחיקה.' : mapAuthError(insErr));
+      return false;
+    }
     setPassword('');
     setConfirming(false);
     const { data } = await supabase
@@ -109,13 +112,18 @@ export function DeleteAccountSection() {
   // they cancelled the Google login, last_sign_in_at is unchanged → nothing happens.
   useEffect(() => {
     if (!user) return;
-    let flag: { ts: number; prevSignIn?: string } | null = null;
+    let flag: { ts: number; userId?: string; prevSignIn?: string } | null = null;
     try {
       const raw = sessionStorage.getItem(PENDING_KEY);
       if (raw) flag = JSON.parse(raw);
     } catch {}
     if (!flag) return;
 
+    if (flag.userId !== user.id) {
+      try { sessionStorage.removeItem(PENDING_KEY); } catch {}
+      setError('נבחר חשבון אחר. כדי לבקש מחיקה יש להתחבר שוב לחשבון המקורי.');
+      return;
+    }
     const fresh = Date.now() - flag.ts < 5 * 60 * 1000;
     const reAuthed = !!user.last_sign_in_at && user.last_sign_in_at !== flag.prevSignIn;
     if (fresh && reAuthed) {
@@ -162,7 +170,7 @@ export function DeleteAccountSection() {
   async function startReloginDelete() {
     setError(null);
     try {
-      sessionStorage.setItem(PENDING_KEY, JSON.stringify({ ts: Date.now(), prevSignIn: user?.last_sign_in_at }));
+      sessionStorage.setItem(PENDING_KEY, JSON.stringify({ ts: Date.now(), userId: user?.id, prevSignIn: user?.last_sign_in_at }));
     } catch {
       setError('כדי להמשיך במחיקת החשבון, אפשרו לאתר לשמור נתונים בדפדפן ונסו שוב. אפשר גם לפנות לתמיכה.');
       return;

@@ -7,6 +7,17 @@ create function public.guard_deletion_request() returns trigger
 language plpgsql security definer set search_path='' as $$
 begin
   if tg_op='INSERT' then
+    if auth.uid() is not null then
+      if new.user_id is distinct from auth.uid() or not exists (
+        select 1 from auth.sessions s where s.id::text=auth.jwt()->>'session_id'
+          and s.user_id=auth.uid() and (s.not_after is null or s.not_after>now())
+      ) or not exists (
+        select 1 from jsonb_array_elements(auth.jwt()->'amr') method
+        where method->>'method' in ('password','oauth')
+          and jsonb_typeof(method->'timestamp')='number'
+          and (method->>'timestamp')::numeric between extract(epoch from now())-300 and extract(epoch from now())
+      ) then raise insufficient_privilege using message='RECENT_SIGN_IN_REQUIRED'; end if;
+    end if;
     select email into strict new.user_email from auth.users where id=new.user_id;
     new.requested_at:=now();
     new.scheduled_for:=now()+interval '7 days';
