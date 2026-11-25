@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "types": [
+      "npm:@types/react@18.3.18",
+      "npm:@types/react-dom@18.3.5"
+    ]
+  },
+  "unstable": [
+    "sloppy-imports"
+  ],
+  "nodeModulesDir": "auto",
+  "imports": {
+    "react": "npm:react@18.3.1",
+    "react/jsx-runtime": "npm:react@18.3.1/jsx-runtime",
+    "react-dom": "npm:react-dom@18.3.1",
+    "@react-email/components": "npm:@react-email/components@1.0.12",
+    "@react-email/render": "npm:@react-email/render@2.0.9"
+  }
+}
