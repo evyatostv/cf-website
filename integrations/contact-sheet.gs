@@ -21,7 +21,9 @@ function doPost(event) {
         const value = String(contact[key] || '');
         return /^\s*[=+@-]/.test(value) ? "'" + value : value;
       });
-      sheet.appendRow(row);
+      const next = sheet.getLastRow() + 1;
+      sheet.getRange(next, fields.indexOf('phone') + 1).setNumberFormat('@');
+      sheet.getRange(next, 1, 1, fields.length).setValues([row]);
       SpreadsheetApp.flush();
     }
     return ContentService.createTextOutput(JSON.stringify({storedId:contact.id})).setMimeType(ContentService.MimeType.JSON);

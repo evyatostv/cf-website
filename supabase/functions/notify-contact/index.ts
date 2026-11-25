@@ -185,9 +185,10 @@ serve(async req => {
       if (readError) throw new Error('read_failed');
       if (!contact) continue; // Deletion cascades to its pending deliveries.
       await deliver(contact,job.channel);
-      const {error:writeError} = await db.from('contact_deliveries').update({completed_at:new Date().toISOString()})
-        .eq('contact_id',job.contact_id).eq('channel',job.channel).eq('lease_id',job.lease_id);
-      if (writeError) throw new Error('completion_failed');
+      const {data:completed,error:writeError} = await db.from('contact_deliveries').update({completed_at:new Date().toISOString()})
+        .eq('contact_id',job.contact_id).eq('channel',job.channel).eq('lease_id',job.lease_id)
+        .is('completed_at',null).select('contact_id').maybeSingle();
+      if (writeError || !completed) throw new Error('completion_failed');
     } catch {
       failed++;
       console.error('Contact delivery requires retry', job.channel);

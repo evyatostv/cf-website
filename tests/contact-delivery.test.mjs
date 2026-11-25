@@ -7,7 +7,7 @@ import ts from 'typescript';
 const source = readFileSync(new URL('../supabase/functions/notify-contact/index.ts', import.meta.url), 'utf8');
 const code = ts.transpile(source, { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 });
 const id = '00000000-0000-4000-a000-000000000001';
-function fixture({ saved = true, failReply = false } = {}) {
+function fixture({ saved = true, failReply = false, staleLease = false } = {}) {
   let handler;
   const sent = [], completed = [], lookups = [];
   const contact = { id, name:'Saved name', message:'Private text from saved inquiry', email:'fixture@example.invalid' };
@@ -18,7 +18,11 @@ function fixture({ saved = true, failReply = false } = {}) {
       if (table === 'contact_messages') return { select: () => ({eq: (_key,value) => {
         lookups.push(value); return {maybeSingle: async () => ({data:contact})};
       }}) };
-      const query = {eq(key,value) { if (key === 'channel') completed.push(value); return query; }};
+      let channel;
+      const query = {eq(key,value) { if (key === 'channel') channel=value; return query; },
+        is(){return query;},select(){return query;},async maybeSingle(){
+          if (staleLease) return {data:null}; completed.push(channel); return {data:{contact_id:id}};
+        }};
       return {update: () => query};
     },
   };
@@ -70,11 +74,14 @@ test('the optional spreadsheet receiver verifies its secret and deduplicates the
   const appScript = readFileSync(new URL('../integrations/contact-sheet.gs',import.meta.url),'utf8');
   const rows = [];
   let locked = false;
+  const numberFormats = [];
   const sheet = {
     getLastRow:()=>rows.length,
     appendRow:row=>{ assert.ok(locked); rows.push(Array.from(row)); },
     getRange(row,col) {
-      return { getValue:()=>rows[row-1]?.[col-1], createTextFinder:value=>({
+      return { setNumberFormat:fmt=>numberFormats.push([row,col,fmt]),
+        setValues:values=>{assert.ok(locked);rows[row-1]=Array.from(values[0]);},
+        getValue:()=>rows[row-1]?.[col-1], createTextFinder:value=>({
         matchEntireCell:()=>({findNext:()=>rows.slice(1).some(cells=>cells[0]===value)}),
       }) };
     },
@@ -86,11 +93,19 @@ test('the optional spreadsheet receiver verifies its secret and deduplicates the
     ContentService:{MimeType:{JSON:'json'},createTextOutput:body=>({setMimeType:()=>JSON.parse(body)})},
   };
   runInNewContext(appScript,context);
-  const payload = secret=>({postData:{contents:JSON.stringify({secret,contact:{id,name:'=synthetic formula'}})}});
+  const payload = secret=>({postData:{contents:JSON.stringify({secret,contact:{id,name:'=synthetic formula',phone:'0500000000'}})}});
   assert.throws(()=>context.doPost(payload('wrong')),/Invalid request/);
   assert.equal(rows.length,0);
   assert.equal(context.doPost(payload('shared-test')).storedId,id);
   assert.equal(context.doPost(payload('shared-test')).storedId,id);
   assert.equal(rows.length,2);
+  assert.deepEqual(numberFormats,[[2,5,'@']]);
+  assert.equal(rows[1][4],'0500000000');
   assert.equal(rows[1][2],"'=synthetic formula");
+});
+
+test('expired lease acknowledgement never reports accepted work as complete', async () => {
+  const f = fixture({staleLease:true});
+  assert.equal((await f.handler(f.request('test-secret'))).status,503);
+  assert.deepEqual(f.completed,[]);
 });
