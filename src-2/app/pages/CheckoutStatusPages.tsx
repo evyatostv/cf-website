@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { supabase } from '@/lib/supabase';
+import { usePageReturn } from '@/lib/use-page-return';
 import { useAuth } from '@/lib/auth-context';
 import { Seo } from '@/app/components/Seo';
 
@@ -8,6 +9,7 @@ const CHECKOUT_STATUS = {
   loading: ['בודקים את סטטוס התשלום', 'הבדיקה עשויה להימשך כמה רגעים.'],
   pending: ['ממתינים לאישור התשלום', 'אין צורך לשלם שוב. הדף יתעדכן אוטומטית.'],
   paid: ['התשלום אושר', 'הרישיון הופעל. אפשר להוריד את ClinicFlow מהאזור האישי.'],
+  reversed: ['התשלום בוטל', 'הרישיון שנרכש בהזמנה זו אינו פעיל. לשאלות על החיוב אפשר לפנות לתמיכה.'],
   failed: ['התשלום לא אושר', 'אפשר לחזור לעמוד התמחור.'],
   review: ['ההזמנה בבדיקה', 'אם חויבתם, פנו לתמיכה לפני שתנסו לשלם שוב.'],
   unavailable: ['לא הצלחנו לאתר את ההזמנה', 'בדקו את הקישור או פנו לתמיכה אם חויבתם.'],
@@ -20,6 +22,7 @@ export function CheckoutSuccessPage() {
   const [params] = useSearchParams();
   const order = params.get('order');
   const { user, loading } = useAuth();
+  const pageReturn = usePageReturn();
   const [status, setStatus] = useState<Status>('loading');
 
   useEffect(() => {
@@ -47,8 +50,9 @@ export function CheckoutSuccessPage() {
         case 'PAID': setStatus('paid'); break;
         case 'FAILED':
         case 'CANCELLED': setStatus('failed'); break;
-        case 'MANUAL_REVIEW':
-        case 'REFUNDED': setStatus('review'); break;
+        case 'MANUAL_REVIEW': setStatus('review'); break;
+        case 'REFUNDED':
+        case 'CHARGED_BACK': setStatus('reversed'); break;
         case 'PENDING':
           setStatus('pending');
           timer = window.setTimeout(check, 4000);
@@ -62,13 +66,13 @@ export function CheckoutSuccessPage() {
       stopped = true;
       window.clearTimeout(timer);
     };
-  }, [order, user, loading]);
+  }, [order, user, loading, pageReturn]);
 
   const [title, description] = CHECKOUT_STATUS[status];
   const returnPath = order ? `/checkout/success?order=${encodeURIComponent(order)}` : '/checkout/success';
   const action = status === 'signedOut' ? { to: `/login?redirect=${encodeURIComponent(returnPath)}`, label: 'התחברות' }
     : status === 'failed' ? { to: '/pricing', label: 'חזרה לתמחור' }
-    : status === 'review' || status === 'unavailable' ? { to: '/contact', label: 'פנייה לתמיכה' }
+    : status === 'review' || status === 'reversed' || status === 'unavailable' ? { to: '/contact', label: 'פנייה לתמיכה' }
     : { to: '/dashboard', label: 'המשך לאזור האישי' };
 
   return (

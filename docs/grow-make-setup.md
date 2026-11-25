@@ -36,3 +36,22 @@ Use a Grow Sandbox connection. The official sandbox test card `4580458045804580`
 ## Operational notes
 
 Apply the migration before enabling the scenario. Existing Allpay/Stripe flows remain untouched. Payment data contains order/transaction information only; patient data is never sent to Grow or Make. Refunds are manual through Grow/Make’s **Refund Transaction** action and should be followed by an authorized internal review before revoking access.
+
+## התאמת רישיון להחזר או להכחשת עסקה
+
+אישור תשלום ב־Grow וזיכוי ב־Grow הם פעולות נפרדות. לפני שינוי רישיון בודקים במערכת הסוחר את ההזמנה, מזהה החיוב המקורי, הסכום, המטבע ומספר האסמכתה של הזיכוי או של ההכרעה הסופית. בהחזר חלקי או בהכחשת עסקה שעדיין פתוחה, משאירים את הרישיון פעיל ומעבירים לבדיקה. את הפעולה הכספית מבצעים במערכת הסוחר. כלי התמיכה שלהלן מעדכן את הרישיון לאחר קבלת האישור.
+
+מפעיל עם הרשאת ניהול למסד הנתונים של ClinicFlow יכול להריץ מתוך מאגר האתר את הבדיקה הבאה. מחליפים את הערכים שבסוגריים המסולסלים בפרטים המאומתים של אותה עסקה.
+
+```sh
+node scripts/reconcile-grow-reversal.mjs \
+  --order '{CLINICFLOW_ORDER_UUID}' --capture '{ORIGINAL_GROW_TRANSACTION_ID}' \
+  --amount-agorot 149900 --currency ILS --kind full_refund \
+  --reference '{GROW_REFUND_REFERENCE}'
+```
+
+הבדיקה מחזירה `READY` ומציגה כמה רישיונות Grow יישארו בחשבון. רק לאחר התאמה מלאה, מריצים שוב את אותה פקודה עם `--apply --confirm-order '{CLINICFLOW_ORDER_UUID}'`. להכרעה סופית בהכחשת עסקה לטובת בעל הכרטיס משתמשים ב־`--kind lost_chargeback` ובאסמכתת ההכרעה. כל שינוי מתועד לפי הזמנה ואסמכתה. השדה recorded_by עשוי להכיל תפקיד מסד נתונים משותף. לתיעוד זהות המפעיל שומרים ברשומת התמיכה את שמו ואת אותה אסמכתה. הרצה חוזרת של אותה התאמה תחזיר `ALREADY_RECORDED`.
+
+השרת פוסל את הרישיון של אותה עסקה. מחשב אחר ששויך לרכישה תקפה ממשיך לעבוד. כשלא נותר רישיון מתאים, השרת מפסיק להנפיק קישורי הורדה חדשים. לקישור שכבר הונפק יש תוקף של עד חמש דקות. מחשב שעובד ללא אינטרנט יוכל לקבל את השינוי בבדיקת הרישוי הבאה כשהוא מחובר. נתוני המטופלים נשארים במחשב.
+
+Grow מתעדת פעולה מפורשת לזיכוי מלא או חלקי. יש לוודא בחשבון הסוחר אם קיימת התראה מאומתת המתאימה לסוג האירוע לפני שמפעילים טיפול אוטומטי. [פעולות Grow ב־Make](https://developers.grow.business/docs/grow-app-for-make) · [התראות Grow](https://developers.grow.business/docs/webhooks)
