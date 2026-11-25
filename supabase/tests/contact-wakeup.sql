@@ -25,4 +25,14 @@ begin
   if has_function_privilege('authenticated','public.enqueue_contact_wake(uuid,boolean)','execute') or
     has_table_privilege('anon','public.contact_wake_proofs','select') then raise exception 'private credentials accessible'; end if;
 end $$;
+-- A broken transport cannot roll back a customer inquiry or its retry jobs.
+drop function net.http_post(text,jsonb,jsonb,integer);
+do $$
+declare inquiry uuid:=gen_random_uuid();
+begin
+  insert into public.contact_messages(id,name,email,message) values(inquiry,'test','pending@example.invalid','test');
+  if (select count(*) from public.contact_deliveries where contact_id=inquiry)<>2
+    or exists(select 1 from public.contact_wake_proofs where contact_id=inquiry)
+    then raise exception 'Transport failure lost work or retained unusable credentials'; end if;
+end $$;
 rollback;
