@@ -33,7 +33,7 @@ export function Layout() {
             // Honour an anchor/hash link (e.g. /features#pricing) instead of
             // always jumping to the top and fighting the anchor scroll (WEB-019).
             if (location.hash) {
-              const el = document.querySelector(location.hash);
+              const el = document.getElementById(location.hash.slice(1));
               if (el) {
                 el.scrollIntoView();
                 return;

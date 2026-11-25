@@ -37,7 +37,16 @@
       (function () {
         var h = window.location.hash;
         if (h.indexOf("#/") === 0) {
-          window.location.replace(h.substring(1) + window.location.search);
+          try {
+            var target = new URL(h.substring(1), window.location.origin);
+            if (target.origin !== window.location.origin) return;
+            var outer = new URLSearchParams(window.location.search);
+            var innerKeys = new Set(target.searchParams.keys());
+            outer.forEach(function (value, key) {
+              if (!innerKeys.has(key)) target.searchParams.append(key, value);
+            });
+            window.location.replace(target.href);
+          } catch (_) { /* Leave malformed links on the current page. */ }
         }
       })();
     </script>
