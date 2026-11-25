@@ -26,6 +26,7 @@ for (const [scenario, plan, purchase, expected] of [
     vm.runInNewContext(stripTypeScriptTypes(source.replace(/^import .*;$/gm, '')), {
       Deno: {env: {get: k => k}, serve: fn => {handler = fn;}},
       createClient: (_, key) => key === 'SUPABASE_ANON_KEY' ? user : admin,
+      BUCKET: 'installers', INSTALLER_PATHS: {win:'ClinicFlow-Setup.exe'},
       recordAuditEvent: async () => {}, Response, console, crypto,
     });
     const response = await handler(new Request('https://example.test', {

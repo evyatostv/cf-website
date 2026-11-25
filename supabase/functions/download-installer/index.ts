@@ -1,14 +1,9 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { recordAuditEvent } from '../_shared/audit.ts';
 
-const BUCKET = Deno.env.get('INSTALLERS_BUCKET') || 'installers';
-const SIGNED_URL_TTL = 300; // 5 minutes
+import { BUCKET, INSTALLER_PATHS } from '../_shared/installers.ts';
 
-const INSTALLER_PATHS: Record<string, string> = {
-  win: 'ClinicFlow-Setup.exe',
-  mac: 'ClinicFlow-Setup.dmg',
-  linux: 'ClinicFlow-Setup.AppImage',
-};
+const SIGNED_URL_TTL = 300;
 
 const ALLOWED_ORIGINS = [
   'http://localhost:5173',

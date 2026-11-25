@@ -2,6 +2,8 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 import { inactivePaymentProvider } from '../_shared/payment-provider.ts';
 import { recordAuditEvent } from '../_shared/audit.ts';
 
+import { BUCKET, INSTALLER_PATHS } from '../_shared/installers.ts';
+
 const PACKAGE = { id: 'forever', name: 'ClinicFlow — רישיון לצמיתות', amount: 149900 };
 const SITE_URL = new URL(Deno.env.get('NEXT_PUBLIC_APP_URL') || Deno.env.get('SITE_URL') || 'https://www.clinic-flow.co.il');
 const ALLOWED_ORIGINS = new Set([
@@ -71,6 +73,16 @@ Deno.serve(async (req) => {
       return json({ error: 'יש להזין שם מלא ומספר נייד ישראלי לפני התשלום', code: 'CHECKOUT_CONTACT_REQUIRED' }, 400);
     }
 
+    const os = input.os;
+    if (typeof os !== 'string' || !Object.hasOwn(INSTALLER_PATHS, os)) {
+      return json({ error: 'יש לבחור את מערכת ההפעלה של מחשב היעד לפני התשלום.' }, 400);
+    }
+    const { data: installer, error: installerError } = await db.storage.from(BUCKET).info(INSTALLER_PATHS[os]);
+    if (installerError || !(Number(installer?.size ?? installer?.metadata?.size) > 0)) {
+      await recordAuditEvent(db, { eventType: 'checkout_start', outcome: 'blocked', provider: 'grow', metadata: { reason: 'installer_unavailable', os } });
+      return json({ error: 'קובץ ההתקנה למערכת שבחרת אינו זמין כרגע. אפשר לנסות שוב מאוחר יותר או לפנות לתמיכה.', code: 'INSTALLER_UNAVAILABLE' }, 503);
+    }
+
     const { data: order, error } = await db.rpc('open_grow_order', {
       p_customer_id: user.id, p_package_id: PACKAGE.id, p_amount: PACKAGE.amount,
     });
@@ -103,7 +115,7 @@ Deno.serve(async (req) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         orderId: order.id, packageId: order.package_id, packageName: PACKAGE.name,
-        amount: order.amount, price: order.amount / 100,
+        amount: order.amount, price: order.amount / 100, currency: 'ILS',
         customer: { email: user.email, fullName: fullName.trim(), phone },
         customerName: fullName.trim(), customerEmail: user.email, customerPhone: phone,
         notifyUrl: supabaseUrl + '/functions/v1/grow-webhook',
