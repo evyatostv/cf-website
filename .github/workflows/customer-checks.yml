@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
@@ -33,7 +33,7 @@ jobs:
           --health-cmd "pg_isready -U postgres -d clinicflow_test"
           --health-interval 3s --health-timeout 3s --health-retries 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Apply migrations and run SQL scenarios inside the disposable database
         env:
           DB_CONTAINER: ${{ job.services.db.id }}
