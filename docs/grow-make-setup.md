@@ -68,3 +68,9 @@ select public.support_close_unpaid_grow_link('<order-uuid>', '<merchant-case-ref
 ```
 
 Only a `READY` result permits closure. Run the same command with a third argument `true` to mark this order cancelled and allow the customer to restart checkout. The reference remains recorded against this order. Any later unexpected capture goes to manual review for reconciliation. This command makes no request to Grow and cannot cancel an active payment link, refund a customer, or grant a license.
+
+### זיהוי המחשב לפני זיכוי
+
+כששתי רכישות הן בסך ₪1,499, הסכום לבדו אינו מזהה מחשב. בכל הפעלה השרת משייך את המחשב לרכישה פנויה. בבדיקה המקדימה מצמידים את מזהה ההזמנה למזהה החיוב של Grow. השדה `remaining_grow_seats` מציג את מספר הרישיונות מרכישות Grow שיישארו. רישיון היסטורי תקף, אם קיים, נבדק בנפרד.
+
+אם שויך מחשב לרכישה שזוכתה, בדיקת הרישוי המקוונת הבאה תשלול את הגישה של אותו מחשב. המחשב ששויך לרכישה התקפה ממשיך לעבוד. אם המחשב שזוכה היה המחשב הראשי, השירות מעדכן את השיוך הראשי למחשב שכבר הופעל ברכישה התקפה. זיכוי רכישה שעדיין לא שויכה למחשב מקטין את מספר ההפעלות הפנויות. חזרה על אותה אסמכתה לאותו חיוב אינה מבטלת רישיון נוסף.
