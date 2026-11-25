@@ -24,6 +24,7 @@ function RedirectToDemo() {
   return (
     <>
       <title data-rh="true">ClinicFlow — דמו</title>
+      <meta data-rh="true" name="robots" content="noindex, follow" />
       <meta data-rh="true" name="description" content="בקשו הדגמה קצרה של ClinicFlow — תוכנה מקומית לניהול הפעילות הפרטית של רופאים בישראל." />
       <link data-rh="true" rel="canonical" href="https://www.clinic-flow.co.il/demo" />
       <meta httpEquiv="refresh" content="0; url=/contact?intent=demo" />
