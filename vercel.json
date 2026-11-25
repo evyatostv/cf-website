@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "trailingSlash": false,
   "redirects": [
     {
       "source": "/:path*",
@@ -31,7 +32,8 @@
     { "source": "/download", "destination": "/app-shell.html" },
     { "source": "/premium", "destination": "/app-shell.html" },
     { "source": "/unsubscribe", "destination": "/app-shell.html" },
-    { "source": "/whats-new", "destination": "/app-shell.html" }
+    { "source": "/whats-new", "destination": "/app-shell.html" },
+    { "source": "/(.*)", "destination": "/404.html", "statusCode": 404 }
   ],
   "headers": [
     {

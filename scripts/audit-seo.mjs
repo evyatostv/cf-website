@@ -268,6 +268,10 @@ for (const p of pages) {
 }
 
 // ---------------------------------------------------------------------------
+const fallback = hosting.rewrites.at(-1);
+if (fallback?.source !== "/(.*)" || fallback.destination !== "/404.html" || fallback.statusCode !== 404)
+  fail("vercel.json: expected a final rewrite returning the error page with HTTP 404");
+
 // A missing page must work even before the JavaScript application loads.
 if (!existsSync(notFoundPath)) {
   fail("404.html: missing static error page");
