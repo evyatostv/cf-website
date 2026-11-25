@@ -37,7 +37,7 @@ const EXPECT: { [Id in EmailId]: string[] } = {
   "change-email": ["sharon.clinic@gmail.com", "auth/change?token=eyJhbGci-demo"],
   "welcome": ["ד״ר שרון לוי", "ClinicFlow"],
 
-  "order-confirmation": ["CF-10428", "₪1,411", "₪215"], // receipt values
+  "order-confirmation": ["CF-10428", "₪1,499", "account/orders"], // receipt values
   "license-delivery": ["CF-FULL-7Q2M-4K9X-A1D3", "download"], // license key + CTA
   "upgrade-confirmation": ["ClinicFlow Pro", "ClinicFlow Full", "₪721"], // receipt
   "payment-failed": ["checkout/retry?session=cs_test_a1b2", "₪1,411"], // CTA + amount
@@ -74,6 +74,8 @@ Deno.test("registry ⇄ components: all 21 ids are registered", () => {
 for (const id of EMAIL_IDS) {
   Deno.test(`render · ${id}`, async () => {
     const html = await __renderForTest(id, FIXTURES[id]);
+
+    if (id === "order-confirmation") assert(!html.includes("18%"));
 
     // 1 · non-empty, real document
     assert(html.length > 200, `${id}: html too short (${html.length})`);

@@ -1,0 +1,29 @@
+name: Deliver verified Grow purchase confirmations
+
+on:
+  schedule:
+    - cron: '3,13,23,33,43,53 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+concurrency:
+  group: grow-purchase-receipts
+  cancel-in-progress: false
+
+jobs:
+  deliver:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Process confirmed purchases
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl --silent --show-error --fail-with-body --max-time 180 --request POST \
+            --header "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            --header "x-receipt-dry-run: $DRY_RUN" \
+            --header "x-cron-secret: $CRON_SECRET" \
+            "$SUPABASE_URL/functions/v1/process-grow-receipts"
