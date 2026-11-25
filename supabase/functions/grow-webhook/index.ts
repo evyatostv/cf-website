@@ -26,14 +26,17 @@ Deno.serve(async (req) => {
     !transactionId || !providerStatus || !Number.isInteger(amount) || amount < 0 || amount > 2_147_483_647 || !currency
   ) return json({ error: 'Invalid callback' }, 400);
 
-  let status: 'PAID' | 'CANCELLED' | 'FAILED';
+  let status: 'PAID' | 'CANCELLED' | 'FAILED' | 'REFUNDED';
   if (['success', 'paid', 'approved', 'completed'].includes(providerStatus)) status = 'PAID';
   else if (['cancelled', 'canceled'].includes(providerStatus)) status = 'CANCELLED';
   else if (['failed', 'declined', 'rejected'].includes(providerStatus)) status = 'FAILED';
+  else if (providerStatus === 'refunded') status = 'REFUNDED';
   else if (['pending', 'processing'].includes(providerStatus)) return json({ ok: true, pending: true });
   else return json({ error: 'Unsupported callback status' }, 400);
 
-  const { data, error } = await db.rpc('fulfill_grow_order', {
+  const { data, error } = status === 'REFUNDED'
+    ? await db.rpc('record_grow_refund', { p_order_id: orderId, p_transaction_id: transactionId, p_amount: amount, p_currency: currency })
+    : await db.rpc('fulfill_grow_order', {
     p_order_id: orderId,
     p_transaction_id: transactionId,
     p_status: status,
@@ -54,6 +57,6 @@ Deno.serve(async (req) => {
     await recordAuditEvent(db, { eventType: 'payment_callback', outcome: 'blocked', orderId, provider: 'grow', amount, currency, correlationId: transactionId, metadata: { reason: 'manual_review' } });
     return json({ ok: true, manualReview: true });
   }
-  await recordAuditEvent(db, { eventType: 'payment_callback', outcome: data === 'PAID' ? 'success' : 'failure', orderId, provider: 'grow', amount, currency, correlationId: transactionId, metadata: { status } });
+  await recordAuditEvent(db, { eventType: 'payment_callback', outcome: data === 'PAID' || data === 'REFUNDED' ? 'success' : 'failure', orderId, provider: 'grow', amount, currency, correlationId: transactionId, metadata: { status } });
   return json({ ok: true, licenseActivated: data === 'PAID' });
 });

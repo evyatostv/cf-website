@@ -45,6 +45,15 @@ function Card({ children, className = '' }: { children: React.ReactNode; classNa
 export function DashboardPage() {
   const navigate = useNavigate();
   const { user, loading, signOut } = useAuth();
+  const [seatSummary, setSeatSummary] = useState<{ userId: string; count: number } | null>(null);
+  useEffect(() => {
+    if (!user?.id) return;
+    let current = true;
+    void supabase.rpc('my_paid_seat_count').then(({ data, error }) => {
+      if (current && !error && Number.isSafeInteger(data)) setSeatSummary({ userId: user.id, count: data });
+    });
+    return () => { current = false; };
+  }, [user?.id]);
   const [access, setAccess] = useState<UserAccess | null | undefined>(undefined);
   const [lookupFailed, setLookupFailed] = useState(false);
   const [lookupAttempt, setLookupAttempt] = useState(0);
@@ -218,6 +227,14 @@ export function DashboardPage() {
                       </div>
 
                       
+                      {seatSummary?.userId === user.id && seatSummary.count > 0 && (
+                        <div className="mb-5">
+                          <p>רישיונות למחשבים בחשבון שלך: {seatSummary.count}</p>
+                          <Link className="underline text-[#0d47a1]" to={`/payment?plan=forever&seat=${seatSummary.count + 1}`}>
+                            רכישת רישיון למחשב נוסף ב־1,499 ₪ בתשלום חד־פעמי
+                          </Link>
+                        </div>
+                      )}
                       <div id="installer-options">
                       {downloadError && <p role="alert">{downloadError}</p>}
                       {osType === 'unknown' ? (

@@ -83,10 +83,19 @@ Deno.serve(async (req) => {
       return json({ error: 'קובץ ההתקנה למערכת שבחרת אינו זמין כרגע. אפשר לנסות שוב מאוחר יותר או לפנות לתמיכה.', code: 'INSTALLER_UNAVAILABLE' }, 503);
     }
 
-    const { data: order, error } = await db.rpc('open_grow_order', {
+    const targetSeat = input.targetSeat;
+    if (targetSeat !== undefined && (!Number.isSafeInteger(targetSeat) || targetSeat < 2 || targetSeat > 2147483647)) {
+      return json({ error: 'מספר המחשב לרכישה אינו תקין.' }, 400);
+    }
+    const { data: order, error } = targetSeat !== undefined
+      ? await db.rpc('open_additional_grow_order', { p_customer_id: user.id, p_target_seat: targetSeat })
+      : await db.rpc('open_grow_order', {
       p_customer_id: user.id, p_package_id: PACKAGE.id, p_amount: PACKAGE.amount,
     });
     if (error) throw error;
+    if (order?.result === 'SEATS_CHANGED') {
+      return json({ error: 'מספר הרישיונות השתנה או שהרישיון אינו פעיל. יש לחזור לאזור האישי ולבדוק את מספר המחשבים לפני רכישה נוספת.' }, 409);
+    }
     if (order?.result === 'DELETION_PENDING') {
       return json({ error: 'יש בקשה פתוחה למחיקת החשבון. בטלו אותה באזור האישי לפני הרכישה.' }, 409);
     }

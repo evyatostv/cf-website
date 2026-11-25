@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (!access || !access.is_active) {
+    if (!access || !access.is_active || (access.expires_at && Date.parse(access.expires_at) <= Date.now())) {
       const adminClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
       await recordAuditEvent(adminClient, { eventType: 'download_attempt', outcome: 'blocked', userId: user.id, metadata: { reason: 'no_active_license', os } });
       return new Response(
@@ -108,10 +108,10 @@ Deno.serve(async (req) => {
     }
 
 
-    const { data: purchases, error: purchaseError } = await adminClient.from('purchases')
-      .select('payment_id').eq('user_id', user.id).eq('plan', access.plan)
-      .gt('amount', 0).not('payment_id', 'is', null).neq('payment_id', '').limit(1);
-    if (purchaseError || !purchases?.length) {
+    const { data: hasPurchase, error: purchaseError } = await adminClient.rpc('has_verified_desktop_purchase', {
+      p_customer_id: user.id, p_plan: access.plan,
+    });
+    if (purchaseError || hasPurchase !== true) {
       await recordAuditEvent(adminClient, {eventType: 'download_attempt', outcome: purchaseError ? 'failure' : 'blocked',
         userId: user.id, metadata: {reason: purchaseError ? 'purchase_lookup_failed' : 'purchase_required', os}});
       return new Response(JSON.stringify({ code: purchaseError ? 'PAYMENT_LOOKUP_FAILED' : 'PAYMENT_REQUIRED' }), {

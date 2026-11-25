@@ -41,12 +41,15 @@ export function PaymentPage() {
   const [checkoutPhone, setCheckoutPhone] = useState('');
 
   const plan = searchParams.get('plan') || '';
+  const seatParam = searchParams.get('seat');
+  const targetSeat = seatParam === null ? undefined : Number(seatParam);
+  const validSeat = targetSeat === undefined || (Number.isSafeInteger(targetSeat) && targetSeat >= 2 && targetSeat <= 2147483647);
   const isUpgrade = searchParams.get('upgrade') === 'true';
   const planInfo = PLAN_INFO[plan];
 
   // The checkout URL to return to after (re)login. URL-encode it as a whole so
   // the nested ?plan=/&upgrade= query survives being a value of ?redirect=.
-  const checkoutPath = `/payment?plan=${encodeURIComponent(plan)}${isUpgrade ? '&upgrade=true' : ''}`;
+  const checkoutPath = `/payment?plan=${encodeURIComponent(plan)}${targetSeat === undefined ? '' : `&seat=${targetSeat}`}${isUpgrade ? '&upgrade=true' : ''}`;
   const loginWithRedirect = `/login?redirect=${encodeURIComponent(checkoutPath)}`;
 
   useEffect(() => {
@@ -128,6 +131,7 @@ export function PaymentPage() {
             plan,
             isUpgrade,
             os: targetOs,
+            targetSeat,
             contact: needsCheckoutContact ? { fullName: checkoutName, phone: checkoutPhone } : undefined,
           }),
         }
@@ -160,7 +164,7 @@ export function PaymentPage() {
     }
   };
 
-  if (!plan || !planInfo) {
+  if (!plan || !planInfo || !validSeat) {
     return (
       <div className="min-h-screen flex items-center justify-center pt-20" dir="rtl">
         <div className="text-center">
@@ -196,7 +200,7 @@ export function PaymentPage() {
               <p className="text-sm font-medium text-[#6b7c93] mb-1">הזמנה</p>
               <h2 className="text-2xl font-bold text-[#1a2332] mb-1">{planInfo.name}</h2>
               <div className="text-4xl font-black text-[#0d47a1] mb-1">{planInfo.price}</div>
-              <p className="text-sm text-[#6b7c93] mb-8">תשלום חד-פעמי • רישיון לנצח</p>
+              <p className="text-sm text-[#6b7c93] mb-8">{targetSeat ? `רישיון נוסף למחשב מספר ${targetSeat} באותו החשבון. נתוני המטופלים נשמרים בנפרד בכל מחשב.` : 'תשלום חד-פעמי • רישיון לצמיתות'}</p>
 
               <ul className="space-y-3">
                 {planInfo.features.map((f) => (

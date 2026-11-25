@@ -17,11 +17,12 @@ for (const [scenario, plan, purchase, expected] of [
     const user = { auth: { getUser: async () => ({data: {user: {id: 'buyer'}}}) },
       from: () => ({select() { return this; }, eq() { return this; },
         maybeSingle: () => ({data: {plan, is_active: true}})}) };
-    const admin = { from: table => table === 'purchases' ? {
-      select() {return this;}, eq(k,v) {filters[k] = v; return this;},
-      gt() {return this;}, not() {return this;}, neq() {return this;},
-      limit: () => ({data: purchase ? [{payment_id: 'test'}] : [], error: purchase === null}),
-    } : {insert: async () => ({})},
+    const admin = { from: () => ({insert: async () => ({})}),
+    rpc: (name, params) => {
+      assert.equal(name, 'has_verified_desktop_purchase');
+      Object.assign(filters, params);
+      return {data: purchase, error: purchase === null};
+    },
     storage: {from: () => ({createSignedUrl: () => {signed++; return {data: {signedUrl: 'https://example.test'}};}})} };
     vm.runInNewContext(stripTypeScriptTypes(source.replace(/^import .*;$/gm, '')), {
       Deno: {env: {get: k => k}, serve: fn => {handler = fn;}},
@@ -34,6 +35,6 @@ for (const [scenario, plan, purchase, expected] of [
     }));
     assert.equal(response.status, expected);
     assert.equal(signed, expected === 200 ? 1 : 0);
-    if (plan !== 'trial') assert.deepEqual(filters, {user_id:'buyer', plan});
+    if (plan !== 'trial') assert.deepEqual(filters, {p_customer_id:'buyer', p_plan:plan});
   });
 }
