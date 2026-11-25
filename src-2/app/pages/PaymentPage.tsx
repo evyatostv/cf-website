@@ -75,17 +75,27 @@ export function PaymentPage() {
     setProcessing(true);
     setError('');
     setSessionExpired(false);
+    let authSessionFailed = false;
 
     try {
       // Prefer the current session. A refresh can fail transiently (blocked
       // third-party storage, a short network interruption, or an already
       // rotated refresh token); that must not turn a valid checkout into a
       // misleading generic network error.
-      const { data: sessionData } = await supabase.auth.getSession();
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        authSessionFailed = true;
+        setSessionExpired(true);
+        throw sessionError;
+      }
       let token = sessionData.session?.access_token;
       if (!token) {
         const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-        if (refreshError) throw refreshError;
+        if (refreshError) {
+          authSessionFailed = true;
+          setSessionExpired(true);
+          throw refreshError;
+        }
         token = refreshData.session?.access_token;
       }
 
@@ -135,7 +145,7 @@ export function PaymentPage() {
       // Redirect to the provider checkout page.
       window.location.href = data.paymentUrl;
     } catch (err: any) {
-      setError(mapAuthError(err) || 'שגיאה ביצירת תשלום');
+      setError(authSessionFailed ? 'פג תוקף ההתחברות — אנא התחבר/י מחדש' : (mapAuthError(err) || 'שגיאה ביצירת תשלום'));
       setProcessing(false);
     }
   };
