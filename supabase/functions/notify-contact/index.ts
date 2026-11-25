@@ -182,7 +182,9 @@ serve(async req => {
     }
   }
   const sheetEnabled = Boolean(Deno.env.get('CONTACT_SHEET_URL') && Deno.env.get('CONTACT_SHEET_SECRET'));
-  const { data: jobs, error } = await db.rpc('claim_contact_deliveries', {p_contact:contactId,p_sheet_enabled:sheetEnabled});
+  const dryRun = scheduled && new URL(req.url).searchParams.get('dryRun') === 'true';
+  const { data: jobs, error } = dryRun ? { data: [], error: null } :
+    await db.rpc('claim_contact_deliveries', {p_contact:contactId,p_sheet_enabled:sheetEnabled});
   if (error) return Response.json({error:'claim_failed'}, {status:503});
   let failed = 0;
   for (const job of jobs || []) {
@@ -201,6 +203,12 @@ serve(async req => {
       failed++;
       console.error('Contact delivery requires retry', job.channel);
     }
+  }
+  if (scheduled) {
+    const {data:review,error:countError} = await db.rpc('contact_email_review_counts');
+    if (countError || !Number.isSafeInteger(review?.internal) || !Number.isSafeInteger(review?.reply))
+      return Response.json({error:'review_count_failed',processed:jobs?.length || 0,failed}, {status:503});
+    return Response.json({processed:jobs?.length || 0,failed,review,dryRun}, {status:failed || review.internal || review.reply ? 503 : 200});
   }
   return Response.json({processed:jobs?.length || 0,failed}, {status:failed ? 503 : 200});
 });
