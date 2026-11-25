@@ -1,3 +1,4 @@
+import { inactivePaymentProvider } from '../_shared/payment-provider.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const ALLPAY_LOGIN = Deno.env.get('ALLPAY_LOGIN')!;
@@ -88,6 +89,9 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
+
+  const inactive = inactivePaymentProvider('allpay', corsHeaders);
+  if (inactive) return inactive;
 
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) {

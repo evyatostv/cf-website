@@ -1,7 +1,6 @@
+import { inactivePaymentProvider } from '../_shared/payment-provider.ts';
 import Stripe from 'npm:stripe@17';
 import { createClient } from 'npm:@supabase/supabase-js@2';
-
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
 
 // Map plan slugs → Stripe Price IDs
 const PRICE_IDS: Record<string, string> = {
@@ -41,6 +40,9 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  const inactive = inactivePaymentProvider('stripe', corsHeaders);
+  if (inactive) return inactive;
+
   // Verify the caller's JWT — use their identity, never trust the request body
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) {
@@ -71,6 +73,7 @@ Deno.serve(async (req) => {
       });
     }
 
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: [{ price: PRICE_IDS[plan], quantity: 1 }],
