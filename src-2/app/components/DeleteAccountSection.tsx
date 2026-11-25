@@ -163,7 +163,10 @@ export function DeleteAccountSection() {
     setError(null);
     try {
       sessionStorage.setItem(PENDING_KEY, JSON.stringify({ ts: Date.now(), prevSignIn: user?.last_sign_in_at }));
-    } catch {}
+    } catch {
+      setError('כדי להמשיך במחיקת החשבון, אפשרו לאתר לשמור נתונים בדפדפן ונסו שוב. אפשר גם לפנות לתמיכה.');
+      return;
+    }
     const { error: oErr } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
