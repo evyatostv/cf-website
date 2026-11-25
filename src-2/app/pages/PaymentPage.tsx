@@ -29,6 +29,7 @@ export function PaymentPage() {
   const { user, loading } = useAuth();
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
+  const [pendingOrder, setPendingOrder] = useState('');
   const [sessionExpired, setSessionExpired] = useState(false);
   const [licenseAlreadyActive, setLicenseAlreadyActive] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -87,6 +88,7 @@ export function PaymentPage() {
     setProcessing(true);
     setError('');
     setSessionExpired(false);
+    setPendingOrder('');
     let authSessionFailed = false;
 
     try {
@@ -138,7 +140,7 @@ export function PaymentPage() {
       );
 
       const raw = await res.text();
-      let data: { paymentUrl?: string; error?: string; code?: string } = {};
+      let data: { orderId?: string; paymentUrl?: string; error?: string; code?: string } = {};
       try {
         data = raw ? JSON.parse(raw) : {};
       } catch {
@@ -149,6 +151,7 @@ export function PaymentPage() {
         // Edge-function errors may be raw/English — route through the Hebrew map.
         setError(data.error ? mapAuthError(data.error) : 'שגיאה ביצירת תשלום');
         // A 401/expired token surfaces here too — offer the re-login CTA.
+        if (data.code === 'ORDER_LINK_PENDING' && data.orderId) setPendingOrder(data.orderId);
         if (res.status === 401) setSessionExpired(true);
         if (data.code === 'CHECKOUT_CONTACT_REQUIRED') setNeedsCheckoutContact(true);
         if (data.code === 'LICENSE_ALREADY_ACTIVE') setLicenseAlreadyActive(true);
@@ -301,6 +304,11 @@ export function PaymentPage() {
                     {licenseAlreadyActive && (
                       <Link to="/dashboard" className="inline-block mt-1 text-sm font-medium text-[#0d47a1] underline">
                         המשך לאזור האישי
+                      </Link>
+                    )}
+                    {pendingOrder && (
+                      <Link to={`/checkout/success?order=${encodeURIComponent(pendingOrder)}`} className="inline-block mt-1 text-sm font-medium text-[#0d47a1] underline">
+                        בדיקת מצב ההזמנה
                       </Link>
                     )}
                     {sessionExpired && (

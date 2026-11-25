@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
   ) return json({ error: 'Invalid callback' }, 400);
 
   let status: 'PAID' | 'CANCELLED' | 'FAILED' | 'REFUNDED';
-  if (['success', 'paid', 'approved', 'completed'].includes(providerStatus)) status = 'PAID';
+  if (providerStatus === 'paid') status = 'PAID';
   else if (['cancelled', 'canceled'].includes(providerStatus)) status = 'CANCELLED';
   else if (['failed', 'declined', 'rejected'].includes(providerStatus)) status = 'FAILED';
   else if (providerStatus === 'refunded') status = 'REFUNDED';
@@ -53,7 +53,10 @@ Deno.serve(async (req) => {
     return json({ error: 'Webhook processing failed' }, 500);
   }
   if (data === 'NOT_FOUND') return json({ error: 'Order not found' }, 404);
-  if (data === 'CONFLICT') return json({ error: 'Order requires review' }, 409);
+  if (data === 'CONFLICT') {
+    await recordAuditEvent(db, { eventType: 'payment_callback', outcome: 'blocked', orderId, provider: 'grow', amount, currency, correlationId: transactionId, metadata: { reason: 'conflicting_settlement' } });
+    return json({ error: 'Order requires review' }, 409);
+  }
   if (status === 'PAID' && (data === 'PAID' || data === 'DUPLICATE')) wakeGrowReceipts();
   if (data === 'DUPLICATE') return json({ ok: true, duplicate: true });
   if (data === 'MANUAL_REVIEW') {
