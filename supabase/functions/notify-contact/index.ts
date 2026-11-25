@@ -160,19 +160,27 @@ serve(async req => {
   if (req.method !== 'POST') return Response.json({error:'method'}, {status:405});
   const cronSecret = Deno.env.get('CRON_SECRET');
   const scheduled = Boolean(cronSecret && req.headers.get('x-cron-secret') === cronSecret);
-  if (!scheduled && (!NOTIFY_CONTACT_SECRET || req.headers.get('x-notify-secret') !== NOTIFY_CONTACT_SECRET))
-    return Response.json({error:'unauthorized'}, {status:401});
-
+  const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    {auth:{persistSession:false, autoRefreshToken:false}});
   let contactId: string | null = null;
   if (!scheduled) {
     const event = await req.json().catch(() => null);
-    if (event?.type !== 'INSERT' || event.schema !== 'public' || event.table !== 'contact_messages'
-        || typeof event.record?.id !== 'string' || !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(event.record.id))
-      return Response.json({error:'invalid_event'}, {status:400});
-    contactId = event.record.id;
+    const uuid = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
+    if (typeof event?.proof === 'string' && uuid.test(event.proof) && typeof event.contactId === 'string' && uuid.test(event.contactId)) {
+      const {data:mode,error} = await db.rpc('redeem_contact_wake',{p_contact:event.contactId,p_proof:event.proof});
+      if (error) return Response.json({error:'wake_unavailable'}, {status:503});
+      if (mode === 'DRY_RUN') return Response.json({dryRun:true});
+      if (mode !== 'DELIVER') return Response.json({error:'unauthorized'}, {status:401});
+      contactId = event.contactId;
+    } else {
+      if (!NOTIFY_CONTACT_SECRET || req.headers.get('x-notify-secret') !== NOTIFY_CONTACT_SECRET)
+        return Response.json({error:'unauthorized'}, {status:401});
+      if (event?.type !== 'INSERT' || event.schema !== 'public' || event.table !== 'contact_messages'
+          || typeof event.record?.id !== 'string' || !uuid.test(event.record.id))
+        return Response.json({error:'invalid_event'}, {status:400});
+      contactId = event.record.id;
+    }
   }
-  const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    {auth:{persistSession:false, autoRefreshToken:false}});
   const sheetEnabled = Boolean(Deno.env.get('CONTACT_SHEET_URL') && Deno.env.get('CONTACT_SHEET_SECRET'));
   const { data: jobs, error } = await db.rpc('claim_contact_deliveries', {p_contact:contactId,p_sheet_enabled:sheetEnabled});
   if (error) return Response.json({error:'claim_failed'}, {status:503});
