@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router';
+import { usePageReturn } from '@/lib/use-page-return';
 import { useAuth } from '@/lib/auth-context';
 import { getPaidUserAccess, UserAccess, PLAN_LABELS, supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase';
 import { DeleteAccountSection } from '@/app/components/DeleteAccountSection';
@@ -45,6 +46,7 @@ function Card({ children, className = '' }: { children: React.ReactNode; classNa
 export function DashboardPage() {
   const navigate = useNavigate();
   const { user, loading, signOut } = useAuth();
+  const pageReturn = usePageReturn();
   const [seatSummary, setSeatSummary] = useState<{ userId: string; count: number } | null>(null);
   useEffect(() => {
     if (!user?.id) return;
@@ -53,7 +55,7 @@ export function DashboardPage() {
       if (current && !error && Number.isSafeInteger(data)) setSeatSummary({ userId: user.id, count: data });
     });
     return () => { current = false; };
-  }, [user?.id]);
+  }, [user?.id, pageReturn]);
   const [access, setAccess] = useState<UserAccess | null | undefined>(undefined);
   const [lookupFailed, setLookupFailed] = useState(false);
   const [lookupAttempt, setLookupAttempt] = useState(0);
@@ -97,6 +99,11 @@ export function DashboardPage() {
         body: JSON.stringify({ os: finalOs }),
       });
       const payload = await response.json().catch(() => ({}));
+      if (response.status === 403 && ['NO_ACTIVE_LICENSE', 'PAYMENT_REQUIRED'].includes(payload.code)) {
+        setAccess(null);
+        setSeatSummary(null);
+        return;
+      }
       if (!response.ok || !payload.downloadUrl) {
         throw new Error(payload.error || 'ההורדה זמינה רק לאחר אישור תשלום.');
       }
@@ -130,7 +137,7 @@ export function DashboardPage() {
       if (current) setLookupFailed(true);
     });
     return () => { current = false; };
-  }, [user, loading, navigate, lookupAttempt]);
+  }, [user, loading, navigate, lookupAttempt, pageReturn]);
 
   const handleSignOut = async () => {
     try { await signOut(); navigate('/'); } catch (err) { console.error(err); }
