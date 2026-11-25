@@ -1,20 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
-import { getUserAccess, UserAccess, PLAN_LABELS, supabase } from '@/lib/supabase';
+import { getUserAccess, UserAccess, PLAN_LABELS, supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase';
 import { DeleteAccountSection } from '@/app/components/DeleteAccountSection';
 import { DataExportSection } from '@/app/components/DataExportSection';
 import { TwoFactorSection } from '@/app/components/TwoFactorSection';
 // MFA is now enforced by the route-level RequireAuth guard (requireMfa).
 
-type DownloadOs = 'win' | 'mac' | 'linux';
-
-function detectOs(): DownloadOs {
-  const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
-  if (/Mac/i.test(ua)) return 'mac';
-  if (/Linux/i.test(ua)) return 'linux';
-  return 'win';
-}
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Download, LogOut, Clock, CheckCircle2, XCircle, AlertCircle,
@@ -29,14 +21,16 @@ const QUICK_ACTIONS = [
   { icon: MessageCircle, title: 'תמיכה טכנית', desc: 'צור קשר עם הצוות', action: 'support' },
 ];
 
+const GETTING_STARTED_URL = 'https://docs.clinic-flow.co.il/#/getting-started';
+
 const RESOURCES = [
-  { icon: BookOpen, title: 'מדריך התחלה מהירה', desc: 'כל מה שצריך לדעת להתחיל', href: '/contact', color: '#0d47a1' },
+  { icon: BookOpen, title: 'מדריך התחלה מהירה', desc: 'כל מה שצריך לדעת להתחיל', href: GETTING_STARTED_URL, color: '#0d47a1' },
   { icon: MessageCircle, title: 'תמיכה טכנית', desc: 'נענה תוך 24 שעות', href: 'mailto:contact@clinic-flow.co.il', color: '#00838f' },
 ];
 
 const SYSTEM_REQ = [
   { icon: Monitor, label: 'מערכת הפעלה', value: 'Windows 10/11 או macOS 12+' },
-  { icon: Cpu, label: 'מעבד', value: 'Intel / AMD x64 (כל דגם מ-2015)' },
+  { icon: Cpu, label: 'מעבד', value: 'Windows: Intel/AMD x64 · Mac: Apple Silicon' },
   { icon: HardDrive, label: 'דיסק', value: '500MB פנויים לפחות' },
 ];
 
@@ -55,10 +49,6 @@ export function DashboardPage() {
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
-  
-  const MAC_LINK = 'https://api.keygen.sh/v1/accounts/57b5f2b8-4504-45d7-a0d9-384a726b65fb/artifacts/latest?product=baa66a06-ff90-47c3-a1d3-97f5aa8b1575&platform=mac&channel=beta';
-  const WIN_LINK = 'https://api.keygen.sh/v1/accounts/57b5f2b8-4504-45d7-a0d9-384a726b65fb/artifacts/latest?product=baa66a06-ff90-47c3-a1d3-97f5aa8b1575&platform=win&channel=beta';
-
   const [osType, setOsType] = useState<'mac' | 'win' | 'unknown'>('unknown');
   const [showWindowsGuideModal, setShowWindowsGuideModal] = useState(false);
 
@@ -69,34 +59,45 @@ export function DashboardPage() {
   }, []);
 
   const handleDownload = async (targetOs?: 'mac' | 'win') => {
+    // Never start an installer download from a client-side action unless the
+    // access record has been positively confirmed as active.  The dashboard is
+    // reachable by authenticated users who have not paid yet, and a stale
+    // session must not turn the public Keygen artifact URL into a free trial.
+    const currentAccess = access;
+    const currentTrialExpired = currentAccess?.plan === 'trial' && currentAccess.expires_at
+      ? new Date(currentAccess.expires_at) < new Date()
+      : false;
+    if (!currentAccess?.is_active || currentTrialExpired) {
+      setDownloadError('הורדת התוכנה זמינה רק לאחר אישור תשלום.');
+      navigate('/payment?plan=forever');
+      return;
+    }
     const finalOs = targetOs || osType;
     setDownloadError(null);
     setDownloading(true);
 
     try {
-      const ACCOUNT_ID = '57b5f2b8-4504-45d7-a0d9-384a726b65fb';
-      const PRODUCT_ID = 'baa66a06-ff90-47c3-a1d3-97f5aa8b1575';
-      const ymlFile = finalOs === 'mac' ? 'latest-mac.yml' : 'latest.yml';
-      
-      const ymlResponse = await fetch(`https://api.keygen.sh/v1/accounts/${ACCOUNT_ID}/artifacts/${ymlFile}?product=${PRODUCT_ID}`);
-      if (!ymlResponse.ok) throw new Error('Failed to fetch release metadata');
-      
-      const ymlText = await ymlResponse.text();
-      
-      const pathMatch = ymlText.match(/path:\s*(.+)/);
-      if (!pathMatch || !pathMatch[1]) throw new Error('Could not parse installer filename');
-      
-      let filename = pathMatch[1].trim();
-      
-      if (finalOs === 'mac') {
-        const dmgMatch = ymlText.match(/url:\s*(.+\.dmg)/);
-        if (dmgMatch && dmgMatch[1]) filename = dmgMatch[1].trim();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('ההתחברות פגה. יש להתחבר מחדש.');
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/download-installer`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ os: finalOs }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.downloadUrl) {
+        throw new Error(payload.error || 'ההורדה זמינה רק לאחר אישור תשלום.');
       }
-
-      window.location.href = `https://api.keygen.sh/v1/accounts/${ACCOUNT_ID}/artifacts/${encodeURIComponent(filename)}?product=${PRODUCT_ID}`;
+      // The URL is short-lived and issued only by the access-gated Edge
+      // Function; installer objects remain private in Supabase Storage.
+      window.location.href = payload.downloadUrl;
       
       // Show SmartScreen guide modal only after downloading an .exe installer
-      const isExeDownload = finalOs === 'win' || (!finalOs && filename.toLowerCase().endsWith('.exe')) || filename.toLowerCase().endsWith('.exe');
+      const isExeDownload = finalOs === 'win';
       if (isExeDownload) {
         setShowWindowsGuideModal(true);
       }
@@ -113,8 +114,9 @@ export function DashboardPage() {
     if (!loading && !user) { navigate('/login'); return; }
     if (user) {
       getUserAccess(user.id).then((acc) => {
-        if (acc && (acc.plan as string) === 'none') {
-          navigate('/payment?plan=full', { replace: true });
+        if (!acc || !acc.is_active || (acc.plan as string) === 'none' ||
+            (acc.plan === 'trial' && acc.expires_at && new Date(acc.expires_at) < new Date())) {
+          navigate('/payment?plan=forever', { replace: true });
         } else {
           setAccess(acc);
         }
@@ -313,7 +315,7 @@ export function DashboardPage() {
                         key={title}
                         onClick={() => {
                           if (action === 'download') handleDownload();
-                          else if (action === 'guide') navigate('/contact');
+                          else if (action === 'guide') window.location.assign(GETTING_STARTED_URL);
                           else if (action === 'support') window.location.href = 'mailto:contact@clinic-flow.co.il';
                         }}
                         className="flex items-center gap-4 p-4 rounded-xl hover:bg-[#f5f7f9] border border-transparent hover:border-[#e1e6ec] transition text-right w-full"
