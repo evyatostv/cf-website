@@ -56,3 +56,15 @@ node scripts/reconcile-grow-reversal.mjs \
 השרת פוסל את הרישיון של אותה עסקה. מחשב אחר ששויך לרכישה תקפה ממשיך לעבוד. כשלא נותר רישיון מתאים, השרת מפסיק להנפיק קישורי הורדה חדשים. לקישור שכבר הונפק יש תוקף של עד חמש דקות. מחשב שעובד ללא אינטרנט יוכל לקבל את השינוי בבדיקת הרישוי הבאה כשהוא מחובר. נתוני המטופלים נשארים במחשב.
 
 Grow מתעדת פעולה מפורשת לזיכוי מלא או חלקי. יש לוודא בחשבון הסוחר אם קיימת התראה מאומתת המתאימה לסוג האירוע לפני שמפעילים טיפול אוטומטי. [פעולות Grow ב־Make](https://developers.grow.business/docs/grow-app-for-make) · [התראות Grow](https://developers.grow.business/docs/webhooks)
+
+## Lost payment link
+
+A connection timeout can leave an order pending with no URL. Give the customer the status link shown after checkout. Use the ClinicFlow order UUID to match its Make execution and Grow merchant record. If a payable link or an unresolved charge exists, keep the order pending and reconcile it through Grow. A time limit or the customer's report alone cannot establish that a link is unpaid.
+
+Once Grow confirms there was no capture **and** no checkout link can still be paid, record the merchant case reference. After one hour, an authorized database operator can preview closure in the linked project:
+
+```sql
+select public.support_close_unpaid_grow_link('<order-uuid>', '<merchant-case-reference>');
+```
+
+Only a `READY` result permits closure. Run the same command with a third argument `true` to mark this order cancelled and allow the customer to restart checkout. The reference remains recorded against this order. Any later unexpected capture goes to manual review for reconciliation. This command makes no request to Grow and cannot cancel an active payment link, refund a customer, or grant a license.

@@ -1,3 +1,15 @@
+-- Operator-attested recovery for a lost creation response. Nothing ages out
+-- automatically: the provider may still have a payable link or captured funds.
+create table public.grow_unpaid_link_closures(
+  order_id uuid primary key references public.orders(id) on delete restrict,
+  provider_reference text not null unique,
+  recorded_at timestamptz not null default now(),
+  recorded_by text not null default current_user
+);
+alter table public.grow_unpaid_link_closures enable row level security;
+revoke all on public.grow_unpaid_link_closures from public,anon,authenticated,service_role;
+
+
 create or replace function public.fulfill_grow_order(
   p_order_id uuid,
   p_transaction_id text,
@@ -57,11 +69,11 @@ begin
   -- A terminal attempt may settle late. If the customer has since opened
   -- another checkout for the same seat, preserve evidence for support and
   -- never create two licenses for the same intended purchase.
-  if checkout.status in ('FAILED','CANCELLED') and exists (
+  if checkout.status in ('FAILED','CANCELLED') and (exists (select 1 from public.grow_unpaid_link_closures c where c.order_id=checkout.id) or exists (
     select 1 from public.orders newer where newer.customer_id=checkout.customer_id
       and newer.target_seat_number=checkout.target_seat_number
       and newer.created_at>checkout.created_at
-  ) then
+  )) then
     update public.orders set status='MANUAL_REVIEW',provider_payload=p_payload where id=checkout.id;
     return 'MANUAL_REVIEW';
   end if;
@@ -94,3 +106,31 @@ begin
 end;
 $$;
 
+create function public.support_close_unpaid_grow_link(p_order uuid,p_reference text,p_apply boolean default false)
+returns text language plpgsql set search_path='' as $$
+declare
+  checkout public.orders%rowtype;
+  previous public.grow_unpaid_link_closures%rowtype;
+begin
+  if p_reference is null or p_reference !~ '^[A-Za-z0-9][A-Za-z0-9._:/-]{1,127}$' then return 'INVALID'; end if;
+  select * into checkout from public.orders where id=p_order;
+  if not found then return 'NOT_FOUND'; end if;
+  if p_apply is true then
+    perform pg_advisory_xact_lock(hashtextextended(checkout.customer_id::text,0));
+    select * into checkout from public.orders where id=p_order for update;
+  end if;
+  select * into previous from public.grow_unpaid_link_closures where order_id=p_order or provider_reference=p_reference limit 1;
+  if found then
+    if previous.order_id=p_order and previous.provider_reference=p_reference then return 'ALREADY_RECORDED'; end if;
+    return 'CONFLICT';
+  end if;
+  if checkout.payment_provider<>'grow_make' or checkout.status<>'PENDING' or checkout.payment_url is not null
+    or checkout.archived_at is not null or checkout.paid_at is not null or checkout.external_transaction_id is not null
+    or checkout.created_at>now()-interval '1 hour' then return 'NOT_ELIGIBLE'; end if;
+  if p_apply is distinct from true then return 'READY'; end if;
+  insert into public.grow_unpaid_link_closures(order_id,provider_reference) values(p_order,p_reference);
+  update public.orders set status='CANCELLED' where id=p_order;
+  return 'RECORDED';
+end;
+$$;
+revoke all on function public.support_close_unpaid_grow_link(uuid,text,boolean) from public,anon,authenticated,service_role;
