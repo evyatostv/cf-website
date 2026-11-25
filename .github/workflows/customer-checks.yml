@@ -1,0 +1,52 @@
+name: Website customer checks
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  website:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: node --test tests/*.test.mjs
+
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      db:
+        image: postgres:17
+        env:
+          POSTGRES_DB: clinicflow_test
+          POSTGRES_PASSWORD: disposable-ci-only
+        options: >-
+          --health-cmd "pg_isready -U postgres -d clinicflow_test"
+          --health-interval 3s --health-timeout 3s --health-retries 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Apply migrations and run SQL scenarios inside the disposable database
+        env:
+          DB_CONTAINER: ${{ job.services.db.id }}
+        run: |
+          docker cp tests "$DB_CONTAINER:/tmp/tests"
+          docker cp supabase "$DB_CONTAINER:/tmp/supabase"
+          docker exec "$DB_CONTAINER" bash -eu -o pipefail -c '
+            run_sql() {
+              psql -X -h /var/run/postgresql -U postgres -d clinicflow_test -v ON_ERROR_STOP=1 -f "$1"
+            }
+            run_sql /tmp/tests/postgres/setup.sql
+            for test in /tmp/supabase/tests/*.sql; do
+              echo "Running ${test##*/}"
+              run_sql "$test"
+            done
+          '
