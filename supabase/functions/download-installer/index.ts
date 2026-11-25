@@ -1,13 +1,9 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { recordAuditEvent } from '../_shared/audit.ts';
 
-const BUCKET = Deno.env.get('INSTALLERS_BUCKET') || 'installers';
-const SIGNED_URL_TTL = 300; // 5 minutes
+import { BUCKET, INSTALLER_PATHS } from '../_shared/installers.ts';
 
-const INSTALLER_PATHS: Record<string, string> = {
-  win: 'ClinicFlow-Setup.exe',
-  mac: 'ClinicFlow-Setup.dmg',
-  linux: 'ClinicFlow-Setup.AppImage',
-};
+const SIGNED_URL_TTL = 300;
 
 const ALLOWED_ORIGINS = [
   'http://localhost:5173',
@@ -95,37 +91,41 @@ Deno.serve(async (req) => {
     }
 
     if (!access || !access.is_active) {
+      const adminClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+      await recordAuditEvent(adminClient, { eventType: 'download_attempt', outcome: 'blocked', userId: user.id, metadata: { reason: 'no_active_license', os } });
       return new Response(
         JSON.stringify({ error: 'No active license', code: 'NO_ACTIVE_LICENSE' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
 
-    // BE-019 (expiry gating decision): expiry is intentionally enforced ONLY for
-    // trials. Paid plans are perpetual licences (offline, pay-once — see product
-    // model), so a non-trial `expires_at` is not a download gate. If future plans
-    // gain a real subscription expiry, extend this check to those plans too; the
-    // current single-plan check is deliberate, not an oversight.
-    if (access.plan === 'trial' && access.expires_at && new Date(access.expires_at) < new Date()) {
-      return new Response(
-        JSON.stringify({ error: 'Trial expired', code: 'TRIAL_EXPIRED' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-      );
+    const adminClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    if (!['forever', 'basic', 'professional', 'full', 'premium'].includes(access.plan)) {
+      await recordAuditEvent(adminClient, {eventType: 'download_attempt', outcome: 'blocked', userId: user.id, metadata: {reason: 'paid_plan_required', os}});
+      return new Response(JSON.stringify({ error: 'נדרש תשלום מאושר', code: 'PAYMENT_REQUIRED' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    // Service-role client — needed to create signed URLs against a private bucket
-    const adminClient = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    );
 
+    const { data: purchases, error: purchaseError } = await adminClient.from('purchases')
+      .select('payment_id').eq('user_id', user.id).eq('plan', access.plan)
+      .gt('amount', 0).not('payment_id', 'is', null).neq('payment_id', '').limit(1);
+    if (purchaseError || !purchases?.length) {
+      await recordAuditEvent(adminClient, {eventType: 'download_attempt', outcome: purchaseError ? 'failure' : 'blocked',
+        userId: user.id, metadata: {reason: purchaseError ? 'purchase_lookup_failed' : 'purchase_required', os}});
+      return new Response(JSON.stringify({ code: purchaseError ? 'PAYMENT_LOOKUP_FAILED' : 'PAYMENT_REQUIRED' }), {
+        status: purchaseError ? 503 : 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     const { data: signed, error: signError } = await adminClient
       .storage
       .from(BUCKET)
       .createSignedUrl(installerKey, SIGNED_URL_TTL);
 
     if (signError || !signed?.signedUrl) {
-      console.error('createSignedUrl failed:', signError?.message);
+      await recordAuditEvent(adminClient, {eventType: 'download_attempt', outcome: 'failure', userId: user.id,
+        metadata: {reason: 'link_signing_failed', os}});
       return new Response(
         JSON.stringify({ error: 'Failed to generate download link' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
@@ -145,6 +145,7 @@ Deno.serve(async (req) => {
       .then(({ error }) => {
         if (error) console.warn('download_log insert failed:', error.message);
       });
+    await recordAuditEvent(adminClient, { eventType: 'download_attempt', outcome: 'success', userId: user.id, metadata: { os, installer: installerKey } });
 
     return new Response(
       JSON.stringify({

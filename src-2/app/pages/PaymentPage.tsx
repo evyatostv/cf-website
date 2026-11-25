@@ -37,6 +37,7 @@ export function PaymentPage() {
   // the first request instead of waiting for a server validation error.
   const [needsCheckoutContact, setNeedsCheckoutContact] = useState(true);
   const [checkoutName, setCheckoutName] = useState('');
+  const [targetOs, setTargetOs] = useState('');
   const [checkoutPhone, setCheckoutPhone] = useState('');
 
   const plan = searchParams.get('plan') || '';
@@ -78,7 +79,7 @@ export function PaymentPage() {
   };
 
   const handlePayment = async () => {
-    if (!user || !planInfo || !termsAccepted || processing) return;
+    if (!user || !targetOs || !planInfo || !termsAccepted || processing) return;
 
     setProcessing(true);
     setError('');
@@ -126,6 +127,7 @@ export function PaymentPage() {
           body: JSON.stringify({
             plan,
             isUpgrade,
+            os: targetOs,
             contact: needsCheckoutContact ? { fullName: checkoutName, phone: checkoutPhone } : undefined,
           }),
         }
@@ -243,6 +245,17 @@ export function PaymentPage() {
 
               <p className="text-center text-xs text-[#6b7c93] mb-5">עד 3 תשלומים ללא ריבית</p>
 
+              <label className="block text-sm mb-5">
+                באיזו מערכת הפעלה תותקן התוכנה?
+                <select value={targetOs} onChange={(event) => setTargetOs(event.target.value)}
+                  className="block w-full mt-1 rounded-lg border border-[#e1e6ec] p-2.5 text-base">
+                  <option value="">בחירת מערכת הפעלה</option>
+                  <option value="win">Windows</option>
+                  <option value="mac">macOS</option>
+                  <option value="linux">Linux</option>
+                </select>
+              </label>
+
               {needsCheckoutContact && (
                 <fieldset className="border border-[#e1e6ec] rounded-xl p-4 mb-5 space-y-3" disabled={processing}>
                   <legend className="px-1 text-sm font-semibold">פרטי קשר לתשלום</legend>
@@ -318,7 +331,7 @@ export function PaymentPage() {
               <button
                 onClick={handlePayment}
                 disabled={
-                  processing || !termsAccepted || licenseAlreadyActive ||
+                  processing || !targetOs || !termsAccepted || licenseAlreadyActive ||
                   (needsCheckoutContact && (!checkoutName.trim() || !checkoutPhone.trim()))
                 }
                 aria-busy={processing}
