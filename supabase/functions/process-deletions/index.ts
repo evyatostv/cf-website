@@ -1,106 +1,31 @@
-// process-deletions — performs account data erasure for due requests.
-//
-// Invoked DAILY by a scheduled GitHub Action (see .github/workflows/
-// process-deletions.yml). Protected by a shared secret (CRON_SECRET) so only
-// the cron can run it. Uses the SERVICE ROLE key (bypasses RLS) to delete data
-// and the auth user.
-//
-// Scope (matches product decision "delete personal data, keep purchase records"):
-//   DELETE     : user_access, contact_messages, the auth login
-//   ANONYMIZE  : purchases, download_log, policy_acceptances (kept for
-//                accounting / legal proof-of-consent, with PII stripped)
-//
-// Required function env (set via `supabase secrets set`):
-//   CRON_SECRET                (must match the GitHub Actions secret)
-//   SUPABASE_URL               (auto-injected by Supabase)
-//   SUPABASE_SERVICE_ROLE_KEY  (auto-injected by Supabase)
-//
-// NOTE: column assumptions (user_id / email on purchases, download_log,
-// policy_acceptances) are documented inline — verify against your schema.
+// One database transaction per due request preserves the account if archival fails.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const CRON_SECRET = Deno.env.get("CRON_SECRET") || "";
-const REDACTED = "deleted@redacted.invalid";
-
-async function sha256Hex(text: string): Promise<string> {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
 serve(async (req) => {
-  // Only the scheduled cron (holding the shared secret) may invoke this.
-  const provided = req.headers.get("x-cron-secret") || "";
-  if (!CRON_SECRET || provided !== CRON_SECRET) {
-    return new Response(JSON.stringify({ error: "unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  const admin = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
-
-  const { data: due, error } = await admin
-    .from("deletion_requests")
-    .select("id, user_id, user_email, requested_at")
-    .eq("status", "pending")
-    .lte("scheduled_for", new Date().toISOString());
-
-  if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  const results: Array<Record<string, unknown>> = [];
-  for (const r of due || []) {
-    const uid = r.user_id as string;
-    const email = r.user_email as string;
-    try {
-      // 1) Delete personal / account data.
-      await admin.from("user_access").delete().eq("user_id", uid);
-      await admin.from("contact_messages").delete().eq("email", email);
-
-      // 2) Anonymize records we must retain (accounting / consent / logs).
-      //    Done BEFORE deleting the auth user to avoid FK violations (user_id
-      //    is nulled here so deleteUser() below can't be blocked by an FK).
-      await admin.from("purchases").update({ user_id: null, email: REDACTED }).eq("user_id", uid);
-      await admin.from("download_log").update({ user_id: null, email: REDACTED }).eq("user_id", uid);
-      // Null user_id too (not just the email): otherwise a RESTRICT/NO ACTION FK
-      // from policy_acceptances -> auth.users would make deleteUser() fail below.
-      await admin.from("policy_acceptances").update({ user_id: null, user_email: REDACTED }).eq("user_id", uid);
-
-      // 3) Append to the immutable audit log (one-way hash only).
-      await admin.from("deletion_log").insert({
-        user_email_hash: await sha256Hex(email),
-        requested_at: r.requested_at,
-        completed_at: new Date().toISOString(),
-      });
-
-      // 4) Delete the auth login LAST. If it fails, the row stays 'pending' and
-      //    the job retries it next run (steps 1-3 are safe to repeat). On
-      //    success the FK `on delete cascade` removes the deletion_requests row
-      //    automatically, so the "completed" update below is best-effort and
-      //    typically a no-op (the audit entry in step 3 is the durable record).
-      const { error: delErr } = await admin.auth.admin.deleteUser(uid);
-      if (delErr) throw delErr;
-
-      await admin.from("deletion_requests").update({
-        status: "completed",
-        completed_at: new Date().toISOString(),
-      }).eq("id", r.id);
-
-      results.push({ id: r.id, ok: true });
-    } catch (e) {
-      results.push({ id: r.id, ok: false, error: String((e as Error)?.message || e) });
+  const secret = Deno.env.get("CRON_SECRET");
+  if (!secret || req.headers.get("x-cron-secret") !== secret) return Response.json({ error: "unauthorized" }, { status: 401 });
+  if (req.method !== "POST") return Response.json({ error: "method" }, { status: 405 });
+  const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+  const cutoff = new Date().toISOString();
+  let completed = 0;
+  let failed = 0;
+  let afterId: string | undefined;
+  while (true) {
+    let page = admin.from("deletion_requests").select("id").eq("status", "pending")
+      .lte("scheduled_for", cutoff).order("id").limit(100);
+    if (afterId) page = page.gt("id", afterId);
+    const { data: due, error } = await page;
+    if (error) return Response.json({ error: "lookup_failed", completed, failed }, { status: 503 });
+    if (!due.length) break;
+    for (const { id } of due) {
+      const { data: result, error: archiveError } = await admin.rpc("archive_due_account", { p_request_id: id });
+      if (archiveError || !["COMPLETED", "SKIPPED"].includes(result)) {
+        console.error("account_archive_failed", { requestId: id, code: archiveError?.code || result });
+        failed++;
+      } else if (result === "COMPLETED") completed++;
+      afterId = id;
     }
   }
-
-  return new Response(JSON.stringify({ ok: true, processed: results.length, results }), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
+  return Response.json({ completed, failed }, { status: failed ? 503 : 200 });
 });
