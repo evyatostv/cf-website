@@ -130,14 +130,10 @@ are rendered/tested but **not yet wired to any trigger** (Phase 2).
 | `allpay-webhook` | false | `sendOnce` + `sendTemplate` | order-confirmation, license-delivery, upgrade-confirmation, payment-failed |
 | `notify-contact` | false | `sendTemplate` + one raw Resend POST (internal notice) | contact-received (auto-reply) |
 | `send-welcome` | true | `sendTemplate` | welcome |
-| `process-email-lifecycle` | false (cron) | `sendOnce` | trial-ending, trial-ended, win-back, renewal-upcoming, updates-lapsed — **guarded no-op** until `LIFECYCLE_EMAILS_ENABLED=true` + state columns populated |
+| `process-email-lifecycle` | false (cron) | `sendOnce` | trial-ending, trial-ended, win-back — **guarded no-op** until `LIFECYCLE_EMAILS_ENABLED=true` + state columns populated |
 | `activate-license` | true | `sendTemplate` | device-reactivation — **reference stub** (desktop-app device/slot tracking is a prerequisite) |
 
-> `process-email-lifecycle` and `activate-license` now exist as **honest, guarded
-> scaffolding** — safe no-ops until the trial/renewal/device product flows exist and
-> the owner arms them. See `EMAIL-PHASE2-PREREQUISITES.md`. `renewal-confirmation`
-> has a ready helper (`_shared/send-renewal-confirmation.ts`) wired to nothing yet;
-> `sales-response` and `policy-update` remain manual/broadcast (no trigger).
+The trial worker defaults to disabled. Annual renewal templates are historical previews. ClinicFlow Full costs ₪1,499 once per computer.
 
 ---
 
@@ -230,20 +226,7 @@ in `supabase/functions/notify-contact/index.ts`). *(This is a code change — ou
 of scope for this doc; noted here so it isn't forgotten.)*
 
 ### Step 9 — Phase 2 enablement (lifecycle emails)
-The lifecycle templates are now backed by **guarded scaffolding** (not fake
-features). Full flip-the-switch runbook: **`EMAIL-PHASE2-PREREQUISITES.md`**.
-In short, to arm them:
-1. `20260702000002_lifecycle.sql` is applied (Step 3) — adds the state columns.
-2. Build the trial-activation + renewal-payment product flows that actually
-   populate `trial_started_at` / `expires_at` / `updates_period_ends` (these do
-   not exist yet — the emails stay no-ops until they do).
-3. Deploy `process-email-lifecycle` (Step 4), set `LIFECYCLE_EMAILS_ENABLED=true`
-   + `CRON_SECRET`, and schedule it daily via a GitHub Action (mirror
-   `process-deletions`) — exact workflow YAML is in the prereqs doc.
-4. Wire `device-reactivation` from the app's activation path into
-   `activate-license`, and call `_shared/send-renewal-confirmation.ts` from the
-   future renewal webhook.
-`sales-response` and `policy-update` stay manual/broadcast by design.
+See [trial email prerequisites](EMAIL-PHASE2-PREREQUISITES.md) for activation requirements and checks. Paid Grow orders use a separate confirmation worker.
 
 ---
 
@@ -291,13 +274,7 @@ npm run email:build   # → emails/.out/*.html (21 templates + _layout.html = 22
 - **`device-reactivation`** — template + an `activate-license` reference stub exist,
   but the **app side** (device-fingerprint tracking, activation-slot table) is not
   built, so nothing calls it in production yet.
-- **Trial + renewal product flows (9 templates)** — the `process-email-lifecycle`
-  cron + `_shared/send-renewal-confirmation.ts` + `20260702000002_lifecycle.sql`
-  are in place as **guarded no-op scaffolding**. They stay dormant until the
-  trial-activation and renewal-payment **product features** exist to populate the
-  state columns and the owner sets `LIFECYCLE_EMAILS_ENABLED=true` (§3 Step 9 /
-  `EMAIL-PHASE2-PREREQUISITES.md`). `renewal-upcoming` also lacks a pricing source
-  until the renewal flow provides one.
+- **Trial campaigns** remain disabled. The renewal templates are historical previews.
 - **`sales-response` / `policy-update`** — no automatic trigger by design; intended
   to be sent manually/assisted (e.g. from an ops action) when needed.
 - **`notify-contact` internal notice** still sends from `onboarding@resend.dev`

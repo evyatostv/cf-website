@@ -46,7 +46,9 @@ for (const [scenario, concurrentChange, shouldExpire] of [
     });
     const result = await handler(new Request('https://example.test', { headers: { 'x-cron-secret': 'test' } }));
     assert.equal(result.status, 200);
-    const section = (await result.json()).sections['trial-ended'];
+    const { sections } = await result.json();
+    assert.deepEqual(Object.keys(sections).sort(), ['trial-ended', 'trial-ending', 'win-back']);
+    const section = sections['trial-ended'];
     assert.equal(section.sent, Number(shouldExpire));
     assert.equal(section.skipped, Number(!shouldExpire));
     assert.deepEqual(messages, shouldExpire ? ['trial-ended'] : []);
