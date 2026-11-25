@@ -1,3 +1,5 @@
+> Historical design brief. The current Full license is ₪1,499 once per computer. Annual renewal examples below are archived and must be excluded from customer campaigns.
+
 # Open Design Brief — ClinicFlow Transactional Email Templates (for Resend)
 
 > **Paste this whole document into Open Design as the project brief.**
