@@ -1,14 +1,16 @@
-import { hasMarketingConsent, hasSafeCampaignUrl } from '@/lib/meta-pixel';
+import { hasMarketingConsent, hasSafeCampaignUrl, hasSafeMarketingReferrer } from '@/lib/meta-pixel';
+import { blogPosts } from '@/app/data/blog-posts';
 import { contentPaths } from '@/app/content/registry';
 
 const MEASUREMENT_ID = 'G-Z7RVT7WW97';
 const PUBLIC_PATHS = new Set(['/', '/start', '/start/thanks', '/features', '/pricing', '/about',
   '/contact', '/partners', '/blog', '/terms', '/privacy', '/disclaimer', '/refund',
-  ...contentPaths]);
+  ...contentPaths, ...blogPosts.filter(post => post.content?.trim()).map(post => '/blog/' + post.slug)]);
 let lastPath: string | null = null;
 
 declare global {
   interface Window {
+    'ga-disable-G-Z7RVT7WW97'?: boolean;
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
   }
@@ -17,9 +19,10 @@ declare global {
 export function syncGoogleAnalytics() {
   if (typeof window === 'undefined') return;
   const path = window.location.pathname;
-  const allowed = hasMarketingConsent() && (PUBLIC_PATHS.has(path) || path.startsWith('/blog/'))
+  const allowed = hasMarketingConsent() && PUBLIC_PATHS.has(path) && hasSafeMarketingReferrer()
     && hasSafeCampaignUrl(window.location.search, window.location.hash)
     && ['clinic-flow.co.il', 'www.clinic-flow.co.il'].includes(window.location.hostname);
+  window['ga-disable-G-Z7RVT7WW97'] = !allowed;
   if (!allowed) {
     lastPath = null;
     window.gtag?.('consent', 'update', { analytics_storage: 'denied' });

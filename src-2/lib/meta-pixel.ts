@@ -34,10 +34,21 @@ export function hasSafeCampaignUrl(search: string, hash: string) {
     permitted.has(key) && /^[a-zA-Z0-9_.~-]{1,500}$/.test(value));
 }
 
+// Providers may include document.referrer in the event independently of the
+// browser's HTTP Referer header. Only an origin can be safely attributed here.
+export function hasSafeMarketingReferrer() {
+  if (!document.referrer) return true;
+  try {
+    const referrer = new URL(document.referrer);
+    return ['https:', 'http:'].includes(referrer.protocol) && referrer.pathname === '/'
+      && !referrer.search && !referrer.hash && !referrer.username && !referrer.password;
+  } catch { return false; }
+}
+
 export function syncMetaPixel() {
   if (typeof window === 'undefined') return;
   // Permit standard campaign IDs, but never arbitrary query fields or fragments.
-  const allowed = hasMarketingConsent() && PUBLIC_PATHS.has(location.pathname)
+  const allowed = hasMarketingConsent() && hasSafeMarketingReferrer() && PUBLIC_PATHS.has(location.pathname)
     && hasSafeCampaignUrl(location.search, location.hash)
     && ['clinic-flow.co.il', 'www.clinic-flow.co.il'].includes(location.hostname);
   if (!allowed) {
