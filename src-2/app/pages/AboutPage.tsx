@@ -118,7 +118,7 @@ export function AboutPage() {
         <div className="bg-[#0d47a1] rounded-2xl p-8 sm:p-14 text-center text-white shadow-xl">
           <h2 className="text-2xl sm:text-4xl font-bold mb-4">המידע של המטופלים שלכם — לא צריך לצאת מהמחשב</h2>
           <p className="text-base sm:text-xl text-white/85 mb-8 max-w-2xl mx-auto">
-            אתם לא צריכים ענן כדי לנהל מרפאה. כל מה שצריך רץ על המחשב שלכם — בתשלום חד־פעמי (1,499 ₪) ועם 30 יום החזר כספי מלא.
+            אתם לא צריכים ענן כדי לנהל מרפאה. כל מה שצריך רץ על המחשב שלכם — בתשלום חד־פעמי (1,499 ₪).
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
