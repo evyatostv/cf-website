@@ -32,7 +32,7 @@ create table public.purchases (
   user_id uuid unique references auth.users on delete cascade, email text not null, version text not null,
   plan text, amount integer, payment_id text unique, discount_eligible boolean, purchased_at timestamptz
 );
-create table public.contact_messages (name text, email text, message text, created_at timestamptz);
+create table public.contact_messages (id uuid primary key default gen_random_uuid(), name text, email text, phone text, message text, created_at timestamptz default now());
 alter table public.contact_messages enable row level security;
 grant select on public.contact_messages to authenticated;
 create policy "Authenticated can read" on public.contact_messages for select to authenticated using(true);
