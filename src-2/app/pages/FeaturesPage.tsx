@@ -148,7 +148,7 @@ export function FeaturesPage() {
             רישיון אחד. כל הכלים. ללא מנוי.
           </h2>
           <p className="text-[#64748b] mb-8 text-base sm:text-lg">
-            1,499 ₪ בתשלום חד־פעמי לכל החיים, עם 30 יום החזר כספי מלא.
+            1,499 ₪ בתשלום חד־פעמי לכל החיים.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
