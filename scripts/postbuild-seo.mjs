@@ -9,7 +9,7 @@
 //   3. Writes dist/llms.txt (site overview + annotated URL list).
 //   4. Writes dist/llms-full.txt (full plain-text dump of every page).
 //   5. Writes dist/app-shell.html (empty-root, noindex SPA shell for the
-//      non-prerendered app routes served via the vercel catch-all rewrite).
+//      non-prerendered app routes served via their explicit Vercel rewrites).
 import {
   readFileSync,
   writeFileSync,

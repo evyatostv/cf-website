@@ -1,4 +1,5 @@
 import "@/instrument";
+import hosting from "../vercel.json";
 
 import { ViteReactSSG } from "vite-react-ssg";
 import { createBrowserRouter } from "react-router";
@@ -35,31 +36,8 @@ export const createRoot = ViteReactSSG({
 // static HTML; everything else (home, features, pricing, blog posts, content
 // pages, legal) is prerendered. Dynamic (`:`/`*`) paths are dropped downstream.
 const EXCLUDED = new Set([
-  "/login",
-  "/signup",
-  "/dashboard",
-  "/campaign-dashboard",
-  "/payment",
-  "/thank-you",
-  "/reset-password",
-  "/update-password",
-  "/complete-profile",
-  "/beta",
-  "/account/orders",
-  "/account/renew",
-  "/checkout/retry",
-  "/download",
-  "/premium",
-  "/unsubscribe",
-  "/whats-new",
-  // These five paths are real permanent redirects in vercel.json. Emitting
-  // duplicate HTML for them creates conflicting canonicals and duplicate
-  // titles, so leave redirect handling to the edge.
-  "/clinicflow-vs-tipulog",
-  "/tipulog-alternatives",
-  "/clinicflow-vs-my-cliniq",
-  "/clinicflow-vs-medform",
-  "/best-clinic-software-israel",
+  ...hosting.rewrites.filter(rule => rule.destination === '/app-shell.html').map(rule => rule.source),
+  ...hosting.redirects.filter(rule => !('has' in rule)).map(rule => rule.source),
 ]);
 
 export function includedRoutes(paths: string[]): string[] {

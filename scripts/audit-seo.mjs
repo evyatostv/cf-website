@@ -22,30 +22,12 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = join(ROOT, "dist");
 const ORIGIN = "https://www.clinic-flow.co.il";
 
-// SPA routes that are intentionally NOT prerendered but are valid link targets
-// (served by the vercel catch-all rewrite to app-shell.html). The spec names the
-// three auth routes; /payment is included because it is a VERIFIED registered
-// client-side route (src-2/app/routes.tsx path:"payment" → PaymentPage) used as
-// the pricing-page purchase CTA (/payment?plan=…). It is the same class as
-// /login: catch-all-served, robots-disallowed, excluded from prerender. A link to
-// it resolves to a real page, so it is not a broken/dangling link.
-const ALLOWED_SPA_ROUTES = new Set([
-  "/login",
-  "/signup",
-  "/reset-password",
-  "/payment",
-  "/dashboard",
-  "/download",
-  "/account/orders",
-]);
-const ALLOWED_REDIRECT_ROUTES = new Set([
-  "/clinicflow-vs-tipulog",
-  "/tipulog-alternatives",
-  "/clinicflow-vs-my-cliniq",
-  "/clinicflow-vs-medform",
-  "/best-clinic-software-israel",
-]);
+// Match the hosting definitions used by the SSG entrypoint.
+const hosting = JSON.parse(readFileSync(join(ROOT, "vercel.json"), "utf8"));
+const ALLOWED_SPA_ROUTES = new Set(hosting.rewrites.filter(rule => rule.destination === "/app-shell.html").map(rule => rule.source));
+const ALLOWED_REDIRECT_ROUTES = new Set(hosting.redirects.filter(rule => !rule.has).map(rule => rule.source));
 
+const notFoundPath = join(DIST, "404.html");
 const failures = [];
 function fail(msg) {
   failures.push(msg);
@@ -283,6 +265,20 @@ for (const p of pages) {
   }
   for (const t of badTargets)
     fail(`${rel}: internal link to ${t} — not an emitted route or allowed SPA route`);
+}
+
+// ---------------------------------------------------------------------------
+// A missing page must work even before the JavaScript application loads.
+if (!existsSync(notFoundPath)) {
+  fail("404.html: missing static error page");
+} else {
+  const html = readFileSync(notFoundPath, "utf8");
+  if (!/<html[^>]*lang="he"/.test(html) || !/<meta[^>]+content="noindex/.test(html)
+      || !html.includes('href="/"') || !html.includes('href="/contact"'))
+    fail("404.html: expected Hebrew recovery page with home and support links");
+}
+for (const route of ALLOWED_SPA_ROUTES) {
+  if (!/^\/[a-z0-9/-]+$/.test(route)) fail(`Wildcard app rewrite would mask missing URLs: ${route}`);
 }
 
 // ---------------------------------------------------------------------------

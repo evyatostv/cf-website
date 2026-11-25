@@ -10,7 +10,7 @@ export function NotFoundPage() {
         </div>
         <h1 className="text-2xl font-bold text-[#1a2332] mb-3">העמוד לא נמצא</h1>
         <p className="text-[#6b7c93] mb-8">
-          הקישור שניסית לפתוח לא קיים או הוסר. בוא/י נחזור אותך לעמוד הבית.
+          ייתכן שהכתובת שגויה או שהעמוד הועבר.
         </p>
         <Link
           to="/"
@@ -19,6 +19,7 @@ export function NotFoundPage() {
           <Home className="w-4 h-4" />
           חזרה לעמוד הבית
         </Link>
+        <Link to="/contact" className="block mt-4 text-[#0d47a1] underline">פנייה לתמיכה</Link>
       </div>
     </div>
   );
