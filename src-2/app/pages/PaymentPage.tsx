@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
 import { motion } from 'motion/react';
@@ -24,11 +24,21 @@ const PLAN_INFO: Record<string, { name: string; price: string; amount: number; f
 };
 
 export function PaymentPage() {
+  const { user } = useAuth();
+  const [params] = useSearchParams();
+  const checkoutKey = JSON.stringify([user?.id, params.get('plan'), params.get('seat'), params.get('upgrade')]);
+  return <AccountCheckout key={checkoutKey} />;
+}
+
+function AccountCheckout() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
+  const [needsSupport, setNeedsSupport] = useState(false);
+  const inFlight = useRef<AbortController | null>(null);
+  useEffect(() => () => inFlight.current?.abort(), []);
   const [pendingOrder, setPendingOrder] = useState('');
   const [sessionExpired, setSessionExpired] = useState(false);
   const [licenseAlreadyActive, setLicenseAlreadyActive] = useState(false);
@@ -37,9 +47,9 @@ export function PaymentPage() {
   // Grow requires a full name and Israeli mobile number. Collect them before
   // the first request instead of waiting for a server validation error.
   const [needsCheckoutContact, setNeedsCheckoutContact] = useState(true);
-  const [checkoutName, setCheckoutName] = useState('');
+  const [checkoutName, setCheckoutName] = useState<string>(() => user?.user_metadata?.full_name || '');
   const [targetOs, setTargetOs] = useState('');
-  const [checkoutPhone, setCheckoutPhone] = useState('');
+  const [checkoutPhone, setCheckoutPhone] = useState<string>(() => user?.user_metadata?.phone || '');
 
   const plan = searchParams.get('plan') || '';
   const seatParam = searchParams.get('seat');
@@ -57,22 +67,6 @@ export function PaymentPage() {
     if (!loading && !user) navigate(loginWithRedirect);
   }, [user, loading, navigate, loginWithRedirect]);
 
-  useEffect(() => {
-    if (!user) return;
-    setCheckoutName((current) => current || user.user_metadata?.full_name || '');
-    setCheckoutPhone((current) => current || user.user_metadata?.phone || '');
-  }, [user]);
-
-  // AllPay can bounce the user back to /payment on a declined/failed charge
-  // (e.g. ?status=failed or ?payment=failed). Surface a Hebrew failure banner
-  // so the return isn't a silent dead-end.
-  useEffect(() => {
-    const status = (searchParams.get('status') || searchParams.get('payment') || '').toLowerCase();
-    if (status === 'failed' || status === 'error' || status === 'declined' || status === 'cancelled' || status === 'canceled') {
-      setError('התשלום לא הושלם או נדחה. ניתן לנסות שוב.');
-    }
-  }, [searchParams]);
-
   const handleTermsChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
     setTermsAccepted(checked);
@@ -85,7 +79,10 @@ export function PaymentPage() {
   const handlePayment = async () => {
     if (!user || !targetOs || !planInfo || !termsAccepted || processing) return;
 
+    const request = new AbortController();
+    inFlight.current = request;
     setProcessing(true);
+    setNeedsSupport(false);
     setError('');
     setSessionExpired(false);
     setPendingOrder('');
@@ -102,18 +99,19 @@ export function PaymentPage() {
         setSessionExpired(true);
         throw sessionError;
       }
-      let token = sessionData.session?.access_token;
-      if (!token) {
+      let session = sessionData.session;
+      if (!session?.access_token) {
         const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
         if (refreshError) {
           authSessionFailed = true;
           setSessionExpired(true);
           throw refreshError;
         }
-        token = refreshData.session?.access_token;
+        session = refreshData.session;
       }
 
-      if (!token) {
+      if (request.signal.aborted) return;
+      if (!session?.access_token || session.user.id !== user.id) {
         setError('פג תוקף ההתחברות — אנא התחבר/י מחדש');
         setSessionExpired(true);
         setProcessing(false);
@@ -126,9 +124,10 @@ export function PaymentPage() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${session.access_token}`,
             'apikey': SUPABASE_ANON_KEY,
           },
+          signal: request.signal,
           body: JSON.stringify({
             plan,
             isUpgrade,
@@ -140,6 +139,7 @@ export function PaymentPage() {
       );
 
       const raw = await res.text();
+      if (request.signal.aborted) return;
       let data: { orderId?: string; paymentUrl?: string; error?: string; code?: string } = {};
       try {
         data = raw ? JSON.parse(raw) : {};
@@ -151,6 +151,7 @@ export function PaymentPage() {
         // Edge-function errors may be raw/English — route through the Hebrew map.
         setError(data.error ? mapAuthError(data.error) : 'שגיאה ביצירת תשלום');
         // A 401/expired token surfaces here too — offer the re-login CTA.
+        setNeedsSupport(res.status >= 500 || data.code === 'ORDER_LINK_PENDING');
         if (data.code === 'ORDER_LINK_PENDING' && data.orderId) setPendingOrder(data.orderId);
         if (res.status === 401) setSessionExpired(true);
         if (data.code === 'CHECKOUT_CONTACT_REQUIRED') setNeedsCheckoutContact(true);
@@ -162,6 +163,8 @@ export function PaymentPage() {
       // Redirect to the provider checkout page.
       window.location.href = data.paymentUrl;
     } catch (err: any) {
+      if (request.signal.aborted) return;
+      setNeedsSupport(!authSessionFailed);
       setError(authSessionFailed ? 'פג תוקף ההתחברות — אנא התחבר/י מחדש' : (mapAuthError(err) || 'שגיאה ביצירת תשלום'));
       setProcessing(false);
     }
@@ -311,6 +314,9 @@ export function PaymentPage() {
                         בדיקת מצב ההזמנה
                       </Link>
                     )}
+                    {needsSupport && (
+                      <Link to="/contact" className="block mt-1 text-sm font-medium text-[#0d47a1] underline">פנייה לתמיכה בנושא התשלום</Link>
+                    )}
                     {sessionExpired && (
                       <Link
                         to={loginWithRedirect}
@@ -367,23 +373,7 @@ export function PaymentPage() {
                 )}
               </button>
 
-              {/* Payment methods */}
-              <div className="flex items-center justify-center gap-2 mt-3">
-                <img src="https://allpay.to/hfields/visa.svg" alt="Visa" className="h-6 rounded-[5px]" />
-                <img src="https://allpay.to/hfields/mastercard.svg" alt="Mastercard" className="h-6 rounded-[5px]" />
-                <img src="https://allpay.to/hfields/amex.svg" alt="AmEx" className="h-6 rounded-[5px]" />
-                <div className="h-6 bg-black rounded-[5px] px-1.5 flex items-center">
-                  <img src="https://allpay.to/hfields/apple-pay.svg" alt="Apple Pay" className="h-3" />
-                </div>
-                <div className="h-6 bg-[#03353b] rounded-[5px] px-1.5 flex items-center">
-                  <img src="https://allpay.to/hfields/bit-cyan.svg" alt="Bit" className="h-3" />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-center gap-1.5 mt-2 text-[10px] text-[#6b7c93]">
-                <Lock className="w-3 h-3 text-green-600" />
-                <span>SSL 256-bit · PCI-DSS</span>
-              </div>
+              <p className="text-center text-xs text-[#4a5568]">פרטי התשלום מוזנים בעמוד התשלום של Grow.</p>
             </div>
           </div>
         </motion.div>
