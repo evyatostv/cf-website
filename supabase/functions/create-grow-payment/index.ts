@@ -40,10 +40,12 @@ Deno.serve(async (req) => {
   const webhookUrl = Deno.env.get('MAKE_PAYMENT_WEBHOOK_URL');
   if (!webhookUrl) return json({ error: 'Payment service unavailable' }, 503);
 
+  const createHook = URL.parse(webhookUrl);
   const notifyUrl = URL.parse(Deno.env.get('MAKE_GROW_NOTIFY_URL') || '');
   if (!notifyUrl || notifyUrl.protocol !== 'https:' || !/^hook(?:\.[a-z0-9-]+)?\.make\.com$/.test(notifyUrl.hostname)
       || notifyUrl.username || notifyUrl.password || notifyUrl.port || notifyUrl.pathname.length < 2
-      || notifyUrl.href === URL.parse(webhookUrl)?.href) {
+      || notifyUrl.search || notifyUrl.hash || !createHook
+      || (notifyUrl.origin === createHook.origin && notifyUrl.pathname.replace(/\/+$/, '') === createHook.pathname.replace(/\/+$/, ''))) {
     return json({ error: 'שירות התשלום אינו זמין כרגע. אפשר לנסות שוב מאוחר יותר.', code: 'PAYMENT_NOTIFICATION_UNAVAILABLE' }, 503);
   }
 

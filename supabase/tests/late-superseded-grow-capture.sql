@@ -15,6 +15,7 @@ begin
   if public.fulfill_grow_order(replacement,'replacement','PAID',149900,'ILS','{}','test-key')<>'PAID' then raise exception 'replacement'; end if;
   if public.fulfill_grow_order(replacement,'replacement','PAID',149900,'ILS','{}','test-key')<>'DUPLICATE' then raise exception 'duplicate'; end if;
   if public.fulfill_grow_order(replacement,'replacement','PAID',1,'ILS','{}','test-key')<>'CONFLICT' then raise exception 'mismatched duplicate'; end if;
+  if public.fulfill_grow_order(replacement,'replacement','FAILED',149900,'ILS','{}','test-key')<>'CONFLICT' then raise exception 'conflicting status'; end if;
   if public.grow_paid_seat_count(account_id)<>1 then raise exception 'incorrect paid seats'; end if;
 end $$;
 rollback;

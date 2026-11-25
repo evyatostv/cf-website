@@ -67,8 +67,10 @@ test('server fixes checkout price, sends unique notification and return routes, 
 
 test('missing notification config creates no order; a lost response never creates a second link', async () => {
   const {db,state}=database();
-  const misconfigured=load('create-grow-payment',db,{...env,MAKE_GROW_NOTIFY_URL:env.MAKE_PAYMENT_WEBHOOK_URL},()=>{throw Error();});
-  assert.equal((await misconfigured(post(checkout,userHeaders))).status,503); assert.equal(state.orders,0);
+  for (const suffix of ['', '?ref=notify', '#notification', '/']) {
+    const misconfigured=load('create-grow-payment',db,{...env,MAKE_GROW_NOTIFY_URL:env.MAKE_PAYMENT_WEBHOOK_URL+suffix},()=>{throw Error();});
+    assert.equal((await misconfigured(post(checkout,userHeaders))).status,503); assert.equal(state.orders,0);
+  }
   let attempts=0;
   const main=load('create-grow-payment',db,env,async ()=>{attempts++;throw Error('timeout');});
   const first=await main(post(checkout,userHeaders));

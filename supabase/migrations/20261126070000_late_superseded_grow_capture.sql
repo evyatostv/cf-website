@@ -23,7 +23,7 @@ begin
   if not found then return 'NOT_FOUND'; end if;
 
   if checkout.status = 'PAID' then
-    if checkout.external_transaction_id = p_transaction_id and checkout.amount=p_amount and checkout.currency=p_currency then
+    if p_status='PAID' and checkout.external_transaction_id = p_transaction_id and checkout.amount=p_amount and checkout.currency=p_currency then
       return 'DUPLICATE';
     end if;
     return 'CONFLICT';
