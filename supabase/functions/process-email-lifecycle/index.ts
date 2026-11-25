@@ -1,17 +1,5 @@
-// process-email-lifecycle — Phase-2 lifecycle-email cron (trial + renewal).
-//
-// ┌─ HONEST-SCAFFOLDING NOTICE ────────────────────────────────────────────────┐
-// │ This is Phase-2 SCAFFOLDING. It stays a SAFE NO-OP until ALL of these are   │
-// │ true — until then it sends nothing:                                        │
-// │   (i)   the migration 20260702000002_lifecycle.sql is applied              │
-// │         (adds user_access.trial_started_at + updates_period_ends), and      │
-// │   (ii)  a trial-activation flow actually sets trial_started_at + expires_at │
-// │         + plan='trial' on real rows, and                                    │
-// │   (iii) a renewal-payment flow actually sets updates_period_ends, and       │
-// │   (iv)  the env flag LIFECYCLE_EMAILS_ENABLED=true is set on the function.  │
-// │ With no such rows and the flag OFF (default), every section matches 0 rows  │
-// │ and/or is skipped, so nothing misfires. See EMAIL-PHASE2-PREREQUISITES.md.  │
-// └────────────────────────────────────────────────────────────────────────────┘
+// Optional trial-email worker. ClinicFlow Full is a one-time purchase per computer.
+// A historical updates end date must never trigger a payment request.
 //
 // Invoked DAILY by a scheduled GitHub Action (mirror .github/workflows/
 // process-deletions.yml — NOT yet created; see the prereqs doc). Protected by
@@ -24,8 +12,6 @@
 //   • trial-ended      plan='trial' AND is_active AND expires_at <= now
 //                      → set is_active=false, send trial-ended
 //   • win-back         plan='trial' AND NOT is_active AND expires_at < now-30d
-//   • renewal-upcoming updates_period_ends in [now+30d, now+31d]
-//   • updates-lapsed   updates_period_ends < now AND is_active
 //
 // Dedupe: each send goes through sendOnce with a DATE-STAMPED synthetic key
 // (`<template>:<userId|email>:<yyyy-mm-dd>`) written to email_log's
@@ -76,7 +62,6 @@ function nameFor(row: Row): string {
 }
 
 const PRICING_URL = "https://clinic-flow.co.il/pricing";
-const RENEW_URL = "https://clinic-flow.co.il/pricing";
 
 interface SectionResult {
   matched: number;
@@ -145,7 +130,7 @@ Deno.serve(async (req) => {
   }
 
   // Whole-function kill switch. Default OFF so this can't fire until the product
-  // owner explicitly arms it (after the trial/renewal flows exist).
+  // owner explicitly arms it (after trial activation is configured).
   if (!LIFECYCLE_ENABLED) {
     console.log(
       "process-email-lifecycle: LIFECYCLE_EMAILS_ENABLED != 'true' — no-op " +
@@ -283,79 +268,6 @@ Deno.serve(async (req) => {
         template: "win-back",
         to: row.email,
         props: { name: nameFor(row), pricingUrl: PRICING_URL },
-      });
-      if (r.skipped) res.skipped++;
-      else if (r.sent) res.sent++;
-      else res.failed++;
-    }
-    return res;
-  });
-
-  // ── 4 · renewal-upcoming — updates_period_ends in [now+30d, now+31d] ────────
-  summary["renewal-upcoming"] = await runSection("renewal-upcoming", async () => {
-    const res = emptySection();
-    const lo = iso(new Date(now.getTime() + 30 * MS_DAY));
-    const hi = iso(new Date(now.getTime() + 31 * MS_DAY));
-    const { data, error } = await admin
-      .from("user_access")
-      .select("user_id, email, plan, updates_period_ends")
-      .gte("updates_period_ends", lo)
-      .lte("updates_period_ends", hi);
-    if (error) throw error;
-
-    for (const row of (data ?? []) as Row[]) {
-      if (!row.email) continue;
-      res.matched++;
-      const key = `renewal-upcoming:${row.user_id ?? row.email}:${
-        dayStamp(new Date(row.updates_period_ends))
-      }`;
-      const r = await sendOnce(admin, {
-        paymentId: key,
-        template: "renewal-upcoming",
-        to: row.email,
-        props: {
-          name: nameFor(row),
-          plan: String(row.plan ?? ""),
-          renewDate: fmtDate(row.updates_period_ends),
-          // There is intentionally no hard-coded renewal price here. The
-          // renewal checkout must supply the actual amount at payment time;
-          // reminders must never invent a price.
-          amount: "המחיר שיוצג בעמוד החידוש",
-          renewUrl: RENEW_URL,
-        },
-      });
-      if (r.skipped) res.skipped++;
-      else if (r.sent) res.sent++;
-      else res.failed++;
-    }
-    return res;
-  });
-
-  // ── 5 · updates-lapsed — updates_period_ends < now AND is_active ────────────
-  summary["updates-lapsed"] = await runSection("updates-lapsed", async () => {
-    const res = emptySection();
-    const { data, error } = await admin
-      .from("user_access")
-      .select("user_id, email, plan, updates_period_ends, is_active")
-      .lt("updates_period_ends", nowIso)
-      .eq("is_active", true);
-    if (error) throw error;
-
-    for (const row of (data ?? []) as Row[]) {
-      if (!row.email) continue;
-      res.matched++;
-      const key = `updates-lapsed:${row.user_id ?? row.email}:${
-        dayStamp(new Date(row.updates_period_ends))
-      }`;
-      const r = await sendOnce(admin, {
-        paymentId: key,
-        template: "updates-lapsed",
-        to: row.email,
-        props: {
-          name: nameFor(row),
-          plan: String(row.plan ?? ""),
-          renewUrl: RENEW_URL,
-        },
       });
       if (r.skipped) res.skipped++;
       else if (r.sent) res.sent++;
