@@ -179,8 +179,6 @@ Deno.serve(async (req) => {
 
     paymentParams.sign = await computeSign(paymentParams, ALLPAY_KEY);
 
-    console.log('AllPay request payload:', JSON.stringify(paymentParams));
-
     const allpayRes = await fetch(
       'https://allpay.to/app/?show=getpayment&mode=api11',
       {
@@ -193,9 +191,9 @@ Deno.serve(async (req) => {
     const allpayData = await allpayRes.json();
 
     if (!allpayRes.ok || !allpayData.payment_url) {
-      console.error('AllPay error:', allpayData);
+      console.error('AllPay payment initialization failed', allpayRes.status);
       return new Response(
-        JSON.stringify({ error: allpayData.error || 'שגיאה ביצירת תשלום' }),
+        JSON.stringify({ error: 'שגיאה ביצירת תשלום' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
@@ -208,11 +206,10 @@ Deno.serve(async (req) => {
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
-  } catch (err) {
-    // BE-004: never leak internal error text to the client — log with a
-    // correlation id, return a generic Hebrew message.
+  } catch {
+    // Support can match this public reference to the corresponding log entry.
     const correlationId = crypto.randomUUID();
-    console.error(`create-allpay-payment error [${correlationId}]:`, err);
+    console.error(`create-allpay-payment error [${correlationId}]`);
     return new Response(
       JSON.stringify({
         error: 'אירעה שגיאה ביצירת התשלום. נסה/י שוב או פנה/י לתמיכה עם מזהה השגיאה.',

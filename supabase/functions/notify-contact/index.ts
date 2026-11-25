@@ -206,8 +206,8 @@ async function handleContact(req: Request): Promise<Response> {
   const data = await res.json();
 
   if (!res.ok) {
-    console.error("Resend error:", data);
-    return new Response(JSON.stringify({ error: data }), { status: 500 });
+    console.error("Contact notification failed", res.status);
+    return new Response(JSON.stringify({ error: "Contact notification failed" }), { status: 500 });
   }
 
   // ── 2 · User-facing auto-reply via the lightweight sendEmail seam ───────────
@@ -234,9 +234,9 @@ async function handleContact(req: Request): Promise<Response> {
         text: `שלום ${nameStr}, קיבלנו את הפנייה שלך ונחזור אליך בהקדם. מספר פנייה: ${ticketId}. ClinicFlow`,
         idempotencyKey: `contact-received:${ticketId}`,
       });
-    } catch (err) {
+    } catch {
       // Swallow: auto-reply is best-effort and must not affect the response.
-      console.error("contact-received auto-reply failed (non-fatal):", err);
+      console.error("Contact auto-reply failed");
     }
   }
 
