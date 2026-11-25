@@ -108,8 +108,10 @@ const emittedRoutes = new Set(pages.map((p) => p.route));
       if (!emittedRoutes.has(route))
         fail(`sitemap.xml: lists ${loc} but dist${route === "/" ? "" : route}/index.html was not emitted`);
     }
-    for (const route of emittedRoutes) {
-      if (!sitemapRoutes.has(route))
+    for (const {route, html} of pages) {
+      const noindex = /<meta\b[^>]*name="robots"[^>]*content="[^"]*\bnoindex\b/i.test(html);
+      if (noindex && sitemapRoutes.has(route)) fail(`sitemap.xml: noindex route ${route} is listed`);
+      if (!noindex && !sitemapRoutes.has(route))
         fail(`sitemap.xml: prerendered route ${route} is missing from the sitemap`);
     }
   }
@@ -165,6 +167,7 @@ const staleOfferCopy = [
 
 for (const p of pages) {
   const { rel, route, html } = p;
+  const noindex = /<meta\b[^>]*name="robots"[^>]*content="[^"]*\bnoindex\b/i.test(html);
 
   // --- exactly one <title>, unique site-wide ---
   const titleMatches = [...html.matchAll(/<title[^>]*>([\s\S]*?)<\/title>/g)];
@@ -189,7 +192,7 @@ for (const p of pages) {
     fail(`${rel}: ${descMatches.length} meta descriptions (expected 1)`);
   } else {
     const desc = descMatches[0][1].trim();
-    if (desc.length < 50 || desc.length > 170)
+    if (!desc || (!noindex && (desc.length < 50 || desc.length > 170)))
       fail(`${rel}: meta description length ${desc.length} outside 50-170 chars`);
   }
 
@@ -219,7 +222,10 @@ for (const p of pages) {
   // --- >500 chars of text inside the root div ---
   const text = rootText(html);
   if (text === null) fail(`${rel}: no <div id="root"> found`);
-  else if (text.length <= 500)
+  else if (!text.length) fail(`${rel}: empty page`);
+  else if (route === "/start" && (!/<h1\b/.test(html) || !/<button\b/.test(html)))
+    fail(`${rel}: lead form missing its heading or first step`);
+  else if (!noindex && route !== "/start" && text.length <= 500)
     fail(`${rel}: only ${text.length} chars of text inside root div (need >500)`);
 
   // --- every JSON-LD block parses ---
@@ -291,8 +297,9 @@ for (const p of pages) {
     if (!/<div id="root"[^>]*>\s*<\/div>/.test(shell))
       fail("app-shell.html: root div is not empty");
     const robots = shell.match(/<meta[^>]*name="robots"[^>]*content="([^"]*)"/);
-    if (!robots || !/noindex/.test(robots[1]))
-      fail("app-shell.html: missing robots noindex meta");
+    if (!robots || !/noindex/.test(robots[1]) || countMatches(shell, /<meta[^>]*name="robots"/g) !== 1)
+      fail("app-shell.html: expected exactly one noindex directive");
+    if (/<link[^>]*rel="canonical"/.test(shell)) fail("app-shell.html: unexpected canonical URL");
   }
   for (const dir of ["login", "dashboard"]) {
     if (existsSync(join(DIST, dir)))

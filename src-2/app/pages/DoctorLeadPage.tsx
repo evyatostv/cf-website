@@ -66,7 +66,7 @@ export function DoctorLeadPage() {
   const inputClass = 'w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-600';
   return (
     <div dir="rtl" className="min-h-screen min-h-[100svh] bg-[#f5f8fc] text-[#172b45] px-4 py-4 sm:px-5 sm:py-10">
-      <Seo title={done ? 'תודה על הפנייה | ClinicFlow' : 'פחות ניירת בקליניקה הפרטית | ClinicFlow'} description="בואו נבדוק איך ClinicFlow יכולה להתאים לפעילות הפרטית שלכם. כמה שאלות קצרות ונחזור אליכם." canonicalPath={done ? '/start/thanks' : '/start'} />
+      <Seo title={done ? 'תודה על הפנייה | ClinicFlow' : 'פחות ניירת בקליניקה הפרטית | ClinicFlow'} description="בואו נבדוק איך ClinicFlow יכולה להתאים לפעילות הפרטית שלכם. כמה שאלות קצרות ונחזור אליכם." canonicalPath={done ? '/start/thanks' : '/start'} noindex={done} />
       <div className="mx-auto max-w-xl">
         <img src="/logo/cf-lockup-horizontal.svg" alt="ClinicFlow" className="h-8 sm:h-10 w-auto max-w-full mx-auto mb-4 sm:mb-8" />
         {done ? (

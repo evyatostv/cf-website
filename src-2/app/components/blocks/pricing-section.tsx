@@ -69,11 +69,11 @@ function PricingSection({ tiers, className }: PricingSectionProps) {
     >
       <div className="w-full max-w-5xl mx-auto" dir="rtl">
         <div className="flex flex-col items-center gap-4 mb-12 text-center">
-          <h2 className="text-3xl sm:text-5xl md:text-6xl font-bold text-[#1a2332]">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-[#1a2332]">
             מחיר אחד. הכל כלול.
             <br />
             <span className="text-[#0d47a1]">בלי מנוי חודשי</span>
-          </h2>
+          </h1>
           <p className="text-xl text-[#6b7c93] max-w-2xl mx-auto mt-4">
             רישיון ClinicFlow כולל את כל היכולות לצמיתות — ללא עלויות חודשיות או שנתיות.
             <br />

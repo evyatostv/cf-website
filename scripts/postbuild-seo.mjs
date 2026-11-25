@@ -168,7 +168,8 @@ for (const p of pages) {
 }
 
 // 2. sitemap.xml
-const urls = pages
+const indexablePages = pages.filter(p => !/<meta\b[^>]*name="robots"[^>]*content="[^"]*\bnoindex\b/i.test(p.html));
+const urls = indexablePages
   .map((p) => {
     const { priority, changefreq } = sitemapMeta(p.route);
     const loc = `${ORIGIN}${p.route === "/" ? "/" : p.route}`;
@@ -197,7 +198,7 @@ const llmsLines = [
   "## עמודים",
   "",
 ];
-for (const p of pages) {
+for (const p of indexablePages) {
   const title = extractTitle(p.html);
   const desc = extractDescription(p.html);
   const loc = `${ORIGIN}${p.route === "/" ? "/" : p.route}`;
@@ -213,7 +214,7 @@ const fullParts = [
   `> ${oneLiner}`,
   "",
 ];
-for (const p of pages) {
+for (const p of indexablePages) {
   const loc = `${ORIGIN}${p.route === "/" ? "/" : p.route}`;
   const title = extractTitle(p.html);
   const text = pageText(p.html);
@@ -243,18 +244,14 @@ writeFileSync(join(DIST, "llms-full.txt"), fullParts.join("\n") + "\n");
   }
   // Generic title.
   shell = shell.replace(/<title[^>]*>[\s\S]*?<\/title>/, "<title>ClinicFlow</title>");
-  // noindex.
-  if (/<meta name="robots"[^>]*>/.test(shell)) {
-    shell = shell.replace(/<meta name="robots"[^>]*>/g, '<meta name="robots" content="noindex, nofollow">');
-  } else {
-    shell = shell.replace(/<\/title>/, '</title>\n    <meta name="robots" content="noindex, nofollow">');
-  }
-  // Drop homepage-identity tags so the shell asserts nothing.
+  // Helmet puts data-rh before name/rel, including on the prerendered home page.
   shell = shell
-    .replace(/<link rel="canonical"[^>]*>/g, "")
-    .replace(/<meta property="og:[^"]*"[^>]*>/g, "")
-    .replace(/<meta name="twitter:[^"]*"[^>]*>/g, "")
-    .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, "");
+    .replace(/<meta\b[^>]*\bname="robots"[^>]*>/gi, "")
+    .replace(/<link\b[^>]*\brel="canonical"[^>]*>/gi, "")
+    .replace(/<meta\b[^>]*\bproperty="og:[^"]*"[^>]*>/gi, "")
+    .replace(/<meta\b[^>]*\bname="(?:twitter:[^"]*|description)"[^>]*>/gi, "")
+    .replace(/<script\b[^>]*\btype="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace("</head>", '<meta name="robots" content="noindex, nofollow"></head>');
   writeFileSync(join(DIST, "app-shell.html"), shell);
 }
 
