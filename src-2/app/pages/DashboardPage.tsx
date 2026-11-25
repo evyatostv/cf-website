@@ -49,7 +49,7 @@ export function DashboardPage() {
   useEffect(() => {
     if (!user?.id) return;
     let current = true;
-    void supabase.rpc('my_grow_paid_seat_count').then(({ data, error }) => {
+    void supabase.rpc('my_paid_seat_count').then(({ data, error }) => {
       if (current && !error && Number.isSafeInteger(data)) setSeatSummary({ userId: user.id, count: data });
     });
     return () => { current = false; };
