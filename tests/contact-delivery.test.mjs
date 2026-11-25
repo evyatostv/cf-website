@@ -65,3 +65,32 @@ test('failed acknowledgement stays retryable without losing the internal complet
   assert.equal((await f.handler(f.request('test-secret'))).status,503);
   assert.deepEqual(f.completed,['internal']);
 });
+
+test('the optional spreadsheet receiver verifies its secret and deduplicates the stored UUID', () => {
+  const appScript = readFileSync(new URL('../integrations/contact-sheet.gs',import.meta.url),'utf8');
+  const rows = [];
+  let locked = false;
+  const sheet = {
+    getLastRow:()=>rows.length,
+    appendRow:row=>{ assert.ok(locked); rows.push(Array.from(row)); },
+    getRange(row,col) {
+      return { getValue:()=>rows[row-1]?.[col-1], createTextFinder:value=>({
+        matchEntireCell:()=>({findNext:()=>rows.slice(1).some(cells=>cells[0]===value)}),
+      }) };
+    },
+  };
+  const context = {
+    PropertiesService:{getScriptProperties:()=>({getProperty:key=>key==='CONTACT_SHEET_SECRET'?'shared-test':'sheet'})},
+    SpreadsheetApp:{openById:()=>({getSheetByName:()=>sheet}),flush(){}},
+    LockService:{getScriptLock:()=>({waitLock(){locked=true;},releaseLock(){locked=false;}})},
+    ContentService:{MimeType:{JSON:'json'},createTextOutput:body=>({setMimeType:()=>JSON.parse(body)})},
+  };
+  runInNewContext(appScript,context);
+  const payload = secret=>({postData:{contents:JSON.stringify({secret,contact:{id,name:'=synthetic formula'}})}});
+  assert.throws(()=>context.doPost(payload('wrong')),/Invalid request/);
+  assert.equal(rows.length,0);
+  assert.equal(context.doPost(payload('shared-test')).storedId,id);
+  assert.equal(context.doPost(payload('shared-test')).storedId,id);
+  assert.equal(rows.length,2);
+  assert.equal(rows[1][2],"'=synthetic formula");
+});
