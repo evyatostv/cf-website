@@ -34,6 +34,30 @@ begin
   if not public.has_verified_desktop_purchase(buyer,'full') then raise exception 'Active seat lost download'; end if;
   perform public.record_grow_refund((extra->>'id')::uuid,second_tx,149900,'ILS');
   if public.has_verified_desktop_purchase(buyer,'full') then raise exception 'All refunded retained download'; end if;
+  if exists(select 1 from public.user_access where user_id=buyer and is_active) then raise exception 'Fully refunded active access'; end if;
+end;
+$$;
+
+do $$
+declare
+  buyer uuid := gen_random_uuid();
+  extra jsonb;
+  legacy_tx text := gen_random_uuid()::text;
+  grow_tx text := gen_random_uuid()::text;
+  original_expiry timestamptz := now()+interval '2 months';
+begin
+  insert into auth.users(id,email) values(buyer,buyer::text || '@example.test');
+  insert into public.purchases(user_id,email,version,plan,amount,payment_id)
+  values(buyer,buyer::text || '@example.test','professional','professional',99900,legacy_tx);
+  update public.user_access set expires_at=original_expiry where user_id=buyer;
+  if (select count(*) from public.account_paid_seat_receipts(buyer,'professional'))<>1 then raise exception 'Legacy seat missing'; end if;
+  extra:=public.open_additional_grow_order(buyer,2);
+  if extra->>'result' is distinct from 'NEW' then raise exception 'Legacy additional purchase'; end if;
+  perform public.fulfill_grow_order((extra->>'id')::uuid,grow_tx,'PAID',149900,'ILS','{}','CF-' || buyer::text);
+  if (select count(*) from public.account_paid_seat_receipts(buyer,'full'))<>2 then raise exception 'Mixed seat count'; end if;
+  perform public.record_grow_refund((extra->>'id')::uuid,grow_tx,149900,'ILS');
+  if not exists(select 1 from public.user_access where user_id=buyer and is_active and plan='professional' and expires_at=original_expiry)
+    then raise exception 'Original legacy license not restored'; end if;
 end;
 $$;
 rollback;
