@@ -223,21 +223,25 @@ Deno.serve(async (req) => {
       if (!row.email) continue;
       res.matched++;
 
-      // Deactivate first (read-only mode). Guarded so a failed flip doesn't
-      // block the mail; the next run retries the flip and dedupe skips the mail.
-      // BE-010: update by primary-key `id` ONLY — updating by email would flip
-      // is_active=false on EVERY row sharing that email (see BE-001 duplicate
-      // rows), which could deactivate a paying user who reused the same address.
-      const { error: upErr } = await admin
+      // A purchase or extension can replace this trial after the initial query.
+      // Only expire the exact trial we observed, and confirm the row changed.
+      const { data: expired, error: upErr } = await admin
         .from("user_access")
         .update({ is_active: false })
-        .eq("id", row.id);
+        .eq("id", row.id)
+        .eq("plan", "trial")
+        .eq("is_active", true)
+        .eq("expires_at", row.expires_at)
+        .select("id")
+        .maybeSingle();
       if (upErr) {
-        console.error(
-          "process-email-lifecycle: [trial-ended] deactivate failed for",
-          row.user_id ?? row.email,
-          upErr.message ?? upErr,
-        );
+        res.failed++;
+        console.error("process-email-lifecycle: trial expiration update failed", upErr.code);
+        continue;
+      }
+      if (!expired) {
+        res.skipped++;
+        continue;
       }
 
       const key = `trial-ended:${row.user_id ?? row.email}:${
