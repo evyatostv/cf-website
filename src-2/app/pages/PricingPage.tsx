@@ -3,7 +3,7 @@ import { Building2, ChevronDown, ShieldCheck, X, Zap } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/lib/auth-context";
-import { getUserAccess } from "@/lib/supabase";
+import { getPaidUserAccess } from "@/lib/supabase";
 import { Seo, SITE_ORIGIN } from "@/app/components/Seo";
 import { PricingSection } from "../components/blocks/pricing-section";
 import { PremiumContactForm } from "../components/PremiumContactForm";
@@ -104,6 +104,7 @@ const faqJsonLd = {
 export function PricingPage() {
   const { user } = useAuth();
   const [hasActiveLicense, setHasActiveLicense] = useState(false);
+  const [lookupFailed, setLookupFailed] = useState(false);
   const [accessLoaded, setAccessLoaded] = useState(false);
   const [isEnterpriseModalOpen, setIsEnterpriseModalOpen] = useState(false);
   const enterpriseDialogRef = useRef<HTMLDivElement>(null);
@@ -135,7 +136,7 @@ export function PricingPage() {
       onClick: (e: React.MouseEvent) => {
         e.preventDefault();
         if (user && !accessLoaded) return;
-        if (hasActiveLicense) {
+        if (hasActiveLicense || lookupFailed) {
           navigate("/dashboard");
         } else if (user) {
           navigate("/payment?plan=forever");
@@ -143,23 +144,24 @@ export function PricingPage() {
           navigate("/signup?redirect=/payment?plan=forever");
         }
       },
-      buttonText: hasActiveLicense ? "לניהול הרישיון" : user && !accessLoaded ? "בודק רישיון..." : tier.buttonText,
+      buttonText: lookupFailed ? "לבדיקת הרישיון" : hasActiveLicense ? "לניהול הרישיון" : user && !accessLoaded ? "בודק רישיון..." : tier.buttonText,
       disabled: Boolean(user && !accessLoaded),
     };
   });
 
   useEffect(() => {
+    let current = true;
+    setHasActiveLicense(false);
+    setAccessLoaded(!user);
     if (user) {
-      setAccessLoaded(false);
-      setHasActiveLicense(false);
-      getUserAccess(user.id).then(access => {
-        setHasActiveLicense(Boolean(access?.is_active));
-        setAccessLoaded(true);
-      });
-    } else {
-      setHasActiveLicense(false);
-      setAccessLoaded(true);
+      getPaidUserAccess(user.id).then(access => {
+        if (current) setHasActiveLicense(Boolean(access));
+      }).catch(() => {
+        if (current) setLookupFailed(true);
+      }).finally(() => { if (current) setAccessLoaded(true); });
     }
+    setLookupFailed(false);
+    return () => { current = false; };
   }, [user]);
 
   useEffect(() => {
