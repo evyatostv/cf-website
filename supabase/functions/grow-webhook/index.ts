@@ -2,6 +2,8 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 import { generateLicenseKey } from '../_shared/license.ts';
 import { recordAuditEvent } from '../_shared/audit.ts';
 
+import { wakeGrowReceipts } from '../_shared/wake-grow-receipts.ts';
+
 const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { 'Content-Type': 'application/json' },
@@ -52,6 +54,7 @@ Deno.serve(async (req) => {
   }
   if (data === 'NOT_FOUND') return json({ error: 'Order not found' }, 404);
   if (data === 'CONFLICT') return json({ error: 'Order requires review' }, 409);
+  if (status === 'PAID' && (data === 'PAID' || data === 'DUPLICATE')) wakeGrowReceipts();
   if (data === 'DUPLICATE') return json({ ok: true, duplicate: true });
   if (data === 'MANUAL_REVIEW') {
     await recordAuditEvent(db, { eventType: 'payment_callback', outcome: 'blocked', orderId, provider: 'grow', amount, currency, correlationId: transactionId, metadata: { reason: 'manual_review' } });
