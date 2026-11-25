@@ -12,27 +12,6 @@ create table public.paid_device_claims (
 alter table public.paid_device_claims enable row level security;
 revoke all on public.paid_device_claims from public, anon, authenticated;
 
-create function public.device_seat_receipts(owner_id uuid, paid_plan text)
-returns setof text language sql stable security definer set search_path = '' as $$
-  -- Legacy channels stored the plan as the receipt version. Keep one
-  -- grandfathered seat; repeated legacy events never multiply capacity.
-  with legacy as (
-    select p.payment_id, p.purchased_at from public.purchases p
-    where p.user_id = owner_id and p.plan::text = paid_plan and p.version = p.plan::text
-      and p.version in ('basic','professional','full','premium') and p.amount > 0
-      and nullif(trim(p.payment_id), '') is not null
-      and not exists (select 1 from public.orders o where o.external_transaction_id = p.payment_id)
-    order by p.purchased_at nulls last, p.payment_id limit 1
-  ), eligible as (
-    select * from legacy union all
-    select p.payment_id, p.purchased_at from public.grow_paid_seat_receipts(owner_id) r
-    join public.purchases p on p.payment_id = r and p.user_id = owner_id
-    where paid_plan in ('full','forever','premium')
-  )
-  select payment_id from eligible order by purchased_at nulls last, payment_id;
-$$;
-revoke all on function public.device_seat_receipts(uuid,text) from public, anon, authenticated;
-
 -- One positive receipt buys one seat. A Grow refund invalidates only that
 -- receipt. Older processors recorded verified receipts without a Grow order.
 create function public.resolve_paid_device(p_fingerprint text, p_legacy text, p_action text, p_check_digest text)
@@ -53,7 +32,7 @@ begin
   if access_row.is_active is not true or access_row.plan::text not in ('full','forever','professional','basic','premium')
      or access_row.expires_at <= now() then return 'no_access'; end if;
 
-  select array(select public.device_seat_receipts(owner_id, access_row.plan::text)) into receipts;
+  select array(select public.account_paid_seat_receipts(owner_id, access_row.plan::text)) into receipts;
   if coalesce(cardinality(receipts), 0) = 0 then return 'no_access'; end if;
 
   -- Preserve an already activated legacy installation before allocating
@@ -119,7 +98,7 @@ returns boolean language sql stable security definer set search_path = '' as $$
     join public.user_access a on a.user_id = c.user_id
     where length(p_token) = 64 and c.check_digest = sha256(convert_to(p_token, 'UTF8'))
       and a.is_active and (a.expires_at is null or a.expires_at > now())
-      and c.payment_id in (select public.device_seat_receipts(c.user_id, a.plan::text))
+      and c.payment_id in (select public.account_paid_seat_receipts(c.user_id, a.plan::text))
   );
 $$;
 revoke all on function public.check_paid_device(text) from public;
