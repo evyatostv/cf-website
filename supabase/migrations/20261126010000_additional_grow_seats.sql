@@ -198,10 +198,11 @@ begin
   if public.grow_paid_seat_count(checkout.customer_id)=0 then
     -- Restore a qualifying previous license when the last Grow seat is refunded.
     -- Never reactivate a manually disabled account.
-    update public.user_access a set plan=p.plan::public.plan_tier,
-      expires_at=(select o.prior_legacy_expires_at from public.orders o where o.customer_id=a.user_id
-        and o.prior_legacy_receipt=p.payment_id and o.status in ('PAID','REFUNDED') order by o.created_at limit 1)
-    from public.purchases p where a.user_id=checkout.customer_id and p.user_id=a.user_id
+    update public.user_access a set plan=p.plan::public.plan_tier, expires_at=original.prior_legacy_expires_at
+    from public.purchases p cross join lateral (
+      select o.prior_legacy_expires_at from public.orders o where o.customer_id=p.user_id
+        and o.prior_legacy_receipt=p.payment_id and o.status in ('PAID','REFUNDED') order by o.created_at limit 1
+    ) original where a.user_id=checkout.customer_id and p.user_id=a.user_id
       and p.payment_id in (select public.legacy_seat_receipt(checkout.customer_id,a.plan::text));
     update public.user_access a set is_active=false where a.user_id=checkout.customer_id
       and not public.has_verified_desktop_purchase(a.user_id,a.plan::text);
