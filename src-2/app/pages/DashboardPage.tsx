@@ -5,6 +5,7 @@ import { getUserAccess, UserAccess, PLAN_LABELS, supabase, SUPABASE_URL, SUPABAS
 import { DeleteAccountSection } from '@/app/components/DeleteAccountSection';
 import { DataExportSection } from '@/app/components/DataExportSection';
 import { TwoFactorSection } from '@/app/components/TwoFactorSection';
+import { trackMarketingEvent } from '@/lib/marketing-analytics';
 // MFA is now enforced by the route-level RequireAuth guard (requireMfa).
 
 import { motion, AnimatePresence } from 'motion/react';
@@ -68,6 +69,7 @@ export function DashboardPage() {
       ? new Date(currentAccess.expires_at) < new Date()
       : false;
     if (!currentAccess?.is_active || currentTrialExpired) {
+      trackMarketingEvent('download_blocked', { reason: currentTrialExpired ? 'trial_expired' : 'no_active_license' });
       setDownloadError('הורדת התוכנה זמינה רק לאחר אישור תשלום.');
       navigate('/payment?plan=forever');
       return;
@@ -95,6 +97,7 @@ export function DashboardPage() {
       // The URL is short-lived and issued only by the access-gated Edge
       // Function; installer objects remain private in Supabase Storage.
       window.location.href = payload.downloadUrl;
+      trackMarketingEvent('download_granted', { os: finalOs });
       
       // Show SmartScreen guide modal only after downloading an .exe installer
       const isExeDownload = finalOs === 'win';
@@ -102,6 +105,7 @@ export function DashboardPage() {
         setShowWindowsGuideModal(true);
       }
     } catch (err: any) {
+      trackMarketingEvent('download_blocked', { os: finalOs, reason: 'download_error' });
       console.error('Download error:', err);
       setDownloadError('ההורדה נכשלה. אנא נסה שוב או פנה לתמיכה.');
     } finally {

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Mail, Phone, User, Building2 } from 'lucide-react';
 import { submitLead } from '@/lib/leads';
+import { DemoAvailability } from '@/app/components/DemoAvailability';
+import { trackMarketingEvent } from '@/lib/marketing-analytics';
 
 export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterprise' }) {
   const [searchParams] = useSearchParams();
@@ -49,6 +51,7 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    trackMarketingEvent('contact_cta_clicked', { intent: mode, source: 'premium_contact_form' });
     setLoading(true);
     setError('');
 
@@ -89,6 +92,8 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
         <h3 className="text-2xl font-bold text-[#1a2332] mb-2">השאר/י פרטים</h3>
         <p className="text-[#6b7c93]">אנחנו נחזור אליך בקרוב</p>
       </div>
+
+      {mode === 'demo' && <DemoAvailability />}
 
       {success && (
         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">

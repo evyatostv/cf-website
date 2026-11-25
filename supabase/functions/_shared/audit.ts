@@ -19,16 +19,20 @@ export async function recordAuditEvent(
   db: SupabaseClient,
   event: AuditEvent,
 ): Promise<void> {
-  const { error } = await db.from('audit_events').insert({
-    event_type: event.eventType,
-    outcome: event.outcome ?? 'success',
-    user_id: event.userId ?? null,
-    order_id: event.orderId ?? null,
-    provider: event.provider ?? null,
-    amount: event.amount ?? null,
-    currency: event.currency ?? null,
-    correlation_id: event.correlationId ?? null,
-    metadata: event.metadata ?? {},
-  });
-  if (error) console.error('audit event write failed', error.message);
+  try {
+    const { error } = await db.from('audit_events').insert({
+      event_type: event.eventType,
+      outcome: event.outcome ?? 'success',
+      user_id: event.userId ?? null,
+      order_id: event.orderId ?? null,
+      provider: event.provider ?? null,
+      amount: event.amount ?? null,
+      currency: event.currency ?? null,
+      correlation_id: event.correlationId ?? null,
+      metadata: event.metadata ?? {},
+    });
+    if (error) console.error('audit event write failed', error.message);
+  } catch (error) {
+    console.error('audit event write failed', error instanceof Error ? error.message : 'unknown error');
+  }
 }

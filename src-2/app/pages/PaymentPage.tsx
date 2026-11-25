@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { AlertCircle, Shield, ArrowLeft, Check, Lock, Loader2 } from 'lucide-react';
 import { supabase, logPolicyAcceptance, SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase';
 import { mapAuthError } from '@/lib/auth-errors';
+import { trackMarketingEvent } from '@/lib/marketing-analytics';
 
 const PLAN_INFO: Record<string, { name: string; price: string; amount: number; features: string[] }> = {
   forever: {
@@ -80,6 +81,7 @@ export function PaymentPage() {
   const handlePayment = async () => {
     if (!user || !planInfo || !termsAccepted || processing) return;
 
+    trackMarketingEvent('checkout_started', { plan });
     setProcessing(true);
     setError('');
     setSessionExpired(false);
@@ -146,13 +148,16 @@ export function PaymentPage() {
         if (res.status === 401) setSessionExpired(true);
         if (data.code === 'CHECKOUT_CONTACT_REQUIRED') setNeedsCheckoutContact(true);
         if (data.code === 'LICENSE_ALREADY_ACTIVE') setLicenseAlreadyActive(true);
+        trackMarketingEvent('checkout_failed', { plan, status: String(res.status), reason: data.code || 'provider_error' });
         setProcessing(false);
         return;
       }
 
       // Redirect to the provider checkout page.
+      trackMarketingEvent('checkout_redirected', { plan });
       window.location.href = data.paymentUrl;
     } catch (err: any) {
+      trackMarketingEvent('checkout_failed', { plan, reason: authSessionFailed ? 'session_expired' : 'request_error' });
       setError(authSessionFailed ? 'פג תוקף ההתחברות — אנא התחבר/י מחדש' : (mapAuthError(err) || 'שגיאה ביצירת תשלום'));
       setProcessing(false);
     }

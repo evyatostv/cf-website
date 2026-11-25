@@ -7,6 +7,7 @@ import { getUserAccess } from "@/lib/supabase";
 import { Seo, SITE_ORIGIN } from "@/app/components/Seo";
 import { PricingSection } from "../components/blocks/pricing-section";
 import { PremiumContactForm } from "../components/PremiumContactForm";
+import { trackMarketingEvent } from "@/lib/marketing-analytics";
 
 const clinicFlowTiers = [
   {
@@ -108,6 +109,8 @@ export function PricingPage() {
   const enterpriseDialogRef = useRef<HTMLDivElement>(null);
   const enterpriseTriggerRef = useRef<HTMLElement | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => { trackMarketingEvent('pricing_viewed'); }, []);
 
   // There is one product and one checkout path.
   const tiersWithActions = clinicFlowTiers.map(tier => {

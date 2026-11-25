@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { recordAuditEvent } from '../_shared/audit.ts';
 
 const BUCKET = Deno.env.get('INSTALLERS_BUCKET') || 'installers';
 const SIGNED_URL_TTL = 300; // 5 minutes
@@ -95,6 +96,8 @@ Deno.serve(async (req) => {
     }
 
     if (!access || !access.is_active) {
+      const adminClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+      await recordAuditEvent(adminClient, { eventType: 'download_attempt', outcome: 'blocked', userId: user.id, metadata: { reason: 'no_active_license', os } });
       return new Response(
         JSON.stringify({ error: 'No active license', code: 'NO_ACTIVE_LICENSE' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
@@ -107,6 +110,8 @@ Deno.serve(async (req) => {
     // gain a real subscription expiry, extend this check to those plans too; the
     // current single-plan check is deliberate, not an oversight.
     if (access.plan === 'trial' && access.expires_at && new Date(access.expires_at) < new Date()) {
+      const adminClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+      await recordAuditEvent(adminClient, { eventType: 'download_attempt', outcome: 'blocked', userId: user.id, metadata: { reason: 'trial_expired', os } });
       return new Response(
         JSON.stringify({ error: 'Trial expired', code: 'TRIAL_EXPIRED' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
@@ -145,6 +150,7 @@ Deno.serve(async (req) => {
       .then(({ error }) => {
         if (error) console.warn('download_log insert failed:', error.message);
       });
+    await recordAuditEvent(adminClient, { eventType: 'download_attempt', outcome: 'success', userId: user.id, metadata: { os, installer: installerKey } });
 
     return new Response(
       JSON.stringify({

@@ -6,6 +6,8 @@ import { submitLead } from "@/lib/leads";
 import { CONTACT_EMAIL, CONTACT_WHATSAPP_URL } from "@/app/config/site";
 import { Seo, SITE_NAME, SITE_ORIGIN } from "@/app/components/Seo";
 import { readStoredAttribution } from "@/app/components/AttributionCapture";
+import { DemoAvailability } from "@/app/components/DemoAvailability";
+import { trackMarketingEvent } from '@/lib/marketing-analytics';
 
 const CONTACT_COPY = {
   general: {
@@ -68,6 +70,7 @@ export function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    trackMarketingEvent('contact_cta_clicked', { intent: intent || 'general', source: 'contact_form' });
     setLoading(true);
     setError("");
     setSuccess(false);
@@ -202,6 +205,8 @@ export function ContactPage() {
             className="bg-white rounded-3xl p-5 sm:p-8 border border-[#e1e6ec]"
           >
             <h2 className="text-2xl font-bold text-[#1a2332] mb-6">{copy.formHeading}</h2>
+
+            {intent === "demo" && <DemoAvailability />}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
