@@ -1,5 +1,6 @@
 name: Deliver stored website inquiries
 on:
+  workflow_dispatch:
   schedule:
     - cron: '7,17,27,37,47,57 * * * *'
 permissions: {}
@@ -15,6 +16,7 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           curl --silent --show-error --fail-with-body --max-time 165 --request POST \
-            --header "x-cron-secret: $CRON_SECRET" "$SUPABASE_URL/functions/v1/notify-contact"
+            --header "x-cron-secret: $CRON_SECRET" "$SUPABASE_URL/functions/v1/notify-contact?dryRun=$DRY_RUN"

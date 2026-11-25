@@ -26,7 +26,7 @@ Deploy the migration and worker before setting the private `contact_wake_config.
 
 ## Reviewing a stalled email
 
-Scheduled runs report aggregate counts `review.internal` and `review.reply`. A nonzero count fails the run even if all new deliveries succeeded. An authenticated scheduled request with `?dryRun=true` checks those counts without claiming jobs, sending email, or writing to Sheets. Individual inquiry wake-ups report only their own delivery result.
+Scheduled runs report aggregate counts `review.internal` and `review.reply`. A nonzero count fails the run even if all new deliveries succeeded. An authenticated scheduled request with `?dryRun=true` checks those counts without claiming jobs, sending email, or writing to Sheets. A manual run of the GitHub delivery workflow always uses this no-send mode. Individual inquiry wake-ups report only their own delivery result.
 
 For mail only, locate the affected UUID and channel using the query above. Check the provider's acceptance history for the exact channel and idempotency key (`contact-internal:<UUID>` or `contact-reply:<UUID>`). A missing inbox message or an expired provider log is insufficient evidence to send again. If the result cannot be established, keep the job under review. Use a provider reference or support case ID, without contact details, for the following operator-only preview:
 
