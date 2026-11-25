@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { Building2, ChevronDown, ShieldCheck, X, Zap } from "lucide-react";
+import { Building2, ChevronDown, X, Zap } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/lib/auth-context";
@@ -63,10 +63,6 @@ const pricingFaq = [
   {
     q: "האם הנתונים מסתנכרנים בין המחשבים?",
     a: "לא. הנתונים נשארים מקומיים ואינם מסתנכרנים לענן. המעבר נעשה ידנית באמצעות קובץ גיבוי מוצפן ב-USB. לשאלות על התאמה למשרד שלכם אפשר לפנות אלינו לפני הרכישה."
-  },
-  {
-    q: "מה אם אני לא מרוצה?",
-    a: "יש 30 יום להחזר כספי מלא, ללא שאלות. אם זה לא מתאים — מקבלים את הכסף בחזרה."
   },
 ];
 
@@ -209,19 +205,11 @@ export function PricingPage() {
     <div className="pt-32 pb-20">
       <Seo
         title="מחיר ClinicFlow – 1,499 ₪ בתשלום חד פעמי"
-        description="ClinicFlow עולה 1,499 ₪ בתשלום חד פעמי. כל יכולות המערכת, רישיון לצמיתות, ללא מנוי חודשי ועם 30 יום החזר כספי מלא."
+        description="ClinicFlow עולה 1,499 ₪ בתשלום חד פעמי. כל יכולות המערכת, רישיון לצמיתות, ללא מנוי חודשי."
         canonicalPath="/pricing"
         jsonLd={[softwareAppJsonLd, faqJsonLd]}
       />
       <div className="container mx-auto px-6 max-w-7xl">
-        {/* Guarantee badge */}
-        <div className="flex items-center justify-center -mt-6 mb-8 relative z-10">
-          <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-5 py-2.5 shadow-sm">
-            <ShieldCheck className="w-5 h-5 text-green-600" />
-            <span className="text-sm font-medium text-green-700">30 יום החזר כספי מלא</span>
-          </div>
-        </div>
-
         <PricingSection tiers={tiersWithActions} />
 
         <AnimatePresence>
