@@ -158,9 +158,7 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   } catch {
-    // BE-004: never leak internal error text (Stripe/DB internals, English) to the
-    // client. Log the full error server-side with a correlation id, return a
-    // generic Hebrew message + the id the user can quote to support.
+    // Support can match this public reference to the corresponding log entry.
     const correlationId = crypto.randomUUID();
     console.error(`create-payment-intent error [${correlationId}]`);
     return new Response(

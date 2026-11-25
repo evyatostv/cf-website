@@ -87,8 +87,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch {
-    // BE-004: never leak internal error text to the client — log with a
-    // correlation id, return a generic Hebrew message.
+    // Support can match this public reference to the corresponding log entry.
     const correlationId = crypto.randomUUID();
     console.error(`create-checkout-session error [${correlationId}]`);
     return new Response(JSON.stringify({
