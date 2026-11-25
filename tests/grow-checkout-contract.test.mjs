@@ -65,6 +65,21 @@ test('server fixes checkout price, sends unique notification and return routes, 
   assert.equal(state.orders,1);
 });
 
+test('checkout requires both configured Make destinations and a callback credential before creating an order', async () => {
+  for (const overrides of [
+    { MAKE_CALLBACK_SECRET: '' }, { MAKE_CALLBACK_SECRET: '  ' },
+    { MAKE_PAYMENT_WEBHOOK_URL: undefined }, { MAKE_GROW_NOTIFY_URL: undefined },
+    { MAKE_PAYMENT_WEBHOOK_URL: 'https://unrelated.example/payment' },
+  ]) {
+    const {db,state} = database();
+    const handler = load('create-grow-payment', db, {...env,...overrides}, () => assert.fail('unexpected network'));
+    const response = await handler(post(checkout,userHeaders));
+    assert.equal(response.status,503);
+    assert.equal((await response.json()).code,'PAYMENT_NOTIFICATION_UNAVAILABLE');
+    assert.equal(state.orders,0);
+  }
+});
+
 test('missing notification config creates no order; a lost response never creates a second link', async () => {
   const {db,state}=database();
   for (const suffix of ['', '?ref=notify', '#notification', '/']) {

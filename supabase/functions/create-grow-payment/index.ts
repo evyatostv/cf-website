@@ -15,6 +15,13 @@ const ALLOWED_ORIGINS = new Set([
   'http://localhost:4173',
 ]);
 
+function makeHook(value: string | undefined): URL | null {
+  const url = URL.parse(value || '');
+  if (!url || url.protocol !== 'https:' || !/^hook(?:\.[a-z0-9-]+)?\.make\.com$/.test(url.hostname)
+      || url.username || url.password || url.port || url.pathname.length < 2 || url.search || url.hash) return null;
+  return url;
+}
+
 Deno.serve(async (req) => {
   const origin = req.headers.get('Origin');
   const headers = new Headers({
@@ -37,14 +44,9 @@ Deno.serve(async (req) => {
 
   const auth = req.headers.get('Authorization');
   if (!auth) return json({ error: 'Unauthorized' }, 401);
-  const webhookUrl = Deno.env.get('MAKE_PAYMENT_WEBHOOK_URL');
-  if (!webhookUrl) return json({ error: 'Payment service unavailable' }, 503);
-
-  const createHook = URL.parse(webhookUrl);
-  const notifyUrl = URL.parse(Deno.env.get('MAKE_GROW_NOTIFY_URL') || '');
-  if (!notifyUrl || notifyUrl.protocol !== 'https:' || !/^hook(?:\.[a-z0-9-]+)?\.make\.com$/.test(notifyUrl.hostname)
-      || notifyUrl.username || notifyUrl.password || notifyUrl.port || notifyUrl.pathname.length < 2
-      || notifyUrl.search || notifyUrl.hash || !createHook
+  const createHook = makeHook(Deno.env.get('MAKE_PAYMENT_WEBHOOK_URL'));
+  const notifyUrl = makeHook(Deno.env.get('MAKE_GROW_NOTIFY_URL'));
+  if (!createHook || !notifyUrl || !Deno.env.get('MAKE_CALLBACK_SECRET')?.trim()
       || (notifyUrl.origin === createHook.origin && notifyUrl.pathname.replace(/\/+$/, '') === createHook.pathname.replace(/\/+$/, ''))) {
     return json({ error: 'שירות התשלום אינו זמין כרגע. אפשר לנסות שוב מאוחר יותר.', code: 'PAYMENT_NOTIFICATION_UNAVAILABLE' }, 503);
   }
@@ -130,7 +132,8 @@ Deno.serve(async (req) => {
     cancelUrl.searchParams.set('order', order.id);
     let response: Response;
     try {
-      response = await fetch(webhookUrl, {
+      response = await fetch(createHook.href, {
+        redirect: 'error',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
