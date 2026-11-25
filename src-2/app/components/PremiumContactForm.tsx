@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Mail, Phone, User, Building2 } from 'lucide-react';
 import { submitLead } from '@/lib/leads';
+import { captureAttribution } from '@/app/components/AttributionCapture';
 import { DemoAvailability } from '@/app/components/DemoAvailability';
 import { trackMarketingEvent } from '@/lib/marketing-analytics';
 
@@ -20,25 +21,7 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'];
-    const fromUrl = Object.fromEntries(keys.flatMap((key) => {
-      const value = searchParams.get(key);
-      return value ? [[key, value]] : [];
-    }));
-    const storageKey = 'clinicflow_attribution';
-    const existing = window.sessionStorage.getItem(storageKey);
-    let saved: Record<string, string> = {};
-    try {
-      saved = existing ? JSON.parse(existing) as Record<string, string> : {};
-    } catch {
-      window.sessionStorage.removeItem(storageKey);
-    }
-    const next = { ...saved, ...fromUrl };
-    if (!next.landing_path) next.landing_path = window.location.pathname;
-    if (Object.keys(fromUrl).length > 0 || !saved.landing_path) {
-      window.sessionStorage.setItem(storageKey, JSON.stringify(next));
-    }
-    setStoredAttribution(next);
+    setStoredAttribution(captureAttribution(searchParams, 'clinicflow_attribution'));
   }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
