@@ -9,9 +9,11 @@ export function usePageReturn() {
     const onPageShow = (event: PageTransitionEvent) => { if (event.persisted) refresh(); };
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('pageshow', onPageShow);
+    window.addEventListener('online', refresh);
     return () => {
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('pageshow', onPageShow);
+      window.removeEventListener('online', refresh);
     };
   }, []);
   return revision;

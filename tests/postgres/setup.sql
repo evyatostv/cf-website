@@ -19,4 +19,5 @@ for each row execute function public.sync_user_access_on_purchase();
 \ir ../../supabase/migrations/20261126050000_support_grow_reversal.sql
 \ir ../../supabase/migrations/20261126060000_atomic_account_archive.sql
 \ir ../../supabase/migrations/20261126061000_active_marketing_admin.sql
+\ir ../../supabase/migrations/20261126062000_stored_contact_delivery.sql
 \ir ../../supabase/migrations/20261126070000_late_superseded_grow_capture.sql

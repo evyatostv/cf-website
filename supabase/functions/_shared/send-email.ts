@@ -116,9 +116,11 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    const detail = typeof data === "object" ? JSON.stringify(data) : String(data);
-    throw new Error(`sendEmail: Resend responded ${res.status} — ${detail}`);
+    throw new Error(`sendEmail: Resend responded ${res.status}`);
   }
 
-  return { id: (data as { id: string }).id };
+  if (typeof data?.id !== "string" || !data.id.trim()) {
+    throw new Error("sendEmail: provider did not confirm message acceptance");
+  }
+  return { id: data.id };
 }

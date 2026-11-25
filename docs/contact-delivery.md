@@ -1,0 +1,18 @@
+# Website inquiry delivery
+
+Saving a contact form commits the inquiry and its delivery jobs together. The browser returns success once that transaction succeeds. Each saved row has its own UUID. Distinct form submissions intentionally create separate inquiries. The migration queues newly inserted rows only.
+
+## Email
+
+Apply the migration first. Deploy `notify-contact` with its existing gateway setting (`verify_jwt=false`), then publish the website. The function accepts either the existing `NOTIFY_CONTACT_SECRET` from an INSERT webhook on `public.contact_messages` or `CRON_SECRET` from the scheduled worker. It reads the contact by UUID with the service role. Keep `RESEND_API_KEY`, a verified `NOTIFY_FROM`, the internal `NOTIFY_EMAIL`, and the service-role credentials in Edge secrets. GitHub Actions needs the matching `CRON_SECRET` and `SUPABASE_URL`. The webhook wakes delivery immediately; the ten-minute schedule also covers missed webhooks.
+
+Internal notification and customer acknowledgement complete independently. Each uses a stable provider key for its channel and inquiry. If acceptance is uncertain for 23 hours, automatic retries stop before the provider's deduplication window expires. Check the provider by key before deciding whether to resend. To locate those cases without reading customer text:
+
+```sql
+select contact_id, channel, first_attempt from public.contact_deliveries
+where completed_at is null and first_attempt <= now() - interval '23 hours';
+```
+
+## Optional Google Sheet
+
+Replace the old public browser mirror with a new deployment of `integrations/contact-sheet.gs`. Set `CONTACT_SHEET_SECRET` and `SPREADSHEET_ID` in Apps Script properties. Set the matching `CONTACT_SHEET_SECRET` and Apps Script execution URL as `CONTACT_SHEET_URL` in Edge secrets. The integration writes a dedicated tab, checks the saved UUID under a lock, and acknowledges the same UUID on retry. Retire the previous unauthenticated Apps Script deployment separately. Until configured, sheet jobs stay pending while email proceeds. Enabling the mirror later processes its pending inquiries. This change does not remove historical copies from Sheets.

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { supabase } from '@/lib/supabase';
+import { watchOrderStatus } from '@/lib/checkout-status';
 import { usePageReturn } from '@/lib/use-page-return';
 import { useAuth } from '@/lib/auth-context';
 import { Seo } from '@/app/components/Seo';
@@ -8,6 +9,7 @@ import { Seo } from '@/app/components/Seo';
 const CHECKOUT_STATUS = {
   loading: ['בודקים את סטטוס התשלום', 'הבדיקה עשויה להימשך כמה רגעים.'],
   pending: ['ממתינים לאישור התשלום', 'אין צורך לשלם שוב. הדף יתעדכן אוטומטית.'],
+  connection: ['הקשר עם השרת נקטע', 'נבדוק שוב כשהחיבור יתחדש. אם כבר שילמתם, אין צורך לשלם שוב.'],
   paid: ['התשלום אושר', 'הרישיון הופעל. אפשר להוריד את ClinicFlow מהאזור האישי.'],
   reversed: ['התשלום בוטל', 'הרישיון שנרכש בהזמנה זו אינו פעיל. לשאלות על החיוב אפשר לפנות לתמיכה.'],
   failed: ['התשלום לא אושר', 'אפשר לחזור לעמוד התמחור.'],
@@ -36,36 +38,11 @@ export function CheckoutSuccessPage() {
       return;
     }
 
-    let stopped = false;
-    let timer: number | undefined;
-    const check = async () => {
-      const { data, error } = await supabase.from('orders').select('status').eq('id', order).maybeSingle();
-      if (stopped) return;
-      if (error) {
-        setStatus('unavailable');
-        timer = window.setTimeout(check, 4000);
-        return;
-      }
-      switch (data?.status) {
-        case 'PAID': setStatus('paid'); break;
-        case 'FAILED':
-        case 'CANCELLED': setStatus('failed'); break;
-        case 'MANUAL_REVIEW': setStatus('review'); break;
-        case 'REFUNDED':
-        case 'CHARGED_BACK': setStatus('reversed'); break;
-        case 'PENDING':
-          setStatus('pending');
-          timer = window.setTimeout(check, 4000);
-          break;
-        default: setStatus('unavailable');
-      }
-    };
     setStatus('loading');
-    void check();
-    return () => {
-      stopped = true;
-      window.clearTimeout(timer);
-    };
+    return watchOrderStatus(
+      () => supabase.from('orders').select('status').eq('id', order).maybeSingle(),
+      setStatus,
+    );
   }, [order, user, loading, pageReturn]);
 
   const [title, description] = CHECKOUT_STATUS[status];
@@ -84,6 +61,9 @@ export function CheckoutSuccessPage() {
           <p className="mt-3 text-[#6b7c93]">{description}</p>
         </div>
         <Link className="inline-block mt-6 rounded-xl bg-[#0d47a1] px-6 py-3 text-white" to={action.to}>{action.label}</Link>
+        {(status === 'pending' || status === 'connection') && (
+          <p className="mt-4"><Link className="underline" to="/contact">שילמתם ועדיין ממתינים? פנו לתמיכה</Link></p>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,4 @@
 import { supabase } from "@/lib/supabase";
-import { LEADS_SHEET_WEBHOOK } from "@/app/config/site";
 
 export type Lead = {
   name: string;
@@ -27,9 +26,7 @@ function clamp(v: string | undefined, max: number): string {
   return (v ?? "").trim().slice(0, max);
 }
 
-// Submits a lead to Supabase (contact_messages — which triggers the
-// notify-contact email webhook) and, best-effort, mirrors it to Google Sheets.
-// Optional delivery services have bounded waits and never fail a saved lead.
+// Delivery work is queued in the same transaction as the stored inquiry.
 export async function submitLead(lead: Lead): Promise<{ ok: boolean; error?: string }> {
   // Validate + normalise before hitting the network (WEB-008).
   const name = clamp(lead.name, LIMITS.name);
@@ -59,59 +56,8 @@ export async function submitLead(lead: Lead): Promise<{ ok: boolean; error?: str
   const { error } = await supabase.from("contact_messages").insert(record);
 
   if (error) {
-    console.error("Lead insert failed:", error);
+    console.error("Lead insert failed", error.code);
     return { ok: false, error: "שגיאה בשליחה. נסו שוב מאוחר יותר." };
-  }
-
-  // The production database webhook is optional; invoke the notifier directly
-  // as a browser fallback so contact requests still reach the inbox when the
-  // dashboard webhook has not been configured yet. The Edge Function validates
-  // the site Origin and performs the actual Resend send server-side.
-  const notifyController = new AbortController();
-  const notifyTimeout = setTimeout(() => notifyController.abort(), 4000);
-  try {
-    const { error: notifyError } = await supabase.functions.invoke("notify-contact", {
-      body: { record: { ...record, created_at: new Date().toISOString() } },
-      signal: notifyController.signal,
-    });
-    if (notifyError) console.warn("Contact notification failed (lead was saved):", notifyError);
-  } catch (e) {
-    console.warn("Contact notification invocation failed (lead was saved):", e);
-  } finally {
-    clearTimeout(notifyTimeout);
-  }
-
-  // Best-effort mirror to a Google Apps Script Web App. Apps Script doesn't send
-  // CORS headers, so we POST opaquely (no-cors + text/plain); the script reads
-  // e.postData.contents. Failure here is logged but never shown to the user.
-  if (LEADS_SHEET_WEBHOOK) {
-    const mirrorController = new AbortController();
-    const mirrorTimeout = setTimeout(() => mirrorController.abort(), 3000);
-    try {
-      await fetch(LEADS_SHEET_WEBHOOK, {
-        method: "POST",
-        mode: "no-cors",
-        signal: mirrorController.signal,
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({
-          name,
-          email,
-          phone: phone || "",
-          clinicName: clinicName || "",
-          message: body,
-          source: clamp(lead.source, 60) || "website",
-          utm_source: record.utm_source || "",
-          utm_medium: record.utm_medium || "",
-          utm_campaign: record.utm_campaign || "",
-          utm_content: record.utm_content || "",
-          ts: new Date().toISOString(),
-        }),
-      });
-    } catch (e) {
-      console.warn("Google Sheets mirror failed (non-fatal):", e);
-    } finally {
-      clearTimeout(mirrorTimeout);
-    }
   }
 
   return { ok: true };
