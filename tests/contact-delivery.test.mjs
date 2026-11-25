@@ -7,12 +7,13 @@ import ts from 'typescript';
 const source = readFileSync(new URL('../supabase/functions/notify-contact/index.ts', import.meta.url), 'utf8');
 const code = ts.transpile(source, { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 });
 const id = '00000000-0000-4000-a000-000000000001';
-function fixture({ saved = true, failReply = false, staleLease = false, proofMode = null } = {}) {
+function fixture({ saved = true, failReply = false, staleLease = false, proofMode = null, review = {internal:0,reply:0} } = {}) {
   let handler;
   const sent = [], completed = [], lookups = [], claimIds = [];
   const contact = { id, name:'Saved name', message:'Private text from saved inquiry', email:'fixture@example.invalid' };
   const db = {
     rpc: async (fn, args) => {
+      if (fn === 'contact_email_review_counts') return {data:review};
       if (fn === 'redeem_contact_wake') return {data:proofMode};
       claimIds.push(args.p_contact);
       return {data: args.p_contact === id && saved
@@ -39,8 +40,8 @@ function fixture({ saved = true, failReply = false, staleLease = false, proofMod
       return {id:'fixture-receipt'};
     }},
   };
-  runInNewContext(code, {exports:{}, require:key=>imports[key], Response, console:{error(){}},
-    Deno:{env:{get:key=>({NOTIFY_CONTACT_SECRET:'test-secret'})[key]}},
+  runInNewContext(code, {exports:{}, require:key=>imports[key], URL, Response, console:{error(){}},
+    Deno:{env:{get:key=>({NOTIFY_CONTACT_SECRET:'test-secret',CRON_SECRET:'fixture-cron'})[key]}},
     fetch(){throw Error('Unexpected network request');}});
   const request = (secret = '') => new Request('https://example.invalid', { method:'POST',
     headers:{origin:'https://www.clinic-flow.co.il','x-notify-secret':secret},
@@ -123,5 +124,20 @@ test('one-time proof restricts delivery to one row and dry runs cannot claim wor
     assert.equal(response.status, mode ? 200 : 401);
     assert.deepEqual(f.claimIds,mode==='DELIVER' ? [id] : []);
     if(mode==='DRY_RUN') { assert.equal(f.sent.length,0); assert.deepEqual(await response.json(),{dryRun:true}); }
+  }
+});
+
+test('scheduled runs fail visibly on expired mail and dry-run reports only aggregate counts', async () => {
+  for (const [dryRun, review, expected] of [[false,{internal:0,reply:2},503],[true,{internal:1,reply:0},503],[true,{internal:0,reply:0},200],[true,null,503]]) {
+    const f=fixture({review});
+    const response=await f.handler(new Request('https://example.invalid/?dryRun='+dryRun,{
+      method:'POST',headers:{'x-cron-secret':'fixture-cron'},
+    }));
+    assert.equal(response.status,expected);
+    const body=await response.json();
+    if (review) assert.deepEqual(body,{processed:0,failed:0,review,dryRun});
+    else assert.equal(body.error,'review_count_failed');
+    assert.deepEqual(f.sent,[]); assert.deepEqual(f.lookups,[]);
+    assert.deepEqual(f.claimIds,dryRun?[]:[null]);
   }
 });
