@@ -111,3 +111,9 @@ A nonempty installer needs independent signature and install verification.
 Presence of a secret cannot verify its value, Make scenario activation or mapping.
 Only a separately authorized end-to-end payment observation can confirm capture,
 authenticated notification and paid delivery together.
+
+### Merchant readback via Make
+
+For a merchant-managed Make connection, configure `MAKE_GROW_READBACK_URL` and a separate `MAKE_GROW_READBACK_KEY` on the ClinicFlow server. Use a dedicated **Custom Webhook** with Make API-key authentication enabled. Do not reuse the creation or notification URL, or the callback signing key. When either Make readback setting is present the server requires both; failed or partial configuration keeps checkout closed. The direct Grow merchant lookup remains available when both Make readback settings are absent.
+
+The signed notification to ClinicFlow must include the original `paymentLinkProcessId` and `paymentLinkProcessToken`. ClinicFlow checks their digest against the order before initiating its private POST with those two fields and `transactionId`, using the `x-make-apikey` header. The Make scenario must call **Grow → Get Payment Link Info** using the merchant connection, match exactly one transaction with the requested charge ID, and return the following fields mapped from Grow's response: `paymentLinkProcessId`, `paymentLinkProcessToken`, `transactionId`, `statusCode`, `status`, `sum`, and `currency` if supplied. Return an error for missing or ambiguous matches. Do not echo the webhook request into the response. Amount is the captured sum in shekels, such as `2698` for a new account's two licenses. Keep payment identity tokens and API keys out of logs and browser responses.

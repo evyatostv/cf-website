@@ -180,3 +180,35 @@ test('provider acknowledgments and unsigned callbacks never settle orders',async
   assert.equal((await callback(post({...event,amount:359700},auth))).status,409);
   assert.equal(called,3);
 });
+
+test('dedicated Make merchant lookup requires the stored link and checks the independently returned charge',async()=>{
+  const {createHash}=await import('node:crypto');
+  const link={paymentLinkProcessId:'42',paymentLinkProcessToken:'bulkSyntheticLink'};
+  const config={...env,MAKE_GROW_READBACK_URL:'https://hook.eu2.make.com/synthetic-lookup',MAKE_GROW_READBACK_KEY:'dedicated-test'};
+  const auth={'x-make-callback-secret':env.MAKE_CALLBACK_SECRET};
+  const event={orderId,...link,transactionId:'99',status:'paid',amount:269800,currency:'ILS'};
+  const actual={...link,transactionId:'99',statusCode:'2',status:'שולם',sum:'2698'};
+  const binding=createHash('sha256').update('42:bulkSyntheticLink').digest('hex');
+  const db={from:()=>({select(){return this;},eq(){return this;},maybeSingle:async()=>({data:{grow_link_digest:binding}})}),
+    rpc:async()=>({data:++settlements===1?'PAID':'DUPLICATE'})};
+  let requests=0,settlements=0,evidence=actual;
+  const fetch=async(url,req)=>{
+    assert.equal(url,config.MAKE_GROW_READBACK_URL);assert.equal(req.headers['x-make-apikey'],config.MAKE_GROW_READBACK_KEY);
+    assert.equal(req.redirect,'error');assert.deepEqual(JSON.parse(req.body),{...link,transactionId:'99'});
+    requests++;return Response.json(evidence);
+  };
+  const callback=load('grow-webhook',db,config,fetch);
+  for(const override of [{MAKE_GROW_READBACK_URL:env.MAKE_GROW_NOTIFY_URL},{MAKE_GROW_READBACK_URL:env.MAKE_PAYMENT_WEBHOOK_URL},
+    {MAKE_GROW_READBACK_KEY:env.MAKE_CALLBACK_SECRET},{MAKE_GROW_READBACK_URL:'https://unrelated.example/lookup'},{MAKE_GROW_READBACK_KEY:''}]) {
+    assert.equal((await load('grow-webhook',db,{...config,...override},fetch)(post(event,auth))).status,503);
+  }
+  assert.equal((await callback(post({...event,paymentLinkProcessId:'43'},auth))).status,409);
+  assert.equal(requests,0);
+  for(const delta of [{transactionId:'100'},{paymentLinkProcessToken:'anotherLinkToken'},{statusCode:'11'},
+    {status:'מושהה'},{sum:'1499'},{currency:'USD'}]){
+    evidence={...actual,...delta};assert.equal((await callback(post(event,auth))).status,409);
+  }
+  assert.equal(settlements,0);evidence=actual;
+  assert.equal((await (await callback(post(event,auth))).json()).licenseActivated,true);
+  assert.equal((await (await callback(post(event,auth))).json()).duplicate,true);
+});

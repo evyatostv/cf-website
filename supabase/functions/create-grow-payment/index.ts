@@ -1,4 +1,4 @@
-import { linkDigest } from '../_shared/grow-readback.ts';
+import { growReadbackConfig, linkDigest } from '../_shared/grow-readback.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { inactivePaymentProvider } from '../_shared/payment-provider.ts';
 import { recordAuditEvent } from '../_shared/audit.ts';
@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
   if (!auth) return json({ error: 'Unauthorized' }, 401);
   const createHook = makeHook(Deno.env.get('MAKE_PAYMENT_WEBHOOK_URL'));
   const notifyUrl = makeHook(Deno.env.get('MAKE_GROW_NOTIFY_URL'));
-  if (!Deno.env.get('GROW_READBACK_PAGE_CODE')?.trim() || !createHook || !notifyUrl || !Deno.env.get('MAKE_CALLBACK_SECRET')?.trim()
+  if (!growReadbackConfig() || !createHook || !notifyUrl || !Deno.env.get('MAKE_CALLBACK_SECRET')?.trim()
       || (notifyUrl.origin === createHook.origin && notifyUrl.pathname.replace(/\/+$/, '') === createHook.pathname.replace(/\/+$/, ''))) {
     return json({ error: 'שירות התשלום אינו זמין כרגע. אפשר לנסות שוב מאוחר יותר.', code: 'PAYMENT_NOTIFICATION_UNAVAILABLE' }, 503);
   }
