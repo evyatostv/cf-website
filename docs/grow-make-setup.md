@@ -38,6 +38,12 @@ Set these as server-side Supabase Edge Function secrets (never `VITE_` and never
 
 The Grow connection is created in Make via Grow (production) or Grow Sandbox. Grow’s own interface performs OTP verification. Do not put the business identifier or OTP in source control or send it to ClinicFlow.
 
+### Several licenses on one payment link
+
+The server quotes 1–100 computer licenses and records their quantity before issuing the payment link. For a first order of three licenses, the total is ₪3,897. If the account already owns a qualifying license, two more cost ₪2,398. Make receives one bundle product with its total as `price`, fixed product quantity `1`, and a descriptive product name with the chosen license count. The server stores the number of computer licenses as `license_quantity`. Keep Make's product quantity at **one** to avoid multiplying the total twice.
+
+A verified capture grants the stored quantity from the bound order and generates a single payment receipt. A verified full refund or final lost chargeback withdraws all computer licenses paid for in that order. A partial refund requires operator review.
+
 ## Make scenario 2 — payment notification
 
 1. Add **Grow → Notify URL Webhook** and configure the same Grow connection.
@@ -105,3 +111,15 @@ A nonempty installer needs independent signature and install verification.
 Presence of a secret cannot verify its value, Make scenario activation or mapping.
 Only a separately authorized end-to-end payment observation can confirm capture,
 authenticated notification and paid delivery together.
+
+### Merchant readback via Make
+
+For a merchant-managed Make connection, configure `MAKE_GROW_READBACK_URL` and a separate `MAKE_GROW_READBACK_KEY` on the ClinicFlow server. Use a dedicated **Custom Webhook** with Make API-key authentication enabled. Do not reuse the creation or notification URL, or the callback signing key. When either Make readback setting is present the server requires both; failed or partial configuration keeps checkout closed. The direct Grow merchant lookup remains available when both Make readback settings are absent.
+
+The signed notification to ClinicFlow must include the original `paymentLinkProcessId` and `paymentLinkProcessToken`. ClinicFlow checks their digest against the order before initiating its private POST with those two fields and `transactionId`, using the `x-make-apikey` header. The Make scenario must call **Grow → Get Payment Link Info** using the merchant connection, match exactly one transaction with the requested charge ID, and return the following fields mapped from Grow's response: `paymentLinkProcessId`, `paymentLinkProcessToken`, `transactionId`, `statusCode`, `status`, `sum`, and `currency` if supplied. Return an error for missing or ambiguous matches. Do not echo the webhook request into the response. Amount is the captured sum in shekels, such as `2698` for a new account's two licenses. Keep payment identity tokens and API keys out of logs and browser responses.
+
+### Verified sandbox run
+
+On 2026-11-26, the sandbox link-creation scenario generated a ₪2,698 checkout for two computer licenses. The official Grow test card completed the payment. A separate API-key-protected Make readback scenario queried the actual sandbox transaction through Grow Get Payment Link Info.
+
+The isolated runner delivered the same notification twice to the application handler. Each delivery made its own live Make readback. Both returned HTTP 200, the replay was marked duplicate, and local PostgreSQL recorded exactly two licensed seats, one purchase, and one queued receipt. The test used no real charge or customer email. The notifications were replayed by the test runner, so this verifies duplicate handling separately from Grow's automatic webhook scheduling. The readback scenario was deactivated after the run.

@@ -1,4 +1,4 @@
-import { verifyGrowPayment } from '../_shared/grow-readback.ts';
+import { growReadbackConfig, verifyGrowPayment } from '../_shared/grow-readback.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { generateLicenseKey } from '../_shared/license.ts';
 import { recordAuditEvent } from '../_shared/audit.ts';
@@ -40,14 +40,14 @@ Deno.serve(async (req) => {
   // Grow's documented readback proves a captured charge. It does not provide
   // enough evidence here to classify a final full refund or failed attempt.
   if (status !== 'PAID') return json({ error: 'Merchant reconciliation required' }, 409);
-  const pageCode = Deno.env.get('GROW_READBACK_PAGE_CODE')?.trim();
-  if (!pageCode) return json({ error: 'Merchant verification unavailable' }, 503);
+  const readback = growReadbackConfig();
+  if (!readback) return json({ error: 'Merchant verification unavailable' }, 503);
   const { data: order, error: lookupError } = await db.from('orders')
     .select('grow_link_digest').eq('id', orderId).eq('payment_provider', 'grow_make').maybeSingle();
   if (lookupError || !order?.grow_link_digest) return json({ error: 'Order binding unavailable' }, 503);
   try {
     if (!await verifyGrowPayment(order.grow_link_digest, transactionId, body.transactionToken,
-      pageCode, orderId, amount, currency)) return json({ error: 'Unverified payment' }, 409);
+      readback, orderId, amount, currency, body.paymentLinkProcessId, body.paymentLinkProcessToken)) return json({ error: 'Unverified payment' }, 409);
   } catch {
     return json({ error: 'Merchant verification unavailable' }, 503);
   }

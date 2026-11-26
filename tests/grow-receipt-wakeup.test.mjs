@@ -20,7 +20,7 @@ for (const [status, settled, expected] of [
     vm.runInNewContext(stripTypeScriptTypes(source),{
       Deno:{env:{get:k=>env[k]},serve:fn=>{handler=fn;}},
       EdgeRuntime:{waitUntil:task=>{tasks.push(task);}},
-      verifyGrowPayment:async()=>true,createClient:()=>({from:()=>({select(){return this;},eq(){return this;},maybeSingle:async()=>({data:{grow_link_digest:'digest'}})}),rpc:async()=>({data:settled})}),generateLicenseKey:()=> 'synthetic',
+      growReadbackConfig:()=>({kind:"direct"}),verifyGrowPayment:async()=>true,createClient:()=>({from:()=>({select(){return this;},eq(){return this;},maybeSingle:async()=>({data:{grow_link_digest:'digest'}})}),rpc:async()=>({data:settled})}),generateLicenseKey:()=> 'synthetic',
       recordAuditEvent:async()=>{},Response,URL,AbortSignal,console:{error(){}},
       fetch:async (url,request)=>{sent.push([url.href,request.headers['x-cron-secret']]);throw new Error('mail transport unavailable');},
     });

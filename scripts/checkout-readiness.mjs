@@ -36,13 +36,15 @@ try {
          'public.fulfill_grow_order(uuid,text,text,integer,text,jsonb,text)','public.record_grow_refund(uuid,text,integer,text)',
          'public.has_verified_desktop_purchase(uuid,text)']) signature) as service_routines`;
   const [db] = read(['db','query','--linked',sql]).rows;
-  const secrets = Object.fromEntries(['MAKE_PAYMENT_WEBHOOK_URL','MAKE_GROW_NOTIFY_URL','MAKE_CALLBACK_SECRET','GROW_READBACK_PAGE_CODE'].map(key => [key,names.has(key)]));
+  const secrets = Object.fromEntries(['MAKE_PAYMENT_WEBHOOK_URL','MAKE_GROW_NOTIFY_URL','MAKE_CALLBACK_SECRET'].map(key => [key,names.has(key)]));
   const defaultBucket = !names.has('INSTALLERS_BUCKET');
   const defaultProvider = !names.has('PAYMENT_PROVIDER');
-  const prerequisites = defaultBucket && defaultProvider && db.private_bucket && Object.values(secrets).every(Boolean)
+  const makeReadbackSelected = names.has('MAKE_GROW_READBACK_URL') || names.has('MAKE_GROW_READBACK_KEY');
+  const merchantReadbackConfigured = makeReadbackSelected ? names.has('MAKE_GROW_READBACK_URL') && names.has('MAKE_GROW_READBACK_KEY') : names.has('GROW_READBACK_PAGE_CODE');
+  const prerequisites = merchantReadbackConfigured && defaultBucket && defaultProvider && db.private_bucket && Object.values(secrets).every(Boolean)
     && handlers.every(fn => fn.active && fn.gatewayMatches) && Object.values(db.service_routines).every(Boolean);
   const perPlatform = Object.fromEntries(Object.entries(db.files).map(([os,exists]) => [os,Boolean(prerequisites && exists)]));
-  console.log(JSON.stringify({ secretsPresent:secrets,handlers,serviceRoutines:db.service_routines,
+  console.log(JSON.stringify({ secretsPresent:secrets,merchantReadbackConfigured,handlers,serviceRoutines:db.service_routines,
     usesDefaultGrowProvider:defaultProvider,usesDefaultInstallerBucket:defaultBucket,
     defaultBucketPrivate:db.private_bucket,nonemptyDefaultBucketInstallers:db.files,
     staticPrerequisitesMet:perPlatform,providerCaptureVerified:false },null,2));
