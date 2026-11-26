@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { Building2, ChevronDown, X, Zap } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useAuth } from "@/lib/auth-context";
 import { getPaidUserAccess } from "@/lib/supabase";
 import { Seo, SITE_ORIGIN } from "@/app/components/Seo";
@@ -211,6 +211,21 @@ export function PricingPage() {
       />
       <div className="container mx-auto px-6 max-w-7xl">
         <PricingSection tiers={tiersWithActions} />
+
+        <section aria-labelledby="multi-computer-pricing" className="mx-auto mt-10 max-w-3xl rounded-2xl border border-[#d6e5ed] bg-[#f5f9fc] p-6 sm:p-8">
+          <h2 id="multi-computer-pricing" className="mb-3 text-2xl font-bold text-[#1a2332]">עובדים גם בבית וגם במרפאה?</h2>
+          <p className="leading-7">רישיון לכל מחשב מאפשר להשאיר את שני המחשבים פעילים באותו חשבון. אחרי ההפעלה הראשונית באינטרנט אפשר לעבוד בכל אחד מהם גם בלי חיבור.</p>
+          <dl className="my-5 grid gap-3 sm:grid-cols-3">
+            {[
+              ["מחשב אחד", "1,499 ₪"],
+              ["שני מחשבים", "2,698 ₪"],
+              ["שלושה מחשבים", "3,897 ₪"],
+            ].map(([label, total]) => <div key={label} className="rounded-xl bg-white p-4"><dt>{label}</dt><dd className="mt-1 text-xl font-bold text-[#0d47a1]">{total}</dd></div>)}
+          </dl>
+          <p className="leading-7">אלה המחירים הכוללים בתשלום חד־פעמי. אם כבר רכשתם רישיון, כל מחשב נוסף באותו חשבון עולה 1,199 ₪.</p>
+          <p className="mt-3 leading-7">התיקים נשמרים בכל מחשב בנפרד. כדי להמשיך בבית ביקור שהתחלתם במרפאה, מעבירים גיבוי מוצפן ומשחזרים אותו. המשיכו לערוך בעותק העדכני בלבד.</p>
+          <Link to="/contact" className="mt-4 inline-block font-semibold text-[#0d47a1] underline">רוצים להתייעץ לגבי המחשבים בקליניקה? דברו איתנו</Link>
+        </section>
 
         <AnimatePresence>
           {isEnterpriseModalOpen && (
