@@ -54,22 +54,6 @@ Deno.serve(async req => {
     if (!meta || !uuid.test(meta.userId || '') || !plans.has(meta.plan) ||
         (intent.metadata?.userId && intent.metadata.userId !== meta.userId) ||
         (intent.metadata?.plan && intent.metadata.plan !== meta.plan)) return new Response(null,{status:409});
-    let credit = 0;
-    if (session) {
-      if (!session.livemode || session.mode !== 'payment' || session.payment_status !== 'paid' ||
-          session.currency !== 'ils' || session.amount_total !== intent.amount_received ||
-          objectId(session.payment_intent) !== intentId) return new Response(null,{status:409});
-      const lines = await stripe.checkout.sessions.listLineItems(session.id,{limit:2});
-      const line = lines.data[0];
-      const expectedPrice = Deno.env.get('STRIPE_PRICE_'+meta.plan.toUpperCase());
-      if (lines.has_more || lines.data.length!==1 || line.quantity!==1 || !line.price ||
-          (expectedPrice && line.price.id !== expectedPrice) || line.price.currency !== 'ils' || line.price.unit_amount !== intent.amount_received) {
-        return new Response(null,{status:409});
-      }
-    } else if (intent.metadata.discountAmount !== undefined) {
-      if (!/^(0|[1-9]\d{0,6})$/.test(intent.metadata.discountAmount)) return new Response(null,{status:409});
-      credit=Number(intent.metadata.discountAmount);
-    }
     let state = 'paid';
     if (charge.refunded && charge.amount_refunded===charge.amount_captured) state='refunded';
     else if (charge.amount_refunded>0 || charge.disputed) state='review';
@@ -80,6 +64,24 @@ Deno.serve(async req => {
         return new Response(null,{status:409});
       if (dispute.status==='lost') state=dispute.amount===charge.amount_captured ? 'refunded' : 'review';
       else if (state==='paid') return accepted();
+    }
+    let credit = 0;
+    if (session) {
+      if (!session.livemode || session.mode !== 'payment' || session.payment_status !== 'paid' ||
+          session.currency !== 'ils' || session.amount_total !== intent.amount_received ||
+          objectId(session.payment_intent) !== intentId) return new Response(null,{status:409});
+      if (state === 'paid') {
+        const lines = await stripe.checkout.sessions.listLineItems(session.id,{limit:2});
+        const line = lines.data[0];
+        const expectedPrice = Deno.env.get('STRIPE_PRICE_'+meta.plan.toUpperCase());
+        if (lines.has_more || lines.data.length!==1 || line.quantity!==1 || !line.price ||
+            (expectedPrice && line.price.id !== expectedPrice) || line.price.currency !== 'ils' || line.price.unit_amount !== intent.amount_received) {
+          return new Response(null,{status:409});
+        }
+      }
+    } else if (state === 'paid' && intent.metadata.discountAmount !== undefined) {
+      if (!/^(0|[1-9]\d{0,6})$/.test(intent.metadata.discountAmount)) return new Response(null,{status:409});
+      credit=Number(intent.metadata.discountAmount);
     }
     const db=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
     const {data,error}=await db.rpc('record_verified_stripe_order',{
