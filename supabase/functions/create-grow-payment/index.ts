@@ -1,3 +1,4 @@
+import { growReadbackConfig, linkDigest } from '../_shared/grow-readback.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { inactivePaymentProvider } from '../_shared/payment-provider.ts';
 import { recordAuditEvent } from '../_shared/audit.ts';
@@ -47,7 +48,7 @@ Deno.serve(async (req) => {
   if (!auth) return json({ error: 'Unauthorized' }, 401);
   const createHook = makeHook(Deno.env.get('MAKE_PAYMENT_WEBHOOK_URL'));
   const notifyUrl = makeHook(Deno.env.get('MAKE_GROW_NOTIFY_URL'));
-  if (!createHook || !notifyUrl || !Deno.env.get('MAKE_CALLBACK_SECRET')?.trim()
+  if (!growReadbackConfig() || !createHook || !notifyUrl || !Deno.env.get('MAKE_CALLBACK_SECRET')?.trim()
       || (notifyUrl.origin === createHook.origin && notifyUrl.pathname.replace(/\/+$/, '') === createHook.pathname.replace(/\/+$/, ''))) {
     return json({ error: 'שירות התשלום אינו זמין כרגע. אפשר לנסות שוב מאוחר יותר.', code: 'PAYMENT_NOTIFICATION_UNAVAILABLE' }, 503);
   }
@@ -65,8 +66,9 @@ Deno.serve(async (req) => {
     const input = await req.json().catch(() => null);
     if (input?.plan !== PACKAGE.id) return json({ error: 'Invalid package' }, 400);
 
-    if (input.quantity !== undefined && input.quantity !== 1) {
-      return json({ error: 'כל הזמנה מיועדת לרישיון אחד למחשב אחד.' }, 400);
+    const quantity = input.quantity === undefined ? 1 : input.quantity;
+    if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > 100) {
+      return json({ error: 'אפשר לבחור בין רישיון אחד ל־100 רישיונות בהזמנה.' }, 400);
     }
 
     let fullName = input.contact?.fullName;
@@ -110,10 +112,12 @@ Deno.serve(async (req) => {
     }
 
     const targetSeat = input.targetSeat;
-    if (targetSeat !== undefined && (!Number.isSafeInteger(targetSeat) || targetSeat < 2 || targetSeat > 2147483647)) {
+    if (targetSeat !== undefined && (!Number.isSafeInteger(targetSeat) || targetSeat < 1 || targetSeat > 2147483647)) {
       return json({ error: 'מספר המחשב לרכישה אינו תקין.' }, 400);
     }
-    const { data: order, error } = targetSeat !== undefined
+    const { data: order, error } = quantity > 1
+      ? await db.rpc('open_grow_bulk_order', {p_customer_id:user.id, p_target_seat:targetSeat ?? 1, p_quantity:quantity})
+      : targetSeat !== undefined && targetSeat > 1
       ? await db.rpc('open_additional_grow_order', { p_customer_id: user.id, p_target_seat: targetSeat })
       : await db.rpc('open_grow_order', {
       p_customer_id: user.id, p_package_id: PACKAGE.id, p_amount: PACKAGE.amount,
@@ -136,7 +140,11 @@ Deno.serve(async (req) => {
       return json({ error: 'תשלום קודם נמצא בבדיקה. פנו לתמיכה לפני שתנסו לשלם שוב.' }, 409);
     }
     if (order?.result === 'PENDING') {
-      if (order.payment_url) return json({ orderId: order.id, paymentUrl: order.payment_url, amount: order.amount, currency: order.currency });
+      if (order.payment_url) {
+        const { data, error } = await db.from('orders').select('grow_link_digest').eq('id', order.id).maybeSingle();
+        if (error) throw error;
+        if (data?.grow_link_digest) return json({ orderId: order.id, paymentUrl: order.payment_url, amount: order.amount, quantity: order.quantity ?? 1, currency: order.currency });
+      }
       return json({ error: 'יש הזמנה פתוחה. נסו שוב בעוד רגע או פנו לתמיכה אם הקישור אינו זמין.', orderId: order.id, code: 'ORDER_LINK_PENDING' }, 409);
     }
     if (order?.result !== 'NEW') throw new Error('Order creation failed');
@@ -152,8 +160,8 @@ Deno.serve(async (req) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          orderId: order.id, packageId: order.package_id, packageName: PACKAGE.name,
-          amount: order.amount, price: order.amount / 100, currency: 'ILS', quantity: 1,
+          orderId: order.id, packageId: order.package_id, packageName: quantity === 1 ? PACKAGE.name : `ClinicFlow — ${quantity} רישיונות לצמיתות`,
+          amount: order.amount, price: order.amount / 100, currency: 'ILS', quantity: 1, licenseQuantity: order.quantity ?? 1,
           customer: { email: user.email, fullName: fullName.trim(), phone },
           customerName: fullName.trim(), customerEmail: user.email, customerPhone: phone,
           notifyUrl: notifyUrl.href,
@@ -174,19 +182,20 @@ Deno.serve(async (req) => {
         // An invalid provider response follows the reconciliation path below.
       }
     }
-    if (!response.ok || !paymentUrl || paymentUrl.protocol !== 'https:' || paymentUrl.username || paymentUrl.password) {
+    const binding = await linkDigest(payload?.paymentLinkProcessId, payload?.paymentLinkProcessToken);
+    if (!binding || !response.ok || !paymentUrl || paymentUrl.protocol !== 'https:' || paymentUrl.username || paymentUrl.password) {
       // The provider may have created a link even when its response is unusable.
       // Keep the order for reconciliation instead of creating a second link.
       await recordAuditEvent(db, { eventType: 'checkout_start', outcome: 'failure', userId: user.id, orderId: order.id, provider: 'grow', metadata: { reason: 'invalid_provider_response' } });
       return json({ error: 'לא ניתן ליצור קישור תשלום כרגע', code: 'ORDER_LINK_PENDING', orderId: order.id }, 502);
     }
 
-    const { data: savedOrder, error: saveError } = await db.from('orders').update({ payment_url: paymentUrl.href })
+    const { data: savedOrder, error: saveError } = await db.from('orders').update({ payment_url: paymentUrl.href, grow_link_digest: binding })
       .eq('id', order.id).eq('status', 'PENDING').select('id').maybeSingle();
     if (saveError) throw saveError;
     if (!savedOrder) return json({ error: 'מצב ההזמנה השתנה. בדקו את סטטוס התשלום לפני ניסיון נוסף.' }, 409);
     await recordAuditEvent(db, { eventType: 'checkout_start', outcome: 'pending', userId: user.id, orderId: order.id, provider: 'grow', amount: order.amount, currency: 'ILS' });
-    return json({ orderId: order.id, paymentUrl: paymentUrl.href, amount: order.amount, currency: order.currency });
+    return json({ orderId: order.id, paymentUrl: paymentUrl.href, amount: order.amount, quantity: order.quantity ?? 1, currency: order.currency });
   } catch (err) {
     console.error('create-grow-payment', err instanceof Error ? err.name : 'Database error');
     return json({ error: 'Payment initialization failed' }, 500);
