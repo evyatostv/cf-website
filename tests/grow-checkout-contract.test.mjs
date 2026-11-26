@@ -67,13 +67,33 @@ test('server fixes checkout price, sends unique notification and return routes, 
   assert.equal(state.orders,1);
 });
 
-test('a request cannot purchase several seats with a single order',async ()=>{
+test('checkout rejects invalid quantities before creating any order',async ()=>{
   const {db,state}=database();
   const main=load('create-grow-payment',db,env,()=>assert.fail('Unexpected provider call'));
-  for (const quantity of [0,2,'2',-1]) {
+  for (const quantity of [0,101,'2',-1,1.5,null]) {
     assert.equal((await main(post({...checkout,quantity},userHeaders))).status,400);
   }
   assert.equal(state.orders,0);
+});
+
+test('Grow receives one bundle at the exact stored total for the selected computer count',async ()=>{
+  for(const [targetSeat,total] of [[1,389700],[3,359700]]) {
+    const {db}=database();
+    db.rpc=async(name,args)=>{
+      assert.equal(name,'open_grow_bulk_order');assert.equal(args.p_quantity,3);
+      assert.equal(args.p_target_seat,targetSeat);assert.equal(Object.hasOwn(args,'p_amount'),false);
+      return {data:{result:'NEW',id:orderId,package_id:'forever',quantity:3,amount:total,currency:'ILS'}};
+    };
+    const handler=load('create-grow-payment',db,env,async (_,request)=>{
+      const product=JSON.parse(request.body);assert.equal(product.quantity,1);
+      assert.equal(product.licenseQuantity,3);assert.equal(product.price,total/100);
+      assert.equal(product.amount,total);assert.match(product.packageName,/3/);
+      return Response.json({paymentUrl:'https://payment.example/bulk',paymentLinkProcessId:'43',paymentLinkProcessToken:'bulkLinkSynthetic'});
+    });
+    const response=await handler(post({...checkout,quantity:3,targetSeat,amount:1,price:0.01},userHeaders));
+    assert.equal(response.status,200);const body=await response.json();
+    assert.equal(body.amount,total);assert.equal(body.quantity,3);
+  }
 });
 
 test('subsequent seat sends the SQL price, ignoring caller supplied price and amount', async () => {
@@ -155,4 +175,8 @@ test('provider acknowledgments and unsigned callbacks never settle orders',async
   assert.equal((await callback(post({...event,amount:119900},auth))).status,200);
   assert.equal((await callback(post({...event,amount:149900},auth))).status,409);
   assert.equal(called,2);
+  evidence={...tx,sum:'3897.00'};
+  assert.equal((await callback(post({...event,amount:389700},auth))).status,200);
+  assert.equal((await callback(post({...event,amount:359700},auth))).status,409);
+  assert.equal(called,3);
 });

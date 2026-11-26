@@ -38,6 +38,12 @@ Set these as server-side Supabase Edge Function secrets (never `VITE_` and never
 
 The Grow connection is created in Make via Grow (production) or Grow Sandbox. Grow’s own interface performs OTP verification. Do not put the business identifier or OTP in source control or send it to ClinicFlow.
 
+### Several licenses on one payment link
+
+The server quotes 1–100 computer licenses and records their quantity before issuing the payment link. For a first order of three licenses, the total is ₪3,897. If the account already owns a qualifying license, two more cost ₪2,398. Make receives one bundle product with its total as `price`, fixed product quantity `1`, and a descriptive product name with the chosen license count. The server stores the number of computer licenses as `license_quantity`. Keep Make's product quantity at **one** to avoid multiplying the total twice.
+
+A verified capture grants the stored quantity from the bound order and generates a single payment receipt. A verified full refund or final lost chargeback withdraws all computer licenses paid for in that order. A partial refund requires operator review.
+
 ## Make scenario 2 — payment notification
 
 1. Add **Grow → Notify URL Webhook** and configure the same Grow connection.
