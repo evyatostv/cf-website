@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import { MARKETING_CONSENT_KEY, COOKIE_SETTINGS_EVENT, syncMetaPixel } from '@/lib/meta-pixel';
 import { syncGoogleAnalytics } from '@/lib/google-analytics';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
+import { allowHostedMetric } from '@/lib/hosted-metrics';
 import { Cookie, X } from 'lucide-react';
 
 const STORAGE_KEY = MARKETING_CONSENT_KEY;
@@ -9,8 +12,14 @@ const STORAGE_KEY = MARKETING_CONSENT_KEY;
 export function CookieBanner() {
   const [visible, setVisible] = useState(false);
   const location = useLocation();
+  const [measure, setMeasure] = useState(false);
 
-  useEffect(() => { syncMetaPixel(); syncGoogleAnalytics(); }, [location.pathname, location.search, location.hash]);
+  const sync = () => {
+    syncMetaPixel();
+    syncGoogleAnalytics();
+    setMeasure(Boolean(allowHostedMetric({url: window.location.href})));
+  };
+  useEffect(sync, [location.pathname, location.search, location.hash]);
 
   useEffect(() => {
     try {
@@ -19,7 +28,6 @@ export function CookieBanner() {
       setVisible(true);
     }
     const open = () => setVisible(true);
-    const sync = () => { syncMetaPixel(); syncGoogleAnalytics(); };
     window.addEventListener(COOKIE_SETTINGS_EVENT, open);
     window.addEventListener('storage', sync);
     return () => {
@@ -30,19 +38,17 @@ export function CookieBanner() {
 
   const accept = () => {
     try { localStorage.setItem(STORAGE_KEY, 'accepted'); } catch {}
-    syncMetaPixel();
-    syncGoogleAnalytics();
+    sync();
     setVisible(false);
   };
 
   const reject = () => {
     try { localStorage.setItem(STORAGE_KEY, 'rejected'); } catch {}
-    syncMetaPixel();
-    syncGoogleAnalytics();
+    sync();
     setVisible(false);
   };
 
-  if (!visible) return null;
+  if (!visible) return measure ? <><Analytics beforeSend={allowHostedMetric} /><SpeedInsights beforeSend={allowHostedMetric} /></> : null;
 
   return (
     <div
@@ -59,7 +65,7 @@ export function CookieBanner() {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-[#1a2332] mb-1">אנחנו משתמשים בעוגיות</p>
           <p className="text-xs text-[#6b7c93] leading-relaxed mb-3">
-            אנחנו משתמשים בעוגיות חיוניות לתפקוד האתר. באישורכם נשתמש גם ב־Google Analytics ובפיקסל של Meta למדידה בעמודי השיווק.
+            אנחנו משתמשים בעוגיות חיוניות לתפקוד האתר. באישורכם נשתמש גם ב־Google Analytics, בפיקסל של Meta ובכלי המדידה של Vercel לבדיקת שימוש וביצועים בעמודי השיווק.
             לפרטים נוספים ניתן לעיין ב<Link to="/privacy" className="text-[#0d47a1] underline">מדיניות הפרטיות</Link>.
           </p>
           <div className="flex gap-2">
