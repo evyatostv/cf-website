@@ -95,7 +95,7 @@ export const registry: EmailEntry[] = [
   {
     id: 9, file: 'payment-failed.tsx', component: 'PaymentFailed', group: 'B · Purchase & Licensing', from: FROM,
     subject: 'התשלום לא הושלם — נדרשת פעולה',
-    preheader: 'לא הצלחנו לחייב את אמצעי התשלום. אפשר לנסות שוב.',
+    preheader: 'בדקו את מצב הרכישה בחשבון לפני תשלום נוסף.',
     props: ['name', 'plan', 'amount', 'retryUrl'],
     trigger: 'Stripe · payment failed', unsubscribe: false,
   },

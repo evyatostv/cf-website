@@ -235,7 +235,7 @@ export const EMAILS: { [Id in EmailId]: EmailDef<Id> } = {
   "payment-failed": {
     id: "payment-failed", group: "B · Purchase & Licensing", from: FROM, unsubscribe: false,
     subject: "התשלום לא הושלם — נדרשת פעולה",
-    preheader: "לא הצלחנו לחייב את אמצעי התשלום. אפשר לנסות שוב.",
+    preheader: "בדקו את מצב הרכישה בחשבון לפני תשלום נוסף.",
     trigger: "Stripe · payment failed", file: "payment-failed.tsx",
   },
   "refund-confirmation": {
