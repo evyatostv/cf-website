@@ -35,8 +35,6 @@ import { Layout } from "@/app/components/Layout";
 import { RequireAuth } from "@/app/components/RequireAuth";
 import { AuthProvider } from "@/lib/auth-context";
 import { PaymentProvider } from "@/lib/payment-context";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/react";
 import { ContentPage } from "@/app/components/ContentPage";
 import { contentPages } from "@/app/content/registry";
 import { blogPosts } from "@/app/data/blog-posts";
@@ -72,8 +70,6 @@ function RootProviders() {
         <PaymentProvider>
           <Layout />
           <AttributionCapture />
-          <Analytics />
-          <SpeedInsights />
         </PaymentProvider>
       </AuthProvider>
     </Sentry.ErrorBoundary>
