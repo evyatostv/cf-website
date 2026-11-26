@@ -16,9 +16,10 @@
 import {
   assert,
   assertStringIncludes,
+  assertRejects,
 } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { EMAIL_IDS, EMAILS, type EmailId } from "./email-registry.ts";
-import { __renderForTest, REGISTERED_TEMPLATE_IDS } from "./send-template.ts";
+import { __renderForTest, REGISTERED_TEMPLATE_IDS, sendTemplate } from "./send-template.ts";
 import { FIXTURES } from "./emails/fixtures.ts";
 
 /** Hebrew letters range — proves the body contains real Hebrew, not just markup. */
@@ -49,9 +50,9 @@ const EXPECT: { [Id in EmailId]: string[] } = {
   "trial-ended": ["/pricing", "קריאה בלבד"], // adapted pricingUrl→buyUrl
   "win-back": ["/pricing?ref=winback"], // adapted pricingUrl→resumeUrl
 
-  "renewal-upcoming": ["1 באוגוסט 2026", "המחיר שיוצג בעמוד החידוש", "account/renew"], // receipt + CTA
-  "renewal-confirmation": ["1 באוגוסט 2027", "הסכום ששולם בפועל"], // receipt
-  "updates-lapsed": ["account/renew", "לתמיד"], // CTA
+  "renewal-upcoming": ["dashboard", "חד־פעמי"],
+  "renewal-confirmation": ["dashboard", "חד־פעמי"],
+  "updates-lapsed": ["dashboard", "חד־פעמי"],
 
   "contact-received": ["SUP-4471", "לייבא רשומות מטופלים"], // ticket + preview
   "sales-response": ["/premium", "יעל", "Premium"], // CTA + agent
@@ -114,3 +115,10 @@ for (const id of EMAIL_IDS) {
     assert(!/<html|<body/i.test(text), `${id}: plaintext still contains tags`);
   });
 }
+
+
+Deno.test("legacy renewal templates refuse delivery before contacting a provider", async () => {
+  for (const id of ["renewal-upcoming", "renewal-confirmation", "updates-lapsed"] as const) {
+    await assertRejects(() => sendTemplate(id, "test@example.invalid", FIXTURES[id]), Error, "RETIRED_RENEWAL_TEMPLATE");
+  }
+});

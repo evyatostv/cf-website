@@ -1,3 +1,4 @@
+import { formatPurchaseAmount } from '@/lib/purchase-amount';
 import { FormEvent, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import { motion } from 'motion/react';
@@ -48,13 +49,35 @@ export function DownloadPage() {
 
 export function OrdersPage() {
   const { user } = useAuth();
+  return user ? <AccountOrders key={user.id} userId={user.id} /> : null;
+}
+
+function AccountOrders({ userId }: { userId: string }) {
   const [orders, setOrders] = useState<Purchase[] | null>(null);
-  useEffect(() => { if (user) getPurchaseHistory(user.id).then(setOrders); }, [user]);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    getPurchaseHistory(userId).then(
+      (rows) => { if (active) setOrders(rows); },
+      () => { if (active) setFailed(true); },
+    );
+    return () => { active = false; };
+  }, [userId, attempt]);
   return (
     <main className={shell} dir="rtl"><div className="mx-auto max-w-4xl px-4">
       <section className={`${card} p-7 md:p-10`}>
         <div className="mb-8 flex items-center gap-4"><div className="rounded-2xl bg-[#eaf2ff] p-4 text-[#0d47a1]"><FileText className="h-8 w-8" /></div><div><p className="text-sm font-bold text-[#00838f]">החשבון שלי</p><h1 className="text-3xl font-black text-[#1a2332]">הזמנות ורכישות</h1></div></div>
-        {orders === null ? <div className="flex justify-center py-16"><Loader2 className="h-9 w-9 animate-spin text-[#0d47a1]" /></div> : orders.length === 0 ? <div className="rounded-2xl bg-[#f6f9fc] p-10 text-center"><History className="mx-auto mb-3 h-10 w-10 text-[#789]" /><h2 className="mb-2 text-xl font-bold">עדיין אין הזמנות</h2><p className="mb-5 text-[#6b7c93]">לא נמצאה רכישה בחשבון הזה.</p><Link to="/pricing" className={primary}>לצפייה בפרטי הרישיון</Link></div> : <div className="space-y-3">{orders.map((order) => <article key={order.id} className="grid gap-3 rounded-2xl border border-[#e1e8ef] p-5 sm:grid-cols-3"><div><p className="text-xs text-[#6b7c93]">רישיון</p><p className="font-bold text-[#1a2332]">{order.plan || order.version}</p></div><div><p className="text-xs text-[#6b7c93]">תאריך</p><p className="font-medium">{new Date(order.purchased_at).toLocaleDateString('he-IL')}</p></div><div><p className="text-xs text-[#6b7c93]">סכום</p><p className="font-bold text-[#0d47a1]">{typeof order.amount === 'number' ? `₪${order.amount.toLocaleString('he-IL')}` : '—'}</p></div></article>)}</div>}
+        {failed ? (
+          <div className="rounded-2xl bg-[#f6f9fc] p-8 text-center">
+            <p role="alert">לא הצלחנו לטעון את הרכישות. אם כבר שילמתם, בדקו שוב לפני ביצוע תשלום נוסף.</p>
+            <button type="button" className={secondary} onClick={() => {
+              setFailed(false);
+              setAttempt((value) => value + 1);
+            }}>טעינה מחדש</button>
+          </div>
+        ) : orders === null ? <div className="flex justify-center py-16"><Loader2 className="h-9 w-9 animate-spin text-[#0d47a1]" /></div> : orders.length === 0 ? <div className="rounded-2xl bg-[#f6f9fc] p-10 text-center"><History className="mx-auto mb-3 h-10 w-10 text-[#789]" /><h2 className="mb-2 text-xl font-bold">עדיין אין הזמנות</h2><p className="mb-5 text-[#6b7c93]">לא נמצאה רכישה בחשבון הזה.</p><Link to="/pricing" className={primary}>לצפייה בפרטי הרישיון</Link></div> : <div className="space-y-3">{orders.map((order) => <article key={order.id} className="grid gap-3 rounded-2xl border border-[#e1e8ef] p-5 sm:grid-cols-3"><div><p className="text-xs text-[#6b7c93]">רישיון</p><p className="font-bold text-[#1a2332]">{order.plan || order.version}</p></div><div><p className="text-xs text-[#6b7c93]">תאריך</p><p className="font-medium">{new Date(order.purchased_at).toLocaleDateString('he-IL')}</p></div><div><p className="text-xs text-[#6b7c93]">סכום</p><p className="font-bold text-[#0d47a1]">{formatPurchaseAmount(order.amount)}</p></div></article>)}</div>}
         <div className="mt-8 flex flex-wrap gap-3"><Link to="/dashboard" className={primary}>חזרה לחשבון</Link><Link to="/contact" className={secondary}>שאלה לגבי חיוב</Link></div>
       </section>
     </div></main>
@@ -63,9 +86,9 @@ export function OrdersPage() {
 
 type ActionVariant = 'renew' | 'premium' | 'retry' | 'whats-new';
 const actionCopy: Record<ActionVariant, { icon: typeof Rocket; eyebrow: string; title: string; body: string; cta: string; href: string; secondary: string; secondaryHref: string }> = {
-  renew: { icon: RefreshCw, eyebrow: 'חידוש עדכונים', title: 'שומרים על ClinicFlow מעודכנת', body: 'הרישיון שלך ממשיך לעבוד לתמיד. חידוש תקופת העדכונים מוסיף גרסאות חדשות, תיקוני אבטחה ועדכוני תאימות.', cta: 'בחירת חבילת חידוש', href: '/pricing?intent=renew', secondary: 'חזרה לחשבון', secondaryHref: '/dashboard' },
+  renew: { icon: CheckCircle2, eyebrow: 'פרטי הרישיון', title: 'אין צורך לחדש את ClinicFlow Full', body: 'ClinicFlow Full עולה ₪1,499 בתשלום חד־פעמי לכל מחשב. אם כבר שילמתם עבור המחשב הזה, הרישיון שלכם אינו דורש תשלום שנתי.', cta: 'לחשבון שלי', href: '/dashboard', secondary: 'פנייה לתמיכה', secondaryHref: '/contact' },
   premium: { icon: Sparkles, eyebrow: 'ClinicFlow Premium', title: 'בואו נתאים את ClinicFlow לקליניקה שלך', body: 'פתרון מורחב, ליווי אישי והתאמה לצרכים מיוחדים של קליניקות פעילות. נשמח להבין מה נדרש ולחזור עם תשובה ברורה.', cta: 'לתיאום שיחה', href: '/contact?topic=premium', secondary: 'צפייה ביכולות', secondaryHref: '/features' },
-  retry: { icon: RefreshCw, eyebrow: 'השלמת תשלום', title: 'אפשר לנסות שוב בבטחה', body: 'לא בוצע חיוב כפול דרך הקישור הזה. נבחר מחדש את החבילה ונפתח ניסיון תשלום חדש ומאובטח.', cta: 'בחירת חבילה וניסיון חוזר', href: '/pricing?intent=retry', secondary: 'בדיקת ההזמנות שלי', secondaryHref: '/account/orders' },
+  retry: { icon: RefreshCw, eyebrow: 'בירור תשלום', title: 'לפני ניסיון תשלום נוסף', body: 'בדקו אם הרכישה כבר מופיעה בחשבון. אם ראיתם חיוב בכרטיס או קיבלתם אישור תשלום והרכישה עדיין חסרה, פנו אלינו לבירור לפני שתשלמו שוב.', cta: 'בדיקת הרכישות שלי', href: '/account/orders', secondary: 'בירור עם התמיכה', secondaryHref: '/contact' },
   'whats-new': { icon: Rocket, eyebrow: 'מה חדש', title: 'כל מה שהשתפר ב-ClinicFlow', body: 'שיפרנו את חוויית העבודה, האבטחה והביצועים — תוך שמירה על העיקרון החשוב ביותר: המידע הקליני נשאר אצלך, על המחשב.', cta: 'לכל יכולות המערכת', href: '/features', secondary: 'הורדת הגרסה העדכנית', secondaryHref: '/download' },
 };
 

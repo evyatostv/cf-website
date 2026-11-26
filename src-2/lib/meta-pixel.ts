@@ -27,6 +27,11 @@ export function hasMarketingConsent() {
   catch { return false; }
 }
 
+export function isMarketingSite(url: URL) {
+  return url.protocol === 'https:' && !url.username && !url.password
+    && ['www.clinic-flow.co.il', 'clinic-flow.co.il'].includes(url.host);
+}
+
 export function hasSafeCampaignUrl(search: string, hash: string) {
   if (hash && !['#product-video', '#pricing', '#lead-form'].includes(hash)) return false;
   const permitted = new Set(['fbclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'utm_id']);
@@ -50,7 +55,7 @@ export function syncMetaPixel() {
   // Permit standard campaign IDs, but never arbitrary query fields or fragments.
   const allowed = hasMarketingConsent() && hasSafeMarketingReferrer() && PUBLIC_PATHS.has(location.pathname)
     && hasSafeCampaignUrl(location.search, location.hash)
-    && ['clinic-flow.co.il', 'www.clinic-flow.co.il'].includes(location.hostname);
+    && isMarketingSite(new URL(location.href));
   if (!allowed) {
     pendingEvents.length = 0;
     if (initialized) window.fbq?.('consent', 'revoke');

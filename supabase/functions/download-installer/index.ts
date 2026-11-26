@@ -23,6 +23,8 @@ function getCorsHeaders(req: Request) {
     'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Cache-Control': 'no-store',
+    'Vary': 'Origin',
   };
 }
 
@@ -132,20 +134,21 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Best-effort log — never block the download if logging fails
-    adminClient
-      .from('download_log')
-      .insert({
-        user_id: user.id,
-        email: user.email,
-        plan: access.plan,
-        os,
-        installer: installerKey,
-      })
-      .then(({ error }) => {
-        if (error) console.warn('download_log insert failed:', error.message);
-      });
-    await recordAuditEvent(adminClient, { eventType: 'download_attempt', outcome: 'success', userId: user.id, metadata: { os, installer: installerKey } });
+    // Both records describe issuing a link. The file transfer happens later in Storage.
+    const logLink = async () => {
+      try {
+        const { error } = await adminClient.from('download_log').insert({
+          user_id: user.id, email: user.email, plan: access.plan, os, installer: installerKey,
+        });
+        if (error) console.warn('Download link log unavailable');
+      } catch {
+        console.warn('Download link log unavailable');
+      }
+    };
+    await Promise.all([
+      logLink(),
+      recordAuditEvent(adminClient, { eventType: 'download_attempt', outcome: 'success', userId: user.id, metadata: { os, installer: installerKey } }),
+    ]);
 
     return new Response(
       JSON.stringify({

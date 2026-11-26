@@ -21,7 +21,7 @@ export function PaymentFailed({
   retryUrl = 'https://clinic-flow.co.il/checkout/retry',
 }: PaymentFailedProps) {
   return (
-    <EmailLayout preheader="לא הצלחנו לחייב את אמצעי התשלום. אפשר לנסות שוב.">
+    <EmailLayout preheader="בדקו את מצב הרכישה בחשבון לפני תשלום נוסף.">
       <Text style={{ ...s.muted, margin: '0 0 6px', color: brand.primary, fontWeight: 600 }}>
         נדרשת פעולה
       </Text>
@@ -32,10 +32,10 @@ export function PaymentFailed({
       </Callout>
 
       <Text style={s.p}>
-        אין צורך לדאוג — לא בוצע חיוב וההזמנה שמורה. אפשר לעדכן את אמצעי התשלום ולנסות שוב בלחיצה אחת.
+        בדקו את הרכישות בחשבון. אם התקבל אישור תשלום או מופיע חיוב בכרטיס, פנו אלינו לבירור לפני ניסיון נוסף.
       </Text>
 
-      <CtaButton href={retryUrl}>עדכון תשלום וניסיון חוזר</CtaButton>
+      <CtaButton href={retryUrl}>בדיקת מצב הרכישה</CtaButton>
 
       <Text style={s.muted}>
         נתקלת בבעיה? השב למייל ונשמח לעזור להשלים את הרכישה.

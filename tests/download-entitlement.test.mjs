@@ -9,6 +9,7 @@ for (const [scenario, plan, purchase, expected] of [
   ['trial', 'trial', true, 403],
   ['active but unpaid', 'forever', false, 403],
   ['verified purchase', 'forever', true, 200],
+  ['verified purchase with logging outage', 'forever', true, 200],
   ['payment lookup unavailable', 'forever', null, 503],
 ]) {
   test(scenario, async () => {
@@ -17,7 +18,13 @@ for (const [scenario, plan, purchase, expected] of [
     const user = { auth: { getUser: async () => ({data: {user: {id: 'buyer'}}}) },
       from: () => ({select() { return this; }, eq() { return this; },
         maybeSingle: () => ({data: {plan, is_active: true}})}) };
-    const admin = { from: () => ({insert: async () => ({})}),
+    let logFinished = false;
+    const admin = { from: () => ({insert: async () => {
+      await new Promise(resolve => setTimeout(resolve, 5));
+      logFinished = true;
+      if (scenario.endsWith('logging outage')) throw new Error('synthetic logging interruption');
+      return {};
+    }}),
     rpc: (name, params) => {
       assert.equal(name, 'has_verified_desktop_purchase');
       Object.assign(filters, params);
@@ -34,6 +41,8 @@ for (const [scenario, plan, purchase, expected] of [
       method: 'POST', headers: {Authorization: 'Bearer synthetic'}, body: JSON.stringify({os:'win'}),
     }));
     assert.equal(response.status, expected);
+    assert.equal(response.headers.get('Cache-Control'), 'no-store');
+    assert.equal(logFinished, expected === 200);
     assert.equal(signed, expected === 200 ? 1 : 0);
     if (plan !== 'trial') assert.deepEqual(filters, {p_customer_id:'buyer', p_plan:plan});
   });

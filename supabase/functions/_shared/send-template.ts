@@ -172,6 +172,9 @@ export async function sendTemplate<T extends EmailId>(
   props: PropsFor<T>,
   opts: SendTemplateOptions = {},
 ): Promise<SendEmailResult> {
+  if (id === "renewal-upcoming" || id === "renewal-confirmation" || id === "updates-lapsed") {
+    throw new Error("RETIRED_RENEWAL_TEMPLATE");
+  }
   const def = EMAILS[id];
   if (!def) throw new Error(`sendTemplate: unknown template id "${id}"`);
 

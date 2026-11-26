@@ -20,6 +20,10 @@ const CHECKOUT_STATUS = {
 
 type Status = keyof typeof CHECKOUT_STATUS;
 
+function validOrderId(order: string | null): order is string {
+  return order !== null && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(order);
+}
+
 export function CheckoutSuccessPage() {
   const [params] = useSearchParams();
   const order = params.get('order');
@@ -29,7 +33,7 @@ export function CheckoutSuccessPage() {
 
   useEffect(() => {
     if (loading) return;
-    if (!order || !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(order)) {
+    if (!validOrderId(order)) {
       setStatus('unavailable');
       return;
     }
@@ -72,16 +76,18 @@ export function CheckoutSuccessPage() {
 export function CheckoutCancelPage() {
   const [params] = useSearchParams();
   const order = params.get('order');
-  const statusPath = order ? `/checkout/success?order=${encodeURIComponent(order)}` : '/pricing';
+  const hasOrder = validOrderId(order);
+  const statusPath = hasOrder ? `/checkout/success?order=${encodeURIComponent(order)}` : '/account/orders';
   return (
     <div dir="rtl" className="min-h-screen flex items-center justify-center bg-[#f5f7f9] p-6">
       <Seo title="יציאה מדף התשלום | ClinicFlow" description="אפשר לבדוק את סטטוס ההזמנה לפני שמנסים לשלם שוב." canonicalPath="/checkout/cancel" noindex />
       <div className="bg-white rounded-2xl border p-8 max-w-lg text-center">
         <h1 className="text-2xl font-bold text-[#1a2332]">יצאתם מדף התשלום</h1>
-        <p className="mt-3 text-[#6b7c93]">אפשר לבדוק את סטטוס ההזמנה לפני שמנסים לשלם שוב.</p>
+        <p className="mt-3 text-[#6b7c93]">{hasOrder ? 'אפשר לבדוק את סטטוס ההזמנה לפני שמנסים לשלם שוב.' : 'אפשר לבדוק בחשבון אם הרכישה מופיעה. אם ראיתם חיוב והרכישה חסרה, פנו לתמיכה לפני תשלום נוסף.'}</p>
         <Link className="inline-block mt-6 rounded-xl bg-[#0d47a1] px-6 py-3 text-white" to={statusPath}>
-          {order ? 'בדיקת סטטוס ההזמנה' : 'חזרה לתמחור'}
+          {hasOrder ? 'בדיקת סטטוס ההזמנה' : 'ההזמנות והרכישות שלי'}
         </Link>
+        <p className="mt-4"><Link className="underline" to="/contact">שאלה לגבי חיוב? פנו לתמיכה</Link></p>
       </div>
     </div>
   );

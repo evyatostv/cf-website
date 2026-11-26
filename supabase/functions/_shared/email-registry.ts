@@ -235,7 +235,7 @@ export const EMAILS: { [Id in EmailId]: EmailDef<Id> } = {
   "payment-failed": {
     id: "payment-failed", group: "B · Purchase & Licensing", from: FROM, unsubscribe: false,
     subject: "התשלום לא הושלם — נדרשת פעולה",
-    preheader: "לא הצלחנו לחייב את אמצעי התשלום. אפשר לנסות שוב.",
+    preheader: "בדקו את מצב הרכישה בחשבון לפני תשלום נוסף.",
     trigger: "Stripe · payment failed", file: "payment-failed.tsx",
   },
   "refund-confirmation": {
@@ -280,21 +280,21 @@ export const EMAILS: { [Id in EmailId]: EmailDef<Id> } = {
   // ── D · Maintenance & renewal ──
   "renewal-upcoming": {
     id: "renewal-upcoming", group: "D · Maintenance & Renewal", from: FROM, unsubscribe: true,
-    subject: "חידוש תקופת העדכונים שלך מתקרב",
-    preheader: "העדכונים ותאימות תיקון 13 — כדי שהכל יישאר עדכני.",
-    trigger: "30 days before updates period ends", file: "renewal-upcoming.tsx",
+    subject: "פרטי הרישיון החד־פעמי שלך",
+    preheader: "אין צורך בתשלום חידוש שנתי.",
+    trigger: "Retired; preview only", file: "renewal-upcoming.tsx",
   },
   "renewal-confirmation": {
     id: "renewal-confirmation", group: "D · Maintenance & Renewal", from: FROM, unsubscribe: false,
-    subject: "חידוש העדכונים אושר — תודה",
-    preheader: "תקופת עדכונים חדשה נפתחה. הנה הקבלה.",
-    trigger: "Renewal payment succeeded", file: "renewal-confirmation.tsx",
+    subject: "פרטי הרישיון החד־פעמי שלך",
+    preheader: "אין צורך בתשלום חידוש שנתי.",
+    trigger: "Retired; preview only", file: "renewal-confirmation.tsx",
   },
   "updates-lapsed": {
     id: "updates-lapsed", group: "D · Maintenance & Renewal", from: FROM, unsubscribe: true,
-    subject: "תקופת העדכונים הסתיימה — האפליקציה ממשיכה לעבוד",
-    preheader: "התוכנה ממשיכה לעבוד לתמיד. רק העדכונים החדשים מושהים.",
-    trigger: "Updates period lapsed", file: "updates-lapsed.tsx",
+    subject: "פרטי הרישיון החד־פעמי שלך",
+    preheader: "אין צורך בתשלום חידוש שנתי.",
+    trigger: "Retired; preview only", file: "updates-lapsed.tsx",
   },
 
   // ── E · Support & sales ──

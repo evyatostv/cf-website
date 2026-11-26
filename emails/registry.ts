@@ -95,7 +95,7 @@ export const registry: EmailEntry[] = [
   {
     id: 9, file: 'payment-failed.tsx', component: 'PaymentFailed', group: 'B · Purchase & Licensing', from: FROM,
     subject: 'התשלום לא הושלם — נדרשת פעולה',
-    preheader: 'לא הצלחנו לחייב את אמצעי התשלום. אפשר לנסות שוב.',
+    preheader: 'בדקו את מצב הרכישה בחשבון לפני תשלום נוסף.',
     props: ['name', 'plan', 'amount', 'retryUrl'],
     trigger: 'Stripe · payment failed', unsubscribe: false,
   },
@@ -147,24 +147,24 @@ export const registry: EmailEntry[] = [
   // ── D · Maintenance & renewal ──
   {
     id: 16, file: 'renewal-upcoming.tsx', component: 'RenewalUpcoming', group: 'D · Maintenance & Renewal', from: FROM,
-    subject: 'חידוש תקופת העדכונים שלך מתקרב',
-    preheader: 'העדכונים ותאימות תיקון 13 — כדי שהכל יישאר עדכני.',
+    subject: 'פרטי הרישיון החד־פעמי שלך',
+    preheader: 'אין צורך בתשלום חידוש שנתי.',
     props: ['name', 'plan', 'renewDate', 'renewUrl', 'amount'],
-    trigger: '30 days before updates period ends', unsubscribe: true,
+    trigger: 'Retired; preview only', unsubscribe: true,
   },
   {
     id: 17, file: 'renewal-confirmation.tsx', component: 'RenewalConfirmation', group: 'D · Maintenance & Renewal', from: FROM,
-    subject: 'חידוש העדכונים אושר — תודה',
-    preheader: 'תקופת עדכונים חדשה נפתחה. הנה הקבלה.',
+    subject: 'פרטי הרישיון החד־פעמי שלך',
+    preheader: 'אין צורך בתשלום חידוש שנתי.',
     props: ['name', 'plan', 'amount', 'newPeriodEnd', 'invoiceUrl?'],
-    trigger: 'Renewal payment succeeded', unsubscribe: false,
+    trigger: 'Retired; preview only', unsubscribe: false,
   },
   {
     id: 18, file: 'updates-lapsed.tsx', component: 'UpdatesLapsed', group: 'D · Maintenance & Renewal', from: FROM,
-    subject: 'תקופת העדכונים הסתיימה — האפליקציה ממשיכה לעבוד',
-    preheader: 'התוכנה ממשיכה לעבוד לתמיד. רק העדכונים החדשים מושהים.',
+    subject: 'פרטי הרישיון החד־פעמי שלך',
+    preheader: 'אין צורך בתשלום חידוש שנתי.',
     props: ['name', 'plan', 'renewUrl'],
-    trigger: 'Updates period lapsed', unsubscribe: true,
+    trigger: 'Retired; preview only', unsubscribe: true,
   },
 
   // ── E · Support & sales ──
