@@ -8,6 +8,7 @@ Set these as server-side Supabase Edge Function secrets (never `VITE_` and never
 
 - `MAKE_PAYMENT_WEBHOOK_URL`: the Make Custom Webhook URL that starts the payment-link scenario.
 - `MAKE_GROW_NOTIFY_URL`: the HTTPS Make notification trigger from scenario 2, distinct from the link-creation trigger. Grow posts its event here.
+- `GROW_READBACK_PAGE_CODE`: production merchant page code authorized for Grow’s Get Transaction Info, for the same payment page as the Make production connection.
 - `MAKE_CALLBACK_SECRET`: long random secret shared only with Make’s HTTP callback module.
 - `NEXT_PUBLIC_APP_URL`: `https://www.clinic-flow.co.il` (used server-side here for return URLs; despite the name it must not be placed in client-exposed Vite env files).
 - `SITE_URL`: optional backward-compatible fallback for the return URL.
@@ -33,18 +34,18 @@ Set these as server-side Supabase Edge Function secrets (never `VITE_` and never
 | Custom field 1 | `orderId` |
 
 4. Use the merchant’s configured VAT type. The expected checkout total is ₪1,499 for one license. If Make reports an invalid price, inspect the Price mapping for an extra currency token. If the name or phone is empty, inspect the nested `customer` object in that execution. Keep the scenario failed when required customer data is missing so support can investigate the order.
-5. Return the Grow output payment URL to the caller using Make’s webhook response module as `{ "paymentUrl": "<Grow payment URL>" }`.
+5. Return the Grow output payment URL to the caller using Make’s webhook response module as JSON containing `paymentUrl`, `paymentLinkProcessId`, and `paymentLinkProcessToken` from the same response. The ClinicFlow server stores a unique digest of the link identity and returns only the customer URL. Existing orders without a digest require reconciliation.
 
 The Grow connection is created in Make via Grow (production) or Grow Sandbox. Grow’s own interface performs OTP verification. Do not put the business identifier or OTP in source control or send it to ClinicFlow.
 
 ## Make scenario 2 — payment notification
 
 1. Add **Grow → Notify URL Webhook** and configure the same Grow connection.
-2. Map the Grow notification’s order/custom field, transaction identifier, status, amount, and currency.
-3. Use **Grow → Approve Transaction** to acknowledge the notification. Before forwarding a paid event, independently verify the captured transaction, order reference, charged amount and currency using the merchant connection. If the integration cannot supply that evidence, hold the order for reconciliation.
-4. Add **HTTP → Make a request** to `https://<supabase-project>.supabase.co/functions/v1/grow-webhook`, POST JSON `{ orderId, transactionId, status, amount, currency }`, and add header `x-make-callback-secret: <MAKE_CALLBACK_SECRET>`. Send canonical `paid` only for a verified capture and express the charged amount in agorot. A generic approval, a successful API request and the customer’s return URL each carry insufficient evidence of settlement.
+2. For a paid notification, send JSON containing `orderId` (custom field 1), `transactionId`, `transactionToken`, `status` (canonical `paid`), `amount` (integer agorot) and `currency` (`ILS`) to the ClinicFlow grow-webhook with the `x-make-callback-secret` header. Keep transaction tokens in server-to-server connections.
+3. The server reads the actual charge from the fixed Grow production endpoint under the merchant's page code. It checks charge identity, paid status, exact decimal sum and original payment-link identity before settlement. Grow currently supports ILS exclusively. Contradictory explicit currencies are rejected. A checkout created under another link cannot complete this order.
+4. Execute **Approve Transaction** after durable processing or recording a manual reconciliation case. An unavailable lookup needs retry. Unsupported or unbound final events, including legacy links, refunds and chargebacks, need operator reconciliation and must not grant access. Processing a refund uses the verified operator procedure below.
 
-A notification missing its transaction ID is rejected. An authenticated settled transaction with a mismatched amount or currency places a pending order in manual review.
+Provider references: [creation response](https://developers.grow.business/reference/refund-overview-1), [merchant lookup](https://developers.grow.business/reference/get-transaction-info), [lookup response](https://developers.grow.business/reference/response-get-transaction-info), [currency](https://developers.grow.business/discuss/688f5d52758134232e8e70a8).
 
 ## Testing
 

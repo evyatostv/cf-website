@@ -1,3 +1,4 @@
+import { linkDigest } from '../_shared/grow-readback.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { inactivePaymentProvider } from '../_shared/payment-provider.ts';
 import { recordAuditEvent } from '../_shared/audit.ts';
@@ -47,7 +48,7 @@ Deno.serve(async (req) => {
   if (!auth) return json({ error: 'Unauthorized' }, 401);
   const createHook = makeHook(Deno.env.get('MAKE_PAYMENT_WEBHOOK_URL'));
   const notifyUrl = makeHook(Deno.env.get('MAKE_GROW_NOTIFY_URL'));
-  if (!createHook || !notifyUrl || !Deno.env.get('MAKE_CALLBACK_SECRET')?.trim()
+  if (!Deno.env.get('GROW_READBACK_PAGE_CODE')?.trim() || !createHook || !notifyUrl || !Deno.env.get('MAKE_CALLBACK_SECRET')?.trim()
       || (notifyUrl.origin === createHook.origin && notifyUrl.pathname.replace(/\/+$/, '') === createHook.pathname.replace(/\/+$/, ''))) {
     return json({ error: 'שירות התשלום אינו זמין כרגע. אפשר לנסות שוב מאוחר יותר.', code: 'PAYMENT_NOTIFICATION_UNAVAILABLE' }, 503);
   }
@@ -136,7 +137,11 @@ Deno.serve(async (req) => {
       return json({ error: 'תשלום קודם נמצא בבדיקה. פנו לתמיכה לפני שתנסו לשלם שוב.' }, 409);
     }
     if (order?.result === 'PENDING') {
-      if (order.payment_url) return json({ orderId: order.id, paymentUrl: order.payment_url, amount: order.amount, currency: order.currency });
+      if (order.payment_url) {
+        const { data, error } = await db.from('orders').select('grow_link_digest').eq('id', order.id).maybeSingle();
+        if (error) throw error;
+        if (data?.grow_link_digest) return json({ orderId: order.id, paymentUrl: order.payment_url, amount: order.amount, currency: order.currency });
+      }
       return json({ error: 'יש הזמנה פתוחה. נסו שוב בעוד רגע או פנו לתמיכה אם הקישור אינו זמין.', orderId: order.id, code: 'ORDER_LINK_PENDING' }, 409);
     }
     if (order?.result !== 'NEW') throw new Error('Order creation failed');
@@ -174,14 +179,15 @@ Deno.serve(async (req) => {
         // An invalid provider response follows the reconciliation path below.
       }
     }
-    if (!response.ok || !paymentUrl || paymentUrl.protocol !== 'https:' || paymentUrl.username || paymentUrl.password) {
+    const binding = await linkDigest(payload?.paymentLinkProcessId, payload?.paymentLinkProcessToken);
+    if (!binding || !response.ok || !paymentUrl || paymentUrl.protocol !== 'https:' || paymentUrl.username || paymentUrl.password) {
       // The provider may have created a link even when its response is unusable.
       // Keep the order for reconciliation instead of creating a second link.
       await recordAuditEvent(db, { eventType: 'checkout_start', outcome: 'failure', userId: user.id, orderId: order.id, provider: 'grow', metadata: { reason: 'invalid_provider_response' } });
       return json({ error: 'לא ניתן ליצור קישור תשלום כרגע', code: 'ORDER_LINK_PENDING', orderId: order.id }, 502);
     }
 
-    const { data: savedOrder, error: saveError } = await db.from('orders').update({ payment_url: paymentUrl.href })
+    const { data: savedOrder, error: saveError } = await db.from('orders').update({ payment_url: paymentUrl.href, grow_link_digest: binding })
       .eq('id', order.id).eq('status', 'PENDING').select('id').maybeSingle();
     if (saveError) throw saveError;
     if (!savedOrder) return json({ error: 'מצב ההזמנה השתנה. בדקו את סטטוס התשלום לפני ניסיון נוסף.' }, 409);
