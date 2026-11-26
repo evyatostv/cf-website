@@ -45,8 +45,8 @@ async function resolveEmail(
       .eq('user_id', userId)
       .maybeSingle();
     return data?.email ?? null;
-  } catch (err) {
-    console.error('resolveEmail failed (non-fatal):', err);
+  } catch {
+    console.error('resolveEmail failed');
     return null;
   }
 }
@@ -72,8 +72,8 @@ async function readPriorAccess(
     const { data } = await query.maybeSingle();
     if (!data) return null;
     return { plan: data.plan ?? null, hasLicense: !!data.license_key };
-  } catch (err) {
-    console.error('readPriorAccess failed (non-fatal):', err);
+  } catch {
+    console.error('readPriorAccess failed');
     return null;
   }
 }
@@ -157,8 +157,8 @@ async function sendPurchaseEmails(opts: {
       to: email,
       props: { name, plan: label, licenseKey, downloadUrl: DOWNLOAD_URL },
     });
-  } catch (err) {
-    console.error('sendPurchaseEmails failed (non-fatal):', err);
+  } catch {
+    console.error('sendPurchaseEmails failed');
   }
 }
 
@@ -225,7 +225,7 @@ async function grantAccess(
   amount: number,
 ) {
   if (!plan || (!userId && !email)) {
-    console.error('Missing plan or user info:', { plan, userId, email });
+    console.error('Missing plan or user info');
     return false;
   }
 
@@ -274,7 +274,7 @@ async function grantAccess(
   }
 
   if (accessError) {
-    console.error('Failed to update user_access:', accessError);
+    console.error('Failed to update user_access');
     return false;
   }
 
@@ -297,10 +297,10 @@ async function grantAccess(
   }, { onConflict: 'payment_id', ignoreDuplicates: true });
 
   if (purchaseError) {
-    console.error('Failed to record purchase (non-fatal):', purchaseError);
+    console.error('Failed to record purchase');
   }
 
-  console.log(`Access granted: user=${userId} email=${email} plan=${plan}`);
+  console.log('AllPay access granted');
   return true;
 }
 
@@ -311,7 +311,6 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    console.log('Webhook received:', JSON.stringify(body));
 
     // Verify payment authenticity by calling AllPay's paymentstatus API
     // with our own signature (which we know works — we sign requests the same way).
@@ -331,17 +330,16 @@ Deno.serve(async (req) => {
       },
     );
     const statusData = await statusRes.json();
-    console.log('Payment status verification:', JSON.stringify(statusData));
 
     if (!statusRes.ok || statusData.status !== 1) {
-      console.error('Payment not verified as successful:', statusData);
+      console.error('Payment not verified as successful');
       return new Response('Payment not confirmed', { status: 403 });
     }
     console.log('Payment verified OK via status API');
 
     // Only process successful payments
     if (body.status !== 1 && body.status !== '1') {
-      console.log('Payment not successful, status:', body.status);
+      console.log('AllPay reported an unsuccessful payment');
 
       // AllPay api11 status codes: 1 = success (paid), 2 = failed/declined,
       // 0/other = created/pending/intermediate. Only a DEFINITIVE decline (2)
@@ -366,8 +364,8 @@ Deno.serve(async (req) => {
             },
             { idempotencyKey: `${body.order_id || ''}:payment-failed` },
           );
-        } catch (err) {
-          console.error('payment-failed email failed (non-fatal):', err);
+        } catch {
+          console.error('payment-failed email failed');
         }
       }
       // NOTE: any status we can't classify as a real decline is left alone — no
@@ -393,7 +391,7 @@ Deno.serve(async (req) => {
     const orderId = body.order_id || '';
     const orderMatch = /^cf_([0-9a-f]+)_(forever|basic|professional|full)_\d+$/.exec(orderId);
     if (!orderMatch) {
-      console.error('Refusing to grant — unrecognized order_id format:', orderId);
+      console.error('Refusing to grant — unrecognized order_id format');
       return new Response('Bad order reference', { status: 400 });
     }
     const trustedUidPrefix = orderMatch[1];
@@ -406,7 +404,7 @@ Deno.serve(async (req) => {
     // A legit payment always passes (userId === add_field_1 whose first 8 chars
     // ARE this prefix); a replay that swaps in another userId is rejected.
     if (userId && !userId.startsWith(trustedUidPrefix)) {
-      console.error('Refusing to grant — userId does not match paid order:', { orderId, userId });
+      console.error('Refusing to grant — userId does not match paid order');
       return new Response('User mismatch', { status: 403 });
     }
 
@@ -439,9 +437,8 @@ Deno.serve(async (req) => {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error('allpay-webhook error:', msg);
+  } catch {
+    console.error('AllPay webhook processing failed');
     return new Response('Internal error', { status: 500 });
   }
 });
