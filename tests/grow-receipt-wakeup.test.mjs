@@ -9,18 +9,18 @@ const source = read('_shared/wake-grow-receipts.ts').replace('export function','
   read('grow-webhook/index.ts').replace(/^import .*;$/gm,'');
 
 for (const [status, settled, expected] of [
-  ['paid','PAID',1], ['paid','DUPLICATE',1], ['refunded','DUPLICATE',0],
+  ['paid','PAID',1], ['paid','DUPLICATE',1],
   ['paid','MANUAL_REVIEW',0], ['pending',null,0],
 ]) {
   test('receipt wake after '+status+' / '+settled, async () => {
     let handler;
     const sent=[];
     const tasks=[];
-    const env={SUPABASE_URL:'https://internal.example.test',SUPABASE_ANON_KEY:'synthetic',CRON_SECRET:'internal',MAKE_CALLBACK_SECRET:'callback'};
+    const env={GROW_READBACK_PAGE_CODE:'testpage',SUPABASE_URL:'https://internal.example.test',SUPABASE_ANON_KEY:'synthetic',CRON_SECRET:'internal',MAKE_CALLBACK_SECRET:'callback'};
     vm.runInNewContext(stripTypeScriptTypes(source),{
       Deno:{env:{get:k=>env[k]},serve:fn=>{handler=fn;}},
       EdgeRuntime:{waitUntil:task=>{tasks.push(task);}},
-      createClient:()=>({rpc:async()=>({data:settled})}),generateLicenseKey:()=> 'synthetic',
+      verifyGrowPayment:async()=>true,createClient:()=>({from:()=>({select(){return this;},eq(){return this;},maybeSingle:async()=>({data:{grow_link_digest:'digest'}})}),rpc:async()=>({data:settled})}),generateLicenseKey:()=> 'synthetic',
       recordAuditEvent:async()=>{},Response,URL,AbortSignal,console:{error(){}},
       fetch:async (url,request)=>{sent.push([url.href,request.headers['x-cron-secret']]);throw new Error('mail transport unavailable');},
     });

@@ -36,7 +36,7 @@ try {
          'public.fulfill_grow_order(uuid,text,text,integer,text,jsonb,text)','public.record_grow_refund(uuid,text,integer,text)',
          'public.has_verified_desktop_purchase(uuid,text)']) signature) as service_routines`;
   const [db] = read(['db','query','--linked',sql]).rows;
-  const secrets = Object.fromEntries(['MAKE_PAYMENT_WEBHOOK_URL','MAKE_GROW_NOTIFY_URL','MAKE_CALLBACK_SECRET'].map(key => [key,names.has(key)]));
+  const secrets = Object.fromEntries(['MAKE_PAYMENT_WEBHOOK_URL','MAKE_GROW_NOTIFY_URL','MAKE_CALLBACK_SECRET','GROW_READBACK_PAGE_CODE'].map(key => [key,names.has(key)]));
   const defaultBucket = !names.has('INSTALLERS_BUCKET');
   const defaultProvider = !names.has('PAYMENT_PROVIDER');
   const prerequisites = defaultBucket && defaultProvider && db.private_bucket && Object.values(secrets).every(Boolean)

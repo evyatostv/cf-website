@@ -19,6 +19,7 @@ for (const [label, os, size, status] of [
     const paths = [];
     let orders = 0;
     const db = {
+      from:()=>({select(){return this;},eq(){return this;},maybeSingle:async()=>({data:{grow_link_digest:'digest'}})}),
       auth: {getUser: async () => ({data: {user: {id: 'buyer'}}})},
       storage: {from: () => ({info: async path => {
         paths.push(path);
@@ -30,7 +31,7 @@ for (const [label, os, size, status] of [
       },
     };
     vm.runInNewContext(stripTypeScriptTypes(source), {
-      Deno: {env: {get: key => ({ MAKE_PAYMENT_WEBHOOK_URL: 'https://hook.eu2.make.com/synthetic-start', MAKE_GROW_NOTIFY_URL: 'https://hook.eu2.make.com/synthetic-notify', MAKE_CALLBACK_SECRET: 'synthetic-secret' })[key]},
+      Deno: {env: {get: key => ({ GROW_READBACK_PAGE_CODE:'testpage', MAKE_PAYMENT_WEBHOOK_URL: 'https://hook.eu2.make.com/synthetic-start', MAKE_GROW_NOTIFY_URL: 'https://hook.eu2.make.com/synthetic-notify', MAKE_CALLBACK_SECRET: 'synthetic-secret' })[key]},
         serve: callback => {handler = callback;}},
       githubMacInstaller: async () => null, createClient: () => db, inactivePaymentProvider: () => null, recordAuditEvent: async () => {},
       URL, Response, Headers, console,
