@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
     }
 
 
-    const { data: hasPurchase, error: purchaseError } = await adminClient.rpc('has_verified_desktop_purchase', {
+    const { data: hasPurchase, error: purchaseError } = await adminClient.rpc('has_desktop_entitlement', {
       p_customer_id: user.id, p_plan: access.plan,
     });
     if (purchaseError || hasPurchase !== true) {

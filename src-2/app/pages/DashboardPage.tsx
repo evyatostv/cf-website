@@ -51,6 +51,9 @@ export function DashboardPage() {
   const pageReturn = usePageReturn();
   const { quote: seatQuote, failed: seatFailed, retry: retrySeats } = useSeatQuote(user?.id, pageReturn);
   const [access, setAccess] = useState<UserAccess | null | undefined>(undefined);
+  const [licenseSummary, setLicenseSummary] = useState<{
+    total: number; activated: number; test: number; testExpiresAt: string | null;
+  } | null>();
   const [lookupFailed, setLookupFailed] = useState(false);
   const [lookupAttempt, setLookupAttempt] = useState(0);
   const [downloading, setDownloading] = useState(false);
@@ -124,11 +127,17 @@ export function DashboardPage() {
     if (!user) { navigate('/login'); return; }
     let current = true;
     setAccess(undefined);
+    setLicenseSummary(undefined);
     setLookupFailed(false);
     getPaidUserAccess(user.id).then(result => {
       if (current) setAccess(result);
     }).catch(() => {
       if (current) setLookupFailed(true);
+    });
+    supabase.rpc('my_desktop_license_summary').then(({ data, error }) => {
+      if (current) setLicenseSummary(error ? null : data);
+    }, () => {
+      if (current) setLicenseSummary(null);
     });
     return () => { current = false; };
   }, [user, loading, navigate, lookupAttempt, pageReturn]);
@@ -223,20 +232,40 @@ export function DashboardPage() {
                         </div>
                         <div className="bg-[#f5f7f9] rounded-xl p-4">
                           <p className="text-xs text-[#6b7c93] mb-0.5">סוג רישיון</p>
-                          <p className="font-bold text-[#1a2332]">לצמיתות</p>
+                          <p className="font-bold text-[#1a2332]">{access?.expires_at ? `עד ${new Date(access.expires_at).toLocaleDateString('he-IL')}` : licenseSummary && licenseSummary.test === licenseSummary.total && licenseSummary.test > 0 ? 'בדיקה' : 'לצמיתות'}</p>
                         </div>
                       </div>
 
                       
+                      <section className="mb-5 rounded-xl border border-[#e1e6ec] bg-[#f5f7f9] p-4" aria-labelledby="desktop-license-heading">
+                        <h3 id="desktop-license-heading" className="font-bold text-[#1a2332]">רישיונות למחשבים</h3>
+                        <div aria-live="polite">
+                          {licenseSummary === undefined && <p>טוען את מספר הרישיונות…</p>}
+                          {licenseSummary === null && (
+                            <div>
+                              <p>לא הצלחנו לטעון את פרטי הרישיונות.</p>
+                              <button type="button" className="underline" onClick={() => setLookupAttempt(attempt => attempt + 1)}>נסה שוב</button>
+                            </div>
+                          )}
+                          {licenseSummary && (
+                            <>
+                              <p>{licenseSummary.total} רישיונות בחשבון</p>
+                              <p>{licenseSummary.activated} הופעלו · {licenseSummary.total - licenseSummary.activated} פנויים להפעלה</p>
+                              {licenseSummary.test > 0 && <p>רישיונות בדיקה בחשבון · {licenseSummary.test}
+                                {licenseSummary.testExpiresAt && ` · בתוקף עד ${new Date(licenseSummary.testExpiresAt).toLocaleDateString('he-IL')}`}
+                              </p>}
+                            </>
+                          )}
+                        </div>
+                      </section>
                       {seatFailed && (
                         <div className="mb-5" role="alert">
-                          <p>לא הצלחנו לבדוק כמה רישיונות למחשבים יש בחשבון.</p>
-                          <button className="underline" onClick={retrySeats}>בדיקה חוזרת של מספר הרישיונות</button>
+                          <p>לא הצלחנו לטעון את המחיר של רישיון נוסף.</p>
+                          <button className="underline" onClick={retrySeats}>בדיקה חוזרת של מחיר הרישיון</button>
                         </div>
                       )}
                       {seatQuote && seatQuote.paidSeats > 0 && (
                         <div className="mb-5">
-                          <p>רישיונות למחשבים בחשבון שלך: {seatQuote.paidSeats}</p>
                           <Link className="underline text-[#0d47a1]" to={`/payment?plan=forever&seat=${seatQuote.targetSeat}`}>
                             הוספת מחשב · {formatSeatPrice(seatQuote.amount)} לרישיון נוסף בתשלום חד־פעמי
                           </Link>

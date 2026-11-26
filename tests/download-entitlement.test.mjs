@@ -26,7 +26,7 @@ for (const [scenario, plan, purchase, expected] of [
       return {};
     }}),
     rpc: (name, params) => {
-      assert.equal(name, 'has_verified_desktop_purchase');
+      assert.equal(name, 'has_desktop_entitlement');
       Object.assign(filters, params);
       return {data: purchase, error: purchase === null};
     },
