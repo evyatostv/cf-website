@@ -2,8 +2,8 @@
 import * as React from 'react';
 import { Text } from '@react-email/components';
 import { EmailLayout } from './_layout';
-import { CtaButton, Callout } from './components/ui';
-import { brand, s } from './theme';
+import { CtaButton } from './components/ui';
+import { s } from './theme';
 
 export interface UpdatesLapsedProps {
   name: string;
@@ -11,29 +11,12 @@ export interface UpdatesLapsedProps {
   renewUrl: string;
 }
 
-export function UpdatesLapsed({
-  name = 'ד״ר שרון לוי',
-  plan = 'ClinicFlow Full',
-  renewUrl = 'https://clinic-flow.co.il/account/renew',
-}: UpdatesLapsedProps) {
-  return (
-    <EmailLayout preheader="התוכנה ממשיכה לעבוד לתמיד. רק העדכונים החדשים מושהים." unsubscribe>
-      <Text style={{ ...s.muted, margin: '0 0 6px', color: brand.primary, fontWeight: 600 }}>
-        עדכונים
-      </Text>
-      <Text style={s.h1}>תקופת העדכונים הסתיימה</Text>
-
-      <Callout tone="success" title="התוכנה שלך ממשיכה לעבוד — לתמיד">
-        הרישיון שלך הוא חד-פעמי. סיום תקופת העדכונים לא משפיע על השימוש: כל התכונות והנתונים ממשיכים לעבוד כרגיל, אופליין.
-      </Callout>
-
-      <Text style={s.p}>
-        מה שמושהה הוא רק <strong>עדכוני גרסה חדשים</strong> ותאימות לרגולציה עתידית. חידוש מפעיל אותם מחדש מיד.
-      </Text>
-
-      <CtaButton href={renewUrl}>חידוש כדי לחדש עדכונים</CtaButton>
-    </EmailLayout>
-  );
+export function UpdatesLapsed({ plan }: UpdatesLapsedProps) {
+  return <EmailLayout preheader="פרטי הרישיון החד־פעמי" unsubscribe>
+    <Text style={s.h1}>פרטי הרישיון שלך</Text>
+    <Text style={s.p}>{plan} נרכש בתשלום חד־פעמי לכל מחשב. אין צורך בתשלום חידוש שנתי.</Text>
+    <CtaButton href="https://www.clinic-flow.co.il/dashboard">לחשבון שלי</CtaButton>
+  </EmailLayout>;
 }
 
 UpdatesLapsed.PreviewProps = {
