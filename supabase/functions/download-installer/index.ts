@@ -1,7 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { recordAuditEvent } from '../_shared/audit.ts';
 
-import { githubMacInstaller } from '../_shared/github-installer.ts';
+import { githubInstaller } from '../_shared/github-installer.ts';
 import { BUCKET, INSTALLER_PATHS } from '../_shared/installers.ts';
 
 const SIGNED_URL_TTL = 300;
@@ -123,7 +123,7 @@ Deno.serve(async (req) => {
     }
     let link: {downloadUrl: string; expiresAt: string} | null = null;
     try {
-      link = await githubMacInstaller(os);
+      link = await githubInstaller(os);
       if (!link) {
         const {data, error} = await adminClient.storage.from(BUCKET).createSignedUrl(installerKey, SIGNED_URL_TTL);
         if (!error && data?.signedUrl) link = {downloadUrl: data.signedUrl, expiresAt: new Date(Date.now() + SIGNED_URL_TTL * 1000).toISOString()};
