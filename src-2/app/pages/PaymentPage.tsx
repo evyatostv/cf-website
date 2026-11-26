@@ -1,5 +1,6 @@
 import { usePageReturn } from '@/lib/use-page-return';
-import { formatSeatPrice, useSeatQuote } from '@/lib/use-seat-quote';
+import { useSeatQuote } from '@/lib/use-seat-quote';
+import { formatSeatPrice, matchesQuotedOrder } from '@/lib/seat-quote';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
@@ -26,7 +27,7 @@ const PLAN_INFO: Record<string, { name: string; features: string[] }> = {
 export function PaymentPage() {
   const { user } = useAuth();
   const [params] = useSearchParams();
-  const checkoutKey = JSON.stringify([user?.id, params.get('plan'), params.get('seat'), params.get('upgrade')]);
+  const checkoutKey = JSON.stringify([user?.id, params.get('plan'), params.get('seat'), params.get('upgrade'), params.get('quantity')]);
   return <AccountCheckout key={checkoutKey} />;
 }
 
@@ -42,7 +43,7 @@ function AccountCheckout() {
   const [pendingOrder, setPendingOrder] = useState('');
   const [sessionExpired, setSessionExpired] = useState(false);
   const [licenseAlreadyActive, setLicenseAlreadyActive] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [acceptedQuote, setAcceptedQuote] = useState<string | null>(null);
   const [termsLogged, setTermsLogged] = useState(false);
   // Grow requires a full name and Israeli mobile number. Collect them before
   // the first request instead of waiting for a server validation error.
@@ -57,14 +58,21 @@ function AccountCheckout() {
   const validSeat = targetSeat === undefined || (Number.isSafeInteger(targetSeat) && targetSeat >= 2 && targetSeat <= 2147483647);
   const isUpgrade = searchParams.get('upgrade') === 'true';
   const planInfo = PLAN_INFO[plan];
+  const requestedQuantity = searchParams.get('quantity') ?? '';
+  const initialQuantity = /^(?:[1-9]\d?|100)$/.test(requestedQuantity) ? requestedQuantity : '1';
+  const [quantityText, setQuantityText] = useState(initialQuantity);
+  const quantity = /^(?:[1-9]\d?|100)$/.test(quantityText) ? Number(quantityText) : null;
   const revision = usePageReturn();
-  const { quote, failed: quoteFailed, retry: retryQuote } = useSeatQuote(user?.id, revision);
+  const { quote, failed: quoteFailed, retry: retryQuote } = useSeatQuote(user?.id, revision, quantity);
   const matchesTarget = !!quote && quote.targetSeat === (targetSeat ?? 1);
   const price = matchesTarget && quote ? formatSeatPrice(quote.amount) : '—';
+  const quoteKey = matchesTarget && quote && user ? `${user.id}:${quote.targetSeat}:${quote.quantity}:${quote.amount}` : null;
+  const termsAccepted = quoteKey !== null && acceptedQuote === quoteKey;
+  const savings = matchesTarget && quote ? quote.quantity * 149900 - quote.amount : 0;
 
   // The checkout URL to return to after (re)login. URL-encode it as a whole so
   // the nested ?plan=/&upgrade= query survives being a value of ?redirect=.
-  const checkoutPath = `/payment?plan=${encodeURIComponent(plan)}${targetSeat === undefined ? '' : `&seat=${targetSeat}`}${isUpgrade ? '&upgrade=true' : ''}`;
+  const checkoutPath = `/payment?plan=${encodeURIComponent(plan)}${targetSeat === undefined ? '' : `&seat=${targetSeat}`}${isUpgrade ? '&upgrade=true' : ''}&quantity=${quantity ?? initialQuantity}`;
   const loginWithRedirect = `/login?redirect=${encodeURIComponent(checkoutPath)}`;
 
   useEffect(() => {
@@ -73,7 +81,7 @@ function AccountCheckout() {
 
   const handleTermsChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
-    setTermsAccepted(checked);
+    setAcceptedQuote(checked ? quoteKey : null);
     if (checked && !termsLogged && user) {
       await logPolicyAcceptance(user.id, user.email!, plan);
       setTermsLogged(true);
@@ -137,6 +145,7 @@ function AccountCheckout() {
             isUpgrade,
             os: targetOs,
             targetSeat,
+            quantity,
             contact: needsCheckoutContact ? { fullName: checkoutName, phone: checkoutPhone } : undefined,
           }),
         }
@@ -144,7 +153,7 @@ function AccountCheckout() {
 
       const raw = await res.text();
       if (request.signal.aborted) return;
-      let data: { orderId?: string; paymentUrl?: string; amount?: number; currency?: string; error?: string; code?: string } = {};
+      let data: { orderId?: string; paymentUrl?: string; quantity?: number; amount?: number; currency?: string; error?: string; code?: string } = {};
       try {
         data = raw ? JSON.parse(raw) : {};
       } catch {
@@ -164,10 +173,10 @@ function AccountCheckout() {
         return;
       }
 
-      if (data.amount !== quote.amount || data.currency !== quote.currency) {
+      if (!matchesQuotedOrder(quote, data)) {
         const storedPrice = data.currency === 'ILS' && typeof data.amount === 'number' && Number.isSafeInteger(data.amount) && data.amount > 0
           ? ` סכום ההזמנה הקיימת הוא ${formatSeatPrice(data.amount)}.` : '';
-        setError(`סכום ההזמנה לא תואם למחיר שהוצג.${storedPrice} פנו לתמיכה לפני התשלום.`);
+        setError(`פרטי ההזמנה לא תואמים לכמות ולמחיר שהוצגו.${storedPrice} פנו לתמיכה לפני התשלום.`);
         setNeedsSupport(true);
         if (data.orderId) setPendingOrder(data.orderId);
         setProcessing(false);
@@ -220,8 +229,21 @@ function AccountCheckout() {
             <div className="flex-1">
               <p className="text-sm font-medium text-[#6b7c93] mb-1">הזמנה</p>
               <h2 className="text-2xl font-bold text-[#1a2332] mb-1">{planInfo.name}</h2>
-              <div className="text-4xl font-black text-[#0d47a1] mb-1">{price}</div>
-              <p className="text-sm text-[#6b7c93] mb-8">{targetSeat ? `רישיון נוסף למחשב מספר ${targetSeat} באותו החשבון. נתוני המטופלים נשמרים בנפרד בכל מחשב.` : 'תשלום חד-פעמי • רישיון לצמיתות'}</p>
+              <label htmlFor="license-quantity" className="mt-4 mb-1 block font-semibold">מספר הרישיונות לרכישה עכשיו</label>
+              <input id="license-quantity" type="number" min="1" max="100" step="1" inputMode="numeric"
+                className="mb-2 w-24 rounded-lg border border-[#64748b] px-3 py-2 text-center"
+                value={quantityText} disabled={processing} aria-invalid={quantity === null}
+                aria-describedby="license-quantity-help" onChange={event => {
+                  setQuantityText(event.target.value);
+                  setAcceptedQuote(null);
+                  setError('');
+                  setPendingOrder('');
+                  setNeedsSupport(false);
+                  retryQuote();
+                }} />
+              <p id="license-quantity-help" className="mb-3 text-sm text-[#4a5568]">{quantity === null ? 'יש לבחור מספר שלם בין 1 ל־100.' : 'רישיון אחד לכל מחשב. כל הרישיונות בהזמנה ישויכו לחשבון זה.'}</p>
+              <div aria-live="polite" className="text-4xl font-black text-[#0d47a1] mb-1">{price}</div>
+              <p className="text-sm text-[#6b7c93] mb-8">תשלום חד־פעמי. רשומות המטופלים נשמרות בנפרד בכל מחשב.</p>
 
               <ul className="space-y-3">
                 {planInfo.features.map((f) => (
@@ -259,11 +281,14 @@ function AccountCheckout() {
 
               <div className="border border-[#e1e6ec] rounded-xl p-4 mb-5">
                 <div className="flex justify-between text-sm">
-                  <span className="text-[#6b7c93]">{planInfo.name}</span>
+                  <span className="text-[#6b7c93]">{quantity === null ? planInfo.name : `רישיונות למחשבים: ${quantity}`}</span>
                   <span className="font-medium text-[#1a2332]">{price}</span>
                 </div>
+                {savings > 0 && (
+                  <p className="mt-2 text-sm text-[#0d47a1]">חיסכון לעומת מחיר מלא לכל רישיון: {formatSeatPrice(savings)}</p>
+                )}
                 <div className="flex justify-between text-sm border-t border-[#e1e6ec] pt-2 mt-2">
-                  <span className="font-bold text-[#1a2332]">סה"כ לתשלום</span>
+                  <span className="font-bold text-[#1a2332]">סה"כ בתשלום חד־פעמי</span>
                   <span className="font-bold text-[#0d47a1]">{price}</span>
                 </div>
               </div>
@@ -366,7 +391,7 @@ function AccountCheckout() {
                 </span>
               </label>
 
-              {quoteFailed && <p role="alert" className="mb-4 text-center">לא הצלחנו לאמת את המחיר לחשבון. <button type="button" className="underline" onClick={retryQuote}>בדיקה חוזרת</button></p>}
+              {quantity !== null && quoteFailed && <p role="alert" className="mb-4 text-center">לא הצלחנו לאמת את המחיר לחשבון. <button type="button" className="underline" onClick={retryQuote}>בדיקה חוזרת</button></p>}
               {quote && !matchesTarget && <p role="alert" className="mb-4 text-center">מספר הרישיונות בחשבון השתנה. <Link to="/dashboard" className="underline">לבדיקת הרישיונות באזור האישי</Link></p>}
               <button
                 onClick={handlePayment}

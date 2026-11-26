@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
       template: 'order-confirmation',
       to: item.recipient,
       props: {
-        name: '', plan: 'ClinicFlow Full — רישיון למחשב אחד', orderId: item.order_id,
+        name: '', plan: item.quantity > 1 ? `ClinicFlow Full — ${item.quantity} רישיונות למחשבים` : 'ClinicFlow Full — רישיון למחשב אחד', orderId: item.order_id,
         total: formatAgorot(item.amount),
         ordersUrl: 'https://www.clinic-flow.co.il/checkout/success?order=' + encodeURIComponent(item.order_id),
       },
