@@ -3,7 +3,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 import { inactivePaymentProvider } from '../_shared/payment-provider.ts';
 import { recordAuditEvent } from '../_shared/audit.ts';
 
-import { githubMacInstaller } from '../_shared/github-installer.ts';
+import { githubInstaller } from '../_shared/github-installer.ts';
 import { BUCKET, INSTALLER_PATHS } from '../_shared/installers.ts';
 
 const PACKAGE = { id: 'forever', name: 'ClinicFlow — רישיון לצמיתות', amount: 149900 };
@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
     }
     let available = false;
     try {
-      if (await githubMacInstaller(os)) {
+      if (await githubInstaller(os)) {
         available = true;
       } else {
         const {data, error} = await db.storage.from(BUCKET).info(INSTALLER_PATHS[os]);

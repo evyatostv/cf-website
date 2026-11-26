@@ -33,7 +33,7 @@ for (const [label, os, size, status] of [
     vm.runInNewContext(stripTypeScriptTypes(source), {
       Deno: {env: {get: key => ({ GROW_READBACK_PAGE_CODE:'testpage', MAKE_PAYMENT_WEBHOOK_URL: 'https://hook.eu2.make.com/synthetic-start', MAKE_GROW_NOTIFY_URL: 'https://hook.eu2.make.com/synthetic-notify', MAKE_CALLBACK_SECRET: 'synthetic-secret' })[key]},
         serve: callback => {handler = callback;}},
-      githubMacInstaller: async () => null, growReadbackConfig:()=>({kind:"direct"}),createClient: () => db, inactivePaymentProvider: () => null, recordAuditEvent: async () => {},
+      githubInstaller: async () => null, growReadbackConfig:()=>({kind:"direct"}),createClient: () => db, inactivePaymentProvider: () => null, recordAuditEvent: async () => {},
       URL, Response, Headers, console,
     });
     const result = await handler(new Request('https://example.test', {method:'POST',

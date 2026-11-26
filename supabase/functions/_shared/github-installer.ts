@@ -1,13 +1,19 @@
 // Release selection is controlled on the server. Only a pinned, private, uploaded
-// Apple Silicon DMG can issue a provider download link.
+// release asset can issue a provider download link.
 const repo = 'https://api.github.com/repos/evyatostv/ClinicFlow';
 
-export async function githubMacInstaller(
+export async function githubInstaller(
   os: string, env = (name: string) => Deno.env.get(name), request = fetch,
 ): Promise<{downloadUrl: string; expiresAt: string} | null> {
-  const id = env('MAC_INSTALLER_GITHUB_ASSET_ID');
-  const digest = env('MAC_INSTALLER_SHA256');
-  if (os !== 'mac' || (!id && !digest)) return null;
+  const platforms = {
+    mac: {prefix: 'MAC', filename: /^Clinic[ .-]Flow-\d+\.\d+\.\d+-arm64\.dmg$/i},
+    win: {prefix: 'WIN', filename: /^Clinic-Flow-Setup-\d+\.\d+\.\d+\.exe$/i},
+  };
+  if (os !== 'mac' && os !== 'win') return null;
+  const platform = platforms[os];
+  const id = env(platform.prefix + '_INSTALLER_GITHUB_ASSET_ID');
+  const digest = env(platform.prefix + '_INSTALLER_SHA256');
+  if (!id && !digest) return null;
   const token = env('INSTALLER_GITHUB_READ_TOKEN');
   if (!id || !/^[1-9]\d{0,19}$/.test(id) || !digest || !/^[a-f0-9]{64}$/.test(digest) || !token) {
     throw new Error('Missing installer configuration');
@@ -25,7 +31,7 @@ export async function githubMacInstaller(
   }
   const info = await metadata.json();
   if (String(info.id) !== id || info.digest !== 'sha256:' + digest || info.state !== 'uploaded' ||
-      !(info.size > 0) || !/^Clinic[ .-]Flow-\d+\.\d+\.\d+-arm64\.dmg$/i.test(info.name)) {
+      !(info.size > 0) || !platform.filename.test(info.name)) {
     throw new Error('Installer identity mismatch');
   }
   const binary = await api(asset + '?t=' + Date.now(), 'application/octet-stream');
