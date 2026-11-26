@@ -2,6 +2,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 import { inactivePaymentProvider } from '../_shared/payment-provider.ts';
 import { recordAuditEvent } from '../_shared/audit.ts';
 
+import { githubMacInstaller } from '../_shared/github-installer.ts';
 import { BUCKET, INSTALLER_PATHS } from '../_shared/installers.ts';
 
 const PACKAGE = { id: 'forever', name: 'ClinicFlow — רישיון לצמיתות', amount: 149900 };
@@ -92,8 +93,18 @@ Deno.serve(async (req) => {
     if (typeof os !== 'string' || !Object.hasOwn(INSTALLER_PATHS, os)) {
       return json({ error: 'יש לבחור את מערכת ההפעלה של מחשב היעד לפני התשלום.' }, 400);
     }
-    const { data: installer, error: installerError } = await db.storage.from(BUCKET).info(INSTALLER_PATHS[os]);
-    if (installerError || !(Number(installer?.size ?? installer?.metadata?.size) > 0)) {
+    let available = false;
+    try {
+      if (await githubMacInstaller(os)) {
+        available = true;
+      } else {
+        const {data, error} = await db.storage.from(BUCKET).info(INSTALLER_PATHS[os]);
+        available = !error && Number(data?.size ?? data?.metadata?.size) > 0;
+      }
+    } catch {
+      // An unverified or unavailable installer must block order creation.
+    }
+    if (!available) {
       await recordAuditEvent(db, { eventType: 'checkout_start', outcome: 'blocked', provider: 'grow', metadata: { reason: 'installer_unavailable', os } });
       return json({ error: 'קובץ ההתקנה למערכת שבחרת אינו זמין כרגע. אפשר לנסות שוב מאוחר יותר או לפנות לתמיכה.', code: 'INSTALLER_UNAVAILABLE' }, 503);
     }

@@ -88,3 +88,9 @@ Expected `403` if no license:
 - **Same installer for everyone.** Plan-specific feature gating happens inside the Electron app (already implemented in `src/main/index.js` + `src/renderer/app.js`). This endpoint just gates *access* to the binary.
 - **5-minute expiry** is plenty for the browser to start the download. Old links die quickly so they can't be passed around.
 - **Service role is only used inside the function** — never exposed to the client. The user's own JWT is what verifies their identity.
+
+### Private Apple Silicon release asset
+
+When the storage plan cannot hold the signed DMG, both checkout and download can use the same private GitHub release asset in `evyatostv/ClinicFlow`. Set `MAC_INSTALLER_GITHUB_ASSET_ID` and `MAC_INSTALLER_SHA256` to the verified stable DMG and keep `INSTALLER_GITHUB_READ_TOKEN` in server secrets. Scope this token to read repository contents for this repository only. Confirm it can read the selected asset. Never put a personal administrator token in this function.
+
+The server checks repository privacy, the asset's SHA-256, stable Apple Silicon filename and byte count, then requests one byte through the temporary link. Download still requires the existing account, active plan and verified purchase. Checkout checks availability before opening an order. GitHub chooses the signed link expiry, which is returned in `expiresAt`. With both asset settings absent the existing private storage path is used. An incomplete or invalid selection blocks Mac checkout and download. Keep the payment callback verified before enabling the selection.
