@@ -238,7 +238,7 @@ export function DashboardPage() {
                         <div className="mb-5">
                           <p>רישיונות למחשבים בחשבון שלך: {seatQuote.paidSeats}</p>
                           <Link className="underline text-[#0d47a1]" to={`/payment?plan=forever&seat=${seatQuote.targetSeat}`}>
-                            רכישת רישיון למחשב נוסף ב־{formatSeatPrice(seatQuote.amount)} בתשלום חד־פעמי
+                            הוספת מחשב · {formatSeatPrice(seatQuote.amount)} לרישיון נוסף בתשלום חד־פעמי
                           </Link>
                         </div>
                       )}

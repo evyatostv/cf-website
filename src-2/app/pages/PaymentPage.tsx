@@ -27,7 +27,7 @@ const PLAN_INFO: Record<string, { name: string; features: string[] }> = {
 export function PaymentPage() {
   const { user } = useAuth();
   const [params] = useSearchParams();
-  const checkoutKey = JSON.stringify([user?.id, params.get('plan'), params.get('seat'), params.get('upgrade')]);
+  const checkoutKey = JSON.stringify([user?.id, params.get('plan'), params.get('seat'), params.get('upgrade'), params.get('quantity')]);
   return <AccountCheckout key={checkoutKey} />;
 }
 
@@ -43,7 +43,7 @@ function AccountCheckout() {
   const [pendingOrder, setPendingOrder] = useState('');
   const [sessionExpired, setSessionExpired] = useState(false);
   const [licenseAlreadyActive, setLicenseAlreadyActive] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [acceptedQuote, setAcceptedQuote] = useState<string | null>(null);
   const [termsLogged, setTermsLogged] = useState(false);
   // Grow requires a full name and Israeli mobile number. Collect them before
   // the first request instead of waiting for a server validation error.
@@ -58,16 +58,21 @@ function AccountCheckout() {
   const validSeat = targetSeat === undefined || (Number.isSafeInteger(targetSeat) && targetSeat >= 2 && targetSeat <= 2147483647);
   const isUpgrade = searchParams.get('upgrade') === 'true';
   const planInfo = PLAN_INFO[plan];
-  const [quantityText, setQuantityText] = useState('1');
+  const requestedQuantity = searchParams.get('quantity') ?? '';
+  const initialQuantity = /^(?:[1-9]\d?|100)$/.test(requestedQuantity) ? requestedQuantity : '1';
+  const [quantityText, setQuantityText] = useState(initialQuantity);
   const quantity = /^(?:[1-9]\d?|100)$/.test(quantityText) ? Number(quantityText) : null;
   const revision = usePageReturn();
   const { quote, failed: quoteFailed, retry: retryQuote } = useSeatQuote(user?.id, revision, quantity);
   const matchesTarget = !!quote && quote.targetSeat === (targetSeat ?? 1);
   const price = matchesTarget && quote ? formatSeatPrice(quote.amount) : '—';
+  const quoteKey = matchesTarget && quote && user ? `${user.id}:${quote.targetSeat}:${quote.quantity}:${quote.amount}` : null;
+  const termsAccepted = quoteKey !== null && acceptedQuote === quoteKey;
+  const savings = matchesTarget && quote ? quote.quantity * 149900 - quote.amount : 0;
 
   // The checkout URL to return to after (re)login. URL-encode it as a whole so
   // the nested ?plan=/&upgrade= query survives being a value of ?redirect=.
-  const checkoutPath = `/payment?plan=${encodeURIComponent(plan)}${targetSeat === undefined ? '' : `&seat=${targetSeat}`}${isUpgrade ? '&upgrade=true' : ''}`;
+  const checkoutPath = `/payment?plan=${encodeURIComponent(plan)}${targetSeat === undefined ? '' : `&seat=${targetSeat}`}${isUpgrade ? '&upgrade=true' : ''}&quantity=${quantity ?? initialQuantity}`;
   const loginWithRedirect = `/login?redirect=${encodeURIComponent(checkoutPath)}`;
 
   useEffect(() => {
@@ -76,7 +81,7 @@ function AccountCheckout() {
 
   const handleTermsChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
-    setTermsAccepted(checked);
+    setAcceptedQuote(checked ? quoteKey : null);
     if (checked && !termsLogged && user) {
       await logPolicyAcceptance(user.id, user.email!, plan);
       setTermsLogged(true);
@@ -230,7 +235,7 @@ function AccountCheckout() {
                 value={quantityText} disabled={processing} aria-invalid={quantity === null}
                 aria-describedby="license-quantity-help" onChange={event => {
                   setQuantityText(event.target.value);
-                  setTermsAccepted(false);
+                  setAcceptedQuote(null);
                   setError('');
                   setPendingOrder('');
                   setNeedsSupport(false);
@@ -279,8 +284,11 @@ function AccountCheckout() {
                   <span className="text-[#6b7c93]">{quantity === null ? planInfo.name : `רישיונות למחשבים: ${quantity}`}</span>
                   <span className="font-medium text-[#1a2332]">{price}</span>
                 </div>
+                {savings > 0 && (
+                  <p className="mt-2 text-sm text-[#0d47a1]">חיסכון לעומת מחיר מלא לכל רישיון: {formatSeatPrice(savings)}</p>
+                )}
                 <div className="flex justify-between text-sm border-t border-[#e1e6ec] pt-2 mt-2">
-                  <span className="font-bold text-[#1a2332]">סה"כ לתשלום</span>
+                  <span className="font-bold text-[#1a2332]">סה"כ בתשלום חד־פעמי</span>
                   <span className="font-bold text-[#0d47a1]">{price}</span>
                 </div>
               </div>

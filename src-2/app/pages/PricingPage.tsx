@@ -98,7 +98,7 @@ const faqJsonLd = {
 };
 
 export function PricingPage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [hasActiveLicense, setHasActiveLicense] = useState(false);
   const [lookupFailed, setLookupFailed] = useState(false);
   const [accessLoaded, setAccessLoaded] = useState(false);
@@ -215,13 +215,29 @@ export function PricingPage() {
         <section aria-labelledby="multi-computer-pricing" className="mx-auto mt-10 max-w-3xl rounded-2xl border border-[#d6e5ed] bg-[#f5f9fc] p-6 sm:p-8">
           <h2 id="multi-computer-pricing" className="mb-3 text-2xl font-bold text-[#1a2332]">עובדים גם בבית וגם במרפאה?</h2>
           <p className="leading-7">רישיון לכל מחשב מאפשר להשאיר את שני המחשבים פעילים באותו חשבון. אחרי ההפעלה הראשונית באינטרנט אפשר לעבוד בכל אחד מהם גם בלי חיבור.</p>
-          <dl className="my-5 grid gap-3 sm:grid-cols-3">
+          <div className="my-5 grid gap-3 sm:grid-cols-2">
             {[
-              ["מחשב אחד", "1,499 ₪"],
-              ["שני מחשבים", "2,698 ₪"],
-              ["שלושה מחשבים", "3,897 ₪"],
-            ].map(([label, total]) => <div key={label} className="rounded-xl bg-white p-4"><dt>{label}</dt><dd className="mt-1 text-xl font-bold text-[#0d47a1]">{total}</dd></div>)}
-          </dl>
+              { quantity: 1, label: "מחשב אחד", total: "1,499 ₪" },
+              { quantity: 2, label: "בית וקליניקה", total: "2,698 ₪" },
+            ].map(({ quantity, label, total }) => {
+              const checkout = `/payment?plan=forever&quantity=${quantity}`;
+              const destination = hasActiveLicense || lookupFailed
+                ? "/dashboard"
+                : user ? checkout : `/signup?redirect=${encodeURIComponent(checkout)}`;
+              return (
+                <div key={quantity} className="rounded-xl border border-[#d6e5ed] bg-white p-4">
+                  <h3 className="font-semibold">{label}</h3>
+                  <p className="mt-1 text-xl font-bold text-[#0d47a1]">{total}</p>
+                  {quantity === 2 && <p className="mt-1 text-sm font-medium">חיסכון של 300 ₪ על הרישיון השני</p>}
+                  {(!user || accessLoaded) && (
+                    <Link to={destination} aria-disabled={loading} onClick={event => { if (loading) event.preventDefault(); }} className="mt-3 inline-block rounded-lg bg-[#0d47a1] px-4 py-2 font-semibold text-white">
+                      {hasActiveLicense || lookupFailed ? "לאזור האישי" : quantity === 2 ? "לבחירת שני רישיונות" : "לבחירת רישיון אחד"}
+                    </Link>
+                  )}
+                </div>
+              );
+            })}
+          </div>
           <p className="leading-7">אלה המחירים הכוללים בתשלום חד־פעמי. אם כבר רכשתם רישיון, כל מחשב נוסף באותו חשבון עולה 1,199 ₪.</p>
           <p className="mt-3 leading-7">התיקים נשמרים בכל מחשב בנפרד. כדי להמשיך בבית ביקור שהתחלתם במרפאה, מעבירים גיבוי מוצפן ומשחזרים אותו. המשיכו לערוך בעותק העדכני בלבד.</p>
           <Link to="/contact" className="mt-4 inline-block font-semibold text-[#0d47a1] underline">רוצים להתייעץ לגבי המחשבים בקליניקה? דברו איתנו</Link>
