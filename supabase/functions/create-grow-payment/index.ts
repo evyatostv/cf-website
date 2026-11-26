@@ -48,7 +48,8 @@ Deno.serve(async (req) => {
   if (!auth) return json({ error: 'Unauthorized' }, 401);
   const createHook = makeHook(Deno.env.get('MAKE_PAYMENT_WEBHOOK_URL'));
   const notifyUrl = makeHook(Deno.env.get('MAKE_GROW_NOTIFY_URL'));
-  if (!growReadbackConfig() || !createHook || !notifyUrl || !Deno.env.get('MAKE_CALLBACK_SECRET')?.trim()
+  const readback = growReadbackConfig();
+  if (!readback || !createHook || !notifyUrl || !Deno.env.get('MAKE_CALLBACK_SECRET')?.trim()
       || (notifyUrl.origin === createHook.origin && notifyUrl.pathname.replace(/\/+$/, '') === createHook.pathname.replace(/\/+$/, ''))) {
     return json({ error: 'שירות התשלום אינו זמין כרגע. אפשר לנסות שוב מאוחר יותר.', code: 'PAYMENT_NOTIFICATION_UNAVAILABLE' }, 503);
   }
@@ -153,13 +154,15 @@ Deno.serve(async (req) => {
     successUrl.searchParams.set('order', order.id);
     const cancelUrl = new URL('/checkout/cancel', SITE_URL);
     cancelUrl.searchParams.set('order', order.id);
+    const gatewayKey = readback.kind === 'make' && readback.shared ? readback.key : undefined;
     let response: Response;
     try {
       response = await fetch(createHook.href, {
         redirect: 'error',
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(gatewayKey ? { 'x-make-apikey': gatewayKey } : {}) },
         body: JSON.stringify({
+          ...(gatewayKey ? { action: 'create' } : {}),
           orderId: order.id, packageId: order.package_id, packageName: quantity === 1 ? PACKAGE.name : `ClinicFlow — ${quantity} רישיונות לצמיתות`,
           amount: order.amount, price: order.amount / 100, currency: 'ILS', quantity: 1, licenseQuantity: order.quantity ?? 1,
           customer: { email: user.email, fullName: fullName.trim(), phone },

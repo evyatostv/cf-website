@@ -198,7 +198,7 @@ test('dedicated Make merchant lookup requires the stored link and checks the ind
     requests++;return Response.json(evidence);
   };
   const callback=load('grow-webhook',db,config,fetch);
-  for(const override of [{MAKE_GROW_READBACK_URL:env.MAKE_GROW_NOTIFY_URL},{MAKE_GROW_READBACK_URL:env.MAKE_PAYMENT_WEBHOOK_URL},
+  for(const override of [{MAKE_GROW_READBACK_URL:env.MAKE_GROW_NOTIFY_URL},{MAKE_PAYMENT_WEBHOOK_URL:config.MAKE_GROW_READBACK_URL+'?unexpected=1'},
     {MAKE_GROW_READBACK_KEY:env.MAKE_CALLBACK_SECRET},{MAKE_GROW_READBACK_URL:'https://unrelated.example/lookup'},{MAKE_GROW_READBACK_KEY:''}]) {
     assert.equal((await load('grow-webhook',db,{...config,...override},fetch)(post(event,auth))).status,503);
   }
@@ -211,4 +211,31 @@ test('dedicated Make merchant lookup requires the stored link and checks the ind
   assert.equal(settlements,0);evidence=actual;
   assert.equal((await (await callback(post(event,auth))).json()).licenseActivated,true);
   assert.equal((await (await callback(post(event,auth))).json()).duplicate,true);
+});
+
+test('shared keyed gateway routes creation and verification separately', async () => {
+  const {db,state}=database();
+  const config={...env, MAKE_GROW_READBACK_URL:env.MAKE_PAYMENT_WEBHOOK_URL, MAKE_GROW_READBACK_KEY:'dedicated-test'};
+  const link={paymentLinkProcessId:'42', paymentLinkProcessToken:'syntheticLinkToken'};
+  const actions=[];
+  const gateway=async (url,init)=>{
+    assert.equal(url,env.MAKE_PAYMENT_WEBHOOK_URL);
+    assert.equal(init.headers['x-make-apikey'],config.MAKE_GROW_READBACK_KEY);
+    const payload=JSON.parse(init.body);
+    actions.push(payload.action);
+    if(payload.action==='create') {
+      assert.equal(payload.price,1499);
+      return Response.json({...link,paymentUrl:'https://payment.example/order'});
+    }
+    assert.deepEqual(payload,{action:'readback',...link,transactionId:'99'});
+    return Response.json({...link,transactionId:'99',statusCode:'2',status:'שולם',sum:'1499'});
+  };
+  const create=load('create-grow-payment',db,config,gateway);
+  assert.equal((await create(post({...checkout,action:'readback'},userHeaders))).status,200);
+  assert.ok(state.digest);
+  db.rpc=async()=>({data:'PAID'});
+  const verify=load('grow-webhook',db,config,gateway);
+  const event={orderId,...link,action:'create',transactionId:'99',status:'paid',amount:149900,currency:'ILS'};
+  assert.equal((await verify(post(event,{'x-make-callback-secret':env.MAKE_CALLBACK_SECRET}))).status,200);
+  assert.deepEqual(actions,['create','readback']);
 });
