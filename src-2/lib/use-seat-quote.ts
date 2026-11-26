@@ -1,42 +1,27 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './supabase';
 
-export interface SeatQuote {
-  amount: number;
-  currency: 'ILS';
-  paidSeats: number;
-  targetSeat: number;
-}
+import { parseQuote, type SeatQuote } from './seat-quote';
 
-export function formatSeatPrice(amount: number) {
-  return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', minimumFractionDigits: 0 }).format(amount / 100);
-}
-
-function isQuote(data: unknown): data is SeatQuote {
-  if (!data || typeof data !== 'object') return false;
-  const row = data as Record<string, unknown>;
-  return row.currency === 'ILS' && typeof row.amount === 'number' && Number.isSafeInteger(row.amount) && row.amount > 0 &&
-    typeof row.paidSeats === 'number' && Number.isSafeInteger(row.paidSeats) && row.paidSeats >= 0 &&
-    row.targetSeat === row.paidSeats + 1;
-}
-
-export function useSeatQuote(userId: string | undefined, revision: number) {
+export function useSeatQuote(userId: string | undefined, revision: number, quantity: number | null = 1) {
   const [attempt, setAttempt] = useState(0);
-  const [result, setResult] = useState<{ userId: string; revision: number; attempt: number; quote: SeatQuote | null } | null>(null);
+  const [result, setResult] = useState<{ userId: string; revision: number; attempt: number; quantity: number; quote: SeatQuote | null } | null>(null);
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || quantity === null) return;
+    const count = quantity;
     const request = new AbortController();
     async function load() {
       let quote: SeatQuote | null = null;
       try {
-        const { data, error } = await supabase.rpc('my_grow_price_quote').abortSignal(request.signal);
-        if (!error && isQuote(data)) quote = data;
+        const query = count === 1 ? supabase.rpc('my_grow_price_quote') : supabase.rpc('my_grow_price_quote', { p_quantity: count });
+        const { data, error } = await query.abortSignal(request.signal);
+        if (!error) quote = parseQuote(data, count);
       } catch { /* Show the retry action on transport failure. */ }
-      if (!request.signal.aborted && userId) setResult({ userId, revision, attempt, quote });
+      if (!request.signal.aborted && userId) setResult({ userId, revision, attempt, quantity: count, quote });
     }
     void load();
     return () => request.abort();
-  }, [userId, revision, attempt]);
-  const current = result?.userId === userId && result?.attempt === attempt && result?.revision === revision ? result : null;
+  }, [userId, revision, attempt, quantity]);
+  const current = result?.userId === userId && result?.attempt === attempt && result?.revision === revision && result?.quantity === quantity ? result : null;
   return { quote: current?.quote, failed: current?.quote === null, retry: () => setAttempt(value => value + 1) };
 }
