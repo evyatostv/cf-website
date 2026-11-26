@@ -20,39 +20,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session, then SELF-HEAL a dead one. getSession() only reads
-    // the token from localStorage — it does not check the token is still valid.
-    // If the user behind it was deleted (or the project was reset), every call
-    // to /auth/v1/user returns 403 "User from sub claim in JWT does not exist",
-    // which traps the user on /complete-profile forever (its updateUser() can
-    // never succeed). Validating once against GoTrue and signing out on failure
-    // turns that dead end into a clean logged-out state → log in fresh.
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session) {
-        const { error } = await supabase.auth.getUser();
-        if (error) {
-          await supabase.auth.signOut().catch(() => {});
-          setSession(null);
-          setUser(null);
-          setLoading(false);
-          return;
-        }
+    let revision = 0;
+    const showSession = (current: Session | null) => {
+      setSession(current);
+      setUser(current?.user ?? null);
+      setLoading(false);
+    };
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, current) => {
+      const observed = ++revision;
+      if (event !== 'INITIAL_SESSION' || !current) {
+        showSession(current);
+        return;
       }
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+      // Leave the auth callback before starting another SDK operation.
+      setTimeout(async () => {
+        if (observed !== revision) return;
+        try {
+          const { error } = await supabase.auth.getUser(current.access_token);
+          if (observed !== revision) return;
+          if (error?.status === 401 || error?.code === 'user_not_found' ||
+              error?.code === 'session_not_found' ||
+              (error?.status === 403 && /user from sub claim in JWT does not exist/i.test(error.message))) {
+            showSession(null);
+            await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+            return;
+          }
+        } catch {
+          // A temporary connection failure cannot establish that an account was deleted.
+        }
+        if (observed === revision) showSession(current);
+      }, 0);
     });
-
-    return () => subscription?.unsubscribe();
+    return () => {
+      revision++;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, captchaToken?: string) => {
