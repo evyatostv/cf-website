@@ -1,4 +1,4 @@
--- Exercise both possible reversal orders with equally priced seats.
+-- Exercise both possible reversal orders with an additional discounted seat.
 begin;
 do $$
 declare
@@ -20,7 +20,7 @@ begin
     perform public.fulfill_grow_order(order_one,tx_one,'PAID',149900,'ILS','{}','key-'||buyer);
     perform public.resolve_paid_device('home',null,'claim',home_digest);
     order_two:=(public.open_additional_grow_order(buyer,2)->>'id')::uuid;
-    perform public.fulfill_grow_order(order_two,tx_two,'PAID',149900,'ILS','{}','unused');
+    perform public.fulfill_grow_order(order_two,tx_two,'PAID',119900,'ILS','{}','unused');
     perform public.resolve_paid_device('office',null,'claim',office_digest);
     if reverse_second then
       first_order:=order_two; second_order:=order_one; first_tx:=tx_two; last_tx:=tx_one;
@@ -29,15 +29,15 @@ begin
       first_order:=order_one; second_order:=order_two; first_tx:=tx_one; last_tx:=tx_two;
       first_kind:='lost_chargeback'; remaining:=token_office; remaining_fp:='office'; refunded_fp:='home';
     end if;
-    outcome:=public.support_reconcile_grow_reversal(first_order,first_tx,149900,'ILS',first_kind,'case-a-'||buyer,true);
+    outcome:=public.support_reconcile_grow_reversal(first_order,first_tx,case when reverse_second then 119900 else 149900 end,'ILS',first_kind,'case-a-'||buyer,true);
     if outcome->>'result'<>'RECORDED' or (outcome->>'remaining_grow_seats')::int<>1 then raise exception 'first reversal count'; end if;
     if not public.check_paid_device(remaining)
       or public.resolve_paid_device(refunded_fp,null,'check',null)<>'unbound'
       or public.resolve_paid_device(remaining_fp,null,'check',null)<>'active' then raise exception 'first reversal online enforcement'; end if;
     if (select machine_fingerprint from public.user_access where user_id=buyer) is distinct from remaining_fp then
       raise exception 'legacy primary still points to the reversed computer'; end if;
-    if public.support_reconcile_grow_reversal(first_order,first_tx,149900,'ILS',first_kind,'case-a-'||buyer,true)->>'result'<>'ALREADY_RECORDED' then raise exception 'duplicate'; end if;
-    outcome:=public.support_reconcile_grow_reversal(second_order,last_tx,149900,'ILS','full_refund','case-b-'||buyer,true);
+    if public.support_reconcile_grow_reversal(first_order,first_tx,case when reverse_second then 119900 else 149900 end,'ILS',first_kind,'case-a-'||buyer,true)->>'result'<>'ALREADY_RECORDED' then raise exception 'duplicate'; end if;
+    outcome:=public.support_reconcile_grow_reversal(second_order,last_tx,case when reverse_second then 149900 else 119900 end,'ILS','full_refund','case-b-'||buyer,true);
     if (outcome->>'remaining_grow_seats')::int<>0 or public.check_paid_device(token_home) or public.check_paid_device(token_office)
       or (select is_active from public.user_access where user_id=buyer) then raise exception 'last reversal'; end if;
     delete from public.paid_device_claims where user_id=buyer;
@@ -51,7 +51,7 @@ begin
   perform public.fulfill_grow_order(order_one,tx_one,'PAID',149900,'ILS','{}','key-'||buyer);
   update public.user_access set machine_fingerprint='legacy-home' where user_id=buyer;
   order_two:=(public.open_additional_grow_order(buyer,2)->>'id')::uuid;
-  perform public.fulfill_grow_order(order_two,tx_two,'PAID',149900,'ILS','{}','unused');
+  perform public.fulfill_grow_order(order_two,tx_two,'PAID',119900,'ILS','{}','unused');
   if exists(select 1 from public.paid_device_claims where user_id=buyer) then raise exception 'fixture already enrolled'; end if;
   perform public.support_reconcile_grow_reversal(order_one,tx_one,149900,'ILS','full_refund','legacy-case-'||buyer,true);
   if (select machine_fingerprint from public.user_access where user_id=buyer) is not null

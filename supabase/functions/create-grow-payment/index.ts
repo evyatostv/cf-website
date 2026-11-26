@@ -64,6 +64,10 @@ Deno.serve(async (req) => {
     const input = await req.json().catch(() => null);
     if (input?.plan !== PACKAGE.id) return json({ error: 'Invalid package' }, 400);
 
+    if (input.quantity !== undefined && input.quantity !== 1) {
+      return json({ error: 'כל הזמנה מיועדת לרישיון אחד למחשב אחד.' }, 400);
+    }
+
     let fullName = input.contact?.fullName;
     let rawPhone = input.contact?.phone;
     if (input.contact === undefined) {
@@ -121,7 +125,7 @@ Deno.serve(async (req) => {
       return json({ error: 'תשלום קודם נמצא בבדיקה. פנו לתמיכה לפני שתנסו לשלם שוב.' }, 409);
     }
     if (order?.result === 'PENDING') {
-      if (order.payment_url) return json({ orderId: order.id, paymentUrl: order.payment_url });
+      if (order.payment_url) return json({ orderId: order.id, paymentUrl: order.payment_url, amount: order.amount, currency: order.currency });
       return json({ error: 'יש הזמנה פתוחה. נסו שוב בעוד רגע או פנו לתמיכה אם הקישור אינו זמין.', orderId: order.id, code: 'ORDER_LINK_PENDING' }, 409);
     }
     if (order?.result !== 'NEW') throw new Error('Order creation failed');
@@ -138,7 +142,7 @@ Deno.serve(async (req) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orderId: order.id, packageId: order.package_id, packageName: PACKAGE.name,
-          amount: order.amount, price: order.amount / 100, currency: 'ILS',
+          amount: order.amount, price: order.amount / 100, currency: 'ILS', quantity: 1,
           customer: { email: user.email, fullName: fullName.trim(), phone },
           customerName: fullName.trim(), customerEmail: user.email, customerPhone: phone,
           notifyUrl: notifyUrl.href,
@@ -171,7 +175,7 @@ Deno.serve(async (req) => {
     if (saveError) throw saveError;
     if (!savedOrder) return json({ error: 'מצב ההזמנה השתנה. בדקו את סטטוס התשלום לפני ניסיון נוסף.' }, 409);
     await recordAuditEvent(db, { eventType: 'checkout_start', outcome: 'pending', userId: user.id, orderId: order.id, provider: 'grow', amount: order.amount, currency: 'ILS' });
-    return json({ orderId: order.id, paymentUrl: paymentUrl.href });
+    return json({ orderId: order.id, paymentUrl: paymentUrl.href, amount: order.amount, currency: order.currency });
   } catch (err) {
     console.error('create-grow-payment', err instanceof Error ? err.name : 'Database error');
     return json({ error: 'Payment initialization failed' }, 500);

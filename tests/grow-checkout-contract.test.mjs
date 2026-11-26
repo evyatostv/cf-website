@@ -65,6 +65,32 @@ test('server fixes checkout price, sends unique notification and return routes, 
   assert.equal(state.orders,1);
 });
 
+test('a request cannot purchase several seats with a single order',async ()=>{
+  const {db,state}=database();
+  const main=load('create-grow-payment',db,env,()=>assert.fail('Unexpected provider call'));
+  for (const quantity of [0,2,'2',-1]) {
+    assert.equal((await main(post({...checkout,quantity},userHeaders))).status,400);
+  }
+  assert.equal(state.orders,0);
+});
+
+test('subsequent seat sends the SQL price, ignoring caller supplied price and amount', async () => {
+  const {db}=database();
+  db.rpc=async (rpc,args)=>{
+    assert.equal(rpc,'open_additional_grow_order');
+    assert.equal(args.p_target_seat,2);
+    assert.equal(Object.hasOwn(args,'p_amount'),false);
+    return {data:{result:'NEW',id:orderId,package_id:'forever',amount:119900,currency:'ILS'}};
+  };
+  const handler=load('create-grow-payment',db,env,async (_url,request)=>{
+    const body=JSON.parse(request.body);
+    assert.equal(body.quantity,1);assert.equal(body.amount,119900);assert.equal(body.price,1199);assert.equal(body.currency,'ILS');
+    return Response.json({paymentUrl:'https://payment.example/second'});
+  });
+  const response=await handler(post({...checkout,targetSeat:2,price:1,amount:100},userHeaders));
+  assert.equal(response.status,200);assert.equal((await response.json()).amount,119900);
+});
+
 test('checkout requires both configured Make destinations and a callback credential before creating an order', async () => {
   for (const overrides of [
     { MAKE_CALLBACK_SECRET: '' }, { MAKE_CALLBACK_SECRET: '  ' },
