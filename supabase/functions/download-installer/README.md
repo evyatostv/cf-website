@@ -1,14 +1,14 @@
 # download-installer Edge Function
 
-Issues a short-lived signed URL for the ClinicFlow installer **only if** the caller has an active license in `user_access`.
+Issues a short-lived signed URL for the ClinicFlow installer after verifying the account’s active paid license and qualifying purchase.
 
 ## What it does
 
 1. Verifies the Supabase JWT (anyone can call, but must be logged in).
 2. Reads `user_access` for the user.
-3. Rejects if `is_active` is false, or if a `trial` plan has expired.
+3. Rejects inactive, expired, trial, and unpaid accounts. A purchase lookup failure also prevents link issuance.
 4. Generates a 5-minute signed URL to the installer in the private `installers` bucket.
-5. Logs the download to `download_log` (best-effort, never blocks).
+5. Records link issuance in `download_log` and `audit_events`. These events measure issued links. Transfer completion and installation require separate evidence. A logging failure still allows the authorized download.
 6. Returns `{ downloadUrl, expiresAt, plan }`.
 
 ## One-time setup
@@ -24,7 +24,7 @@ Upload the installer files at the root of the bucket:
 - `ClinicFlow-Setup.dmg`
 - `ClinicFlow-Setup.AppImage` (optional)
 
-If you use different filenames, update `INSTALLER_PATHS` at the top of `index.ts`.
+If you use different filenames, update `INSTALLER_PATHS` in `../_shared/installers.ts`.
 
 ### 2. Create the download_log table (optional but recommended)
 
