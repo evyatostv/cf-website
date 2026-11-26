@@ -1,4 +1,5 @@
-import { formatSeatPrice, useSeatQuote } from '@/lib/use-seat-quote';
+import { useSeatQuote } from '@/lib/use-seat-quote';
+import { formatSeatPrice } from '@/lib/seat-quote';
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import { usePageReturn } from '@/lib/use-page-return';
