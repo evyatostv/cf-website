@@ -28,4 +28,5 @@ for each row execute function public.sync_user_access_on_purchase();
 \ir ../../supabase/migrations/20261126081000_verified_allpay_orders.sql
 \ir ../../supabase/migrations/20261126082000_verified_stripe_orders.sql
 \ir ../../supabase/migrations/20261126085000_outreach_grow_totals.sql
+\ir ../../supabase/migrations/20261126091000_grow_link_binding.sql
 \ir ../../supabase/migrations/20261126092000_additional_seat_price.sql
