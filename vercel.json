@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "trailingSlash": false,
   "redirects": [
     {
       "source": "/:path*",
@@ -15,7 +16,24 @@
   ],
   "rewrites": [
     { "source": "/soon", "destination": "/soon.html" },
-    { "source": "/(.*)", "destination": "/app-shell.html" }
+    { "source": "/login", "destination": "/app-shell.html" },
+    { "source": "/signup", "destination": "/app-shell.html" },
+    { "source": "/dashboard", "destination": "/app-shell.html" },
+    { "source": "/campaign-dashboard", "destination": "/app-shell.html" },
+    { "source": "/payment", "destination": "/app-shell.html" },
+    { "source": "/thank-you", "destination": "/app-shell.html" },
+    { "source": "/reset-password", "destination": "/app-shell.html" },
+    { "source": "/update-password", "destination": "/app-shell.html" },
+    { "source": "/complete-profile", "destination": "/app-shell.html" },
+    { "source": "/beta", "destination": "/app-shell.html" },
+    { "source": "/account/orders", "destination": "/app-shell.html" },
+    { "source": "/account/renew", "destination": "/app-shell.html" },
+    { "source": "/checkout/retry", "destination": "/app-shell.html" },
+    { "source": "/download", "destination": "/app-shell.html" },
+    { "source": "/premium", "destination": "/app-shell.html" },
+    { "source": "/unsubscribe", "destination": "/app-shell.html" },
+    { "source": "/whats-new", "destination": "/app-shell.html" },
+    { "source": "/(.*)", "destination": "/404.html", "statusCode": 404 }
   ],
   "headers": [
     {
