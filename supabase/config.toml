@@ -54,3 +54,7 @@ verify_jwt = false
 
 [functions.process-grow-receipts]
 verify_jwt = true
+
+# Accept only expiring single-use proofs issued by the database timer.
+[functions.retry-deliveries]
+verify_jwt = false

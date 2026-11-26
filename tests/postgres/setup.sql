@@ -24,3 +24,4 @@ for each row execute function public.sync_user_access_on_purchase();
 \ir ../../supabase/migrations/20261126073000_contact_delivery_wakeup.sql
 \ir ../../supabase/migrations/20261126071000_refund_primary_device.sql
 \ir ../../supabase/migrations/20261126074000_contact_delivery_review.sql
+\ir ../../supabase/migrations/20261126080000_delivery_retry_timer.sql
