@@ -2,11 +2,22 @@ begin;
 do $$
 declare
   inquiry uuid := gen_random_uuid();
+  constraint_hit text;
   lease uuid;
   job record;
 begin
   insert into public.contact_messages(id,name,email,message,source)
     values (inquiry,'Test','synthetic@example.invalid','Synthetic inquiry','website');
+  -- A retry following an ambiguous response must hit exactly the row identity
+  -- recognized by the client without firing the delivery triggers again.
+  begin
+    insert into public.contact_messages(id,name,email,message,source)
+      values (inquiry,'Test','synthetic@example.invalid','Synthetic inquiry','website');
+    raise exception 'Repeated contact id inserted twice';
+  exception when unique_violation then
+    get stacked diagnostics constraint_hit = constraint_name;
+    if constraint_hit <> 'contact_messages_pkey' then raise exception 'Unexpected duplicate constraint'; end if;
+  end;
   select count(*) into strict job from public.contact_deliveries where contact_id=inquiry;
   if job.count<>3 then raise exception 'Missing durable delivery'; end if;
   if (select count(*) from public.claim_contact_deliveries(gen_random_uuid(),true))<>0 then raise exception 'Unknown row claimed'; end if;

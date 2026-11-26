@@ -90,3 +90,17 @@ Only a `READY` result permits closure. Run the same command with a third argumen
 כששתי רכישות הן בסך ₪1,499, הסכום לבדו אינו מזהה מחשב. בכל הפעלה השרת משייך את המחשב לרכישה פנויה. בבדיקה המקדימה מצמידים את מזהה ההזמנה למזהה החיוב של Grow. השדה `remaining_grow_seats` מציג את מספר הרישיונות מרכישות Grow שיישארו. רישיון היסטורי תקף, אם קיים, נבדק בנפרד.
 
 אם שויך מחשב לרכישה שזוכתה, בדיקת הרישוי המקוונת הבאה תשלול את הגישה של אותו מחשב. המחשב ששויך לרכישה התקפה ממשיך לעבוד. אם המחשב שזוכה היה המחשב הראשי, השירות מעדכן את השיוך הראשי למחשב שכבר הופעל ברכישה התקפה. זיכוי רכישה שעדיין לא שויכה למחשב מקטין את מספר ההפעלות הפנויות. חזרה על אותה אסמכתה לאותו חיוב אינה מבטלת רישיון נוסף.
+
+### Read-only production preflight
+
+From a linked production checkout with an authenticated Supabase CLI, run
+`node scripts/checkout-readiness.mjs win mac` (or specify just the customer's platform).
+Exit 0 means the listed static prerequisites pass on every requested platform.
+Exit 2 means prerequisites are missing or the effective bucket/provider is overridden
+and needs verification. Exit 1 means the inspection could not be completed.
+Only metadata, function versions and boolean checks are printed. This command
+does not open an order, call Make, download an installer or process payment.
+A nonempty installer needs independent signature and install verification.
+Presence of a secret cannot verify its value, Make scenario activation or mapping.
+Only a separately authorized end-to-end payment observation can confirm capture,
+authenticated notification and paid delivery together.

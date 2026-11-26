@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 export type Lead = {
@@ -26,15 +27,32 @@ function clamp(v: string | undefined, max: number): string {
   return (v ?? "").trim().slice(0, max);
 }
 
-// Delivery work is queued in the same transaction as the stored inquiry.
-export async function submitLead(lead: Lead): Promise<{ ok: boolean; error?: string }> {
-  // Validate + normalise before hitting the network (WEB-008).
-  const name = clamp(lead.name, LIMITS.name);
-  const email = clamp(lead.email, LIMITS.email);
-  const phone = clamp(lead.phone, LIMITS.phone);
-  const clinicName = clamp(lead.clinicName, LIMITS.clinicName);
-  const body = clamp(lead.message, LIMITS.message);
+// An intent is scoped to one mounted form. Only its unchanged, unacknowledged
+// payload may reuse the opaque row ID after a lost HTTP response.
+export function useSubmitLead() {
+  const [submit] = useState(() => {
+    let pending: { payload: string; id: string } | undefined;
+    return async (lead: Lead) => {
+      const payload = JSON.stringify(lead);
+      if (pending?.payload !== payload) pending = { payload, id: crypto.randomUUID() };
+      const result = await submitLead(lead, pending.id);
+      if (result.ok) pending = undefined;
+      return result;
+    };
+  });
+  return submit;
+}
 
+async function submitLead(lead: Lead, id: string): Promise<{ ok: boolean; error?: string }> {
+  const name = lead.name.trim();
+  const email = lead.email.trim();
+  const phone = lead.phone?.trim() || "";
+  const clinicName = lead.clinicName?.trim() || "";
+  const body = lead.message.trim();
+  if (name.length > LIMITS.name || email.length > LIMITS.email || phone.length > LIMITS.phone ||
+      clinicName.length > LIMITS.clinicName || body.length > LIMITS.message) {
+    return { ok: false, error: "אחד השדות ארוך מדי. אפשר לקצר את הפרטים ולנסות שוב. תוכן הפנייה נשמר בטופס." };
+  }
   if (!name) return { ok: false, error: "נא להזין שם." };
   if (!EMAIL_RE.test(email)) return { ok: false, error: "כתובת אימייל אינה תקינה." };
   if (!body) return { ok: false, error: "נא להזין הודעה." };
@@ -43,6 +61,7 @@ export async function submitLead(lead: Lead): Promise<{ ok: boolean; error?: str
   const message = clinicName ? `קליניקה: ${clinicName}\n\n${body}` : body;
 
   const record = {
+    id,
     name,
     email,
     phone: phone || null,
@@ -55,6 +74,7 @@ export async function submitLead(lead: Lead): Promise<{ ok: boolean; error?: str
   };
   const { error } = await supabase.from("contact_messages").insert(record);
 
+  if (error?.code === "23505" && error.message.includes('"contact_messages_pkey"')) return { ok: true };
   if (error) {
     console.error("Lead insert failed", error.code);
     return { ok: false, error: "שגיאה בשליחה. נסו שוב מאוחר יותר." };

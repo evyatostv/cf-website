@@ -47,15 +47,26 @@ export function DashboardPage() {
   const navigate = useNavigate();
   const { user, loading, signOut } = useAuth();
   const pageReturn = usePageReturn();
-  const [seatSummary, setSeatSummary] = useState<{ userId: string; count: number } | null>(null);
+  const [seatSummary, setSeatSummary] = useState<{ userId: string; count: number | null } | null>(null);
+  const [seatAttempt, setSeatAttempt] = useState(0);
   useEffect(() => {
     if (!user?.id) return;
+    const userId = user.id;
     let current = true;
-    void supabase.rpc('my_paid_seat_count').then(({ data, error }) => {
-      if (current && !error && Number.isSafeInteger(data)) setSeatSummary({ userId: user.id, count: data });
-    });
+    setSeatSummary(null);
+    const loadSeats = async () => {
+      let count: number | null = null;
+      try {
+        const result = await supabase.rpc('my_paid_seat_count');
+        if (!result.error && Number.isSafeInteger(result.data) && result.data >= 0) count = result.data;
+      } catch {
+        // Keep the retry available when the network request itself fails.
+      }
+      if (current) setSeatSummary({ userId, count });
+    };
+    void loadSeats();
     return () => { current = false; };
-  }, [user?.id, pageReturn]);
+  }, [user?.id, pageReturn, seatAttempt]);
   const [access, setAccess] = useState<UserAccess | null | undefined>(undefined);
   const [lookupFailed, setLookupFailed] = useState(false);
   const [lookupAttempt, setLookupAttempt] = useState(0);
@@ -234,7 +245,13 @@ export function DashboardPage() {
                       </div>
 
                       
-                      {seatSummary?.userId === user.id && seatSummary.count > 0 && (
+                      {seatSummary?.userId === user.id && seatSummary.count === null && (
+                        <div className="mb-5" role="alert">
+                          <p>לא הצלחנו לבדוק כמה רישיונות למחשבים יש בחשבון.</p>
+                          <button className="underline" onClick={() => setSeatAttempt(value => value + 1)}>בדיקה חוזרת של מספר הרישיונות</button>
+                        </div>
+                      )}
+                      {seatSummary?.userId === user.id && seatSummary.count !== null && seatSummary.count > 0 && (
                         <div className="mb-5">
                           <p>רישיונות למחשבים בחשבון שלך: {seatSummary.count}</p>
                           <Link className="underline text-[#0d47a1]" to={`/payment?plan=forever&seat=${seatSummary.count + 1}`}>
