@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const { error } = await supabase.auth.getUser(current.access_token);
           if (observed !== revision) return;
-          if (error?.status === 401 || error?.code === 'user_not_found' ||
+          if (error?.code === 'user_not_found' ||
               error?.code === 'session_not_found' ||
               (error?.status === 403 && /user from sub claim in JWT does not exist/i.test(error.message))) {
             showSession(null);
