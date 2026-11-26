@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Mail, Phone, User, Building2 } from 'lucide-react';
-import { submitLead } from '@/lib/leads';
+import { useSubmitLead } from '@/lib/leads';
 import { captureAttribution } from '@/app/components/AttributionCapture';
 import { DemoAvailability } from '@/app/components/DemoAvailability';
 import { trackMarketingEvent } from '@/lib/marketing-analytics';
 
 export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterprise' }) {
+  const submitLead = useSubmitLead();
   const [searchParams] = useSearchParams();
   const [storedAttribution, setStoredAttribution] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
@@ -16,6 +17,7 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
     clinicName: '',
     message: '',
   });
+  const sending = useRef(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -34,39 +36,47 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
+    if (sending.current) return;
+    sending.current = true;
+    try {
+      setLoading(true);
+      setError('');
 
-    const isEnterprise = mode === 'enterprise';
-    const attribution = {
-      source: storedAttribution.utm_source || searchParams.get('utm_source') || undefined,
-      medium: storedAttribution.utm_medium || searchParams.get('utm_medium') || undefined,
-      campaign: storedAttribution.utm_campaign || searchParams.get('utm_campaign') || undefined,
-      content: storedAttribution.utm_content || searchParams.get('utm_content') || undefined,
-    };
-    const attributionLabel = Object.values(attribution).filter(Boolean).join('/');
-    const landingPath = storedAttribution.landing_path || window.location.pathname;
-    const res = await submitLead({
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      clinicName: formData.clinicName,
-      message: `${isEnterprise ? '[פניית Enterprise]' : '[בקשת הדגמה מהאתר]'}\n${formData.message || 'אשמח לקבל הדגמה קצרה של ClinicFlow.'}${attributionLabel ? `\n\nמקור: ${attributionLabel}` : ''}`,
-      source: [isEnterprise ? 'enterprise-lead-form' : 'website-demo-form', `landing:${landingPath}`, attributionLabel]
-        .filter(Boolean)
-        .join('/'),
-      attribution,
-    });
+      const isEnterprise = mode === 'enterprise';
+      const attribution = {
+        source: storedAttribution.utm_source || searchParams.get('utm_source') || undefined,
+        medium: storedAttribution.utm_medium || searchParams.get('utm_medium') || undefined,
+        campaign: storedAttribution.utm_campaign || searchParams.get('utm_campaign') || undefined,
+        content: storedAttribution.utm_content || searchParams.get('utm_content') || undefined,
+      };
+      const attributionLabel = Object.values(attribution).filter(Boolean).join('/');
+      const landingPath = storedAttribution.landing_path || window.location.pathname;
+      const res = await submitLead({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        clinicName: formData.clinicName,
+        message: `${isEnterprise ? '[פניית Enterprise]' : '[בקשת הדגמה מהאתר]'}\n${formData.message || 'אשמח לקבל הדגמה קצרה של ClinicFlow.'}${attributionLabel ? `\n\nמקור: ${attributionLabel}` : ''}`,
+        source: [isEnterprise ? 'enterprise-lead-form' : 'website-demo-form', `landing:${landingPath}`, attributionLabel]
+          .filter(Boolean)
+          .join('/'),
+        attribution,
+      });
 
-    setLoading(false);
-    if (!res.ok) {
-      setError(res.error || 'שגיאה בשליחה. נסו שוב מאוחר יותר.');
-      return;
+      if (!res.ok) {
+        setError(res.error || 'שגיאה בשליחה. נסו שוב מאוחר יותר.');
+        return;
+      }
+      trackMarketingEvent('contact_submitted', 'premium_contact_form');
+      setSuccess(true);
+      setFormData({ name: '', email: '', phone: '', clinicName: '', message: '' });
+      setTimeout(() => setSuccess(false), 5000);
+    } catch {
+      setError("לא התקבל אישור שליחה. הפרטים נשארו בטופס ואפשר לנסות שוב.");
+    } finally {
+      sending.current = false;
+      setLoading(false);
     }
-    trackMarketingEvent('contact_submitted', 'premium_contact_form');
-    setSuccess(true);
-    setFormData({ name: '', email: '', phone: '', clinicName: '', message: '' });
-    setTimeout(() => setSuccess(false), 5000);
   };
 
   return (
@@ -98,7 +108,7 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
           </label>
           <div className="flex items-center h-12 px-3 border border-[#e1e6ec] rounded-lg focus-within:ring-2 focus-within:ring-[#0d47a1] transition-colors overflow-hidden bg-white">
             <User className="w-5 h-5 text-[#6b7c93] flex-shrink-0" />
-            <input
+            <input disabled={loading}
               type="text"
               name="name"
               value={formData.name}
@@ -117,7 +127,7 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
           </label>
           <div className="flex items-center h-12 px-3 border border-[#e1e6ec] rounded-lg focus-within:ring-2 focus-within:ring-[#0d47a1] transition-colors overflow-hidden bg-white">
             <Mail className="w-5 h-5 text-[#6b7c93] flex-shrink-0" />
-            <input
+            <input disabled={loading}
               type="email"
               name="email"
               value={formData.email}
@@ -136,7 +146,7 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
           </label>
           <div className="flex items-center h-12 px-3 border border-[#e1e6ec] rounded-lg focus-within:ring-2 focus-within:ring-[#0d47a1] transition-colors overflow-hidden bg-white">
             <Phone className="w-5 h-5 text-[#6b7c93] flex-shrink-0" />
-            <input
+            <input disabled={loading}
               type="tel"
               name="phone"
               value={formData.phone}
@@ -154,7 +164,7 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
           </label>
           <div className="flex items-center h-12 px-3 border border-[#e1e6ec] rounded-lg focus-within:ring-2 focus-within:ring-[#0d47a1] transition-colors overflow-hidden bg-white">
             <Building2 className="w-5 h-5 text-[#6b7c93] flex-shrink-0" />
-            <input
+            <input disabled={loading}
               type="text"
               name="clinicName"
               value={formData.clinicName}
@@ -170,7 +180,7 @@ export function PremiumContactForm({ mode = 'demo' }: { mode?: 'demo' | 'enterpr
           <label className="block text-sm font-medium text-[#1a2332] mb-2">
             הודעה <span className="text-[#9aa7b8] text-sm font-normal">(לא חובה)</span>
           </label>
-          <textarea
+          <textarea disabled={loading}
             name="message"
             value={formData.message}
             onChange={handleChange}

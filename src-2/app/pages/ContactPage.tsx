@@ -1,8 +1,8 @@
 import { motion } from "motion/react";
 import { Mail, MessageCircle, Send, CheckCircle } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSearchParams } from "react-router";
-import { submitLead } from "@/lib/leads";
+import { useSubmitLead } from "@/lib/leads";
 import { CONTACT_EMAIL, CONTACT_WHATSAPP_URL } from "@/app/config/site";
 import { Seo, SITE_NAME, SITE_ORIGIN } from "@/app/components/Seo";
 import { readStoredAttribution } from "@/app/components/AttributionCapture";
@@ -46,6 +46,7 @@ const CONTACT_COPY = {
 };
 
 export function ContactPage() {
+  const submitLead = useSubmitLead();
   const [searchParams] = useSearchParams();
   const intent = searchParams.get("intent");
   const copy = intent === "demo" || intent === "partnership" ? CONTACT_COPY[intent] : CONTACT_COPY.general;
@@ -57,6 +58,7 @@ export function ContactPage() {
     clinicName: "",
     message: "",
   });
+  const sending = useRef(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -70,46 +72,54 @@ export function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
-    setSuccess(false);
+    if (sending.current) return;
+    sending.current = true;
+    try {
+      setLoading(true);
+      setError("");
+      setSuccess(false);
 
-    const storedAttribution = readStoredAttribution();
-    const attribution = ["utm_source", "utm_medium", "utm_campaign", "utm_content"]
-      .map((key) => [key, searchParams.get(key) || storedAttribution[key]] as const)
-      .filter((entry): entry is readonly [string, string] => Boolean(entry[1]));
-    const attributionSource = attribution.map(([, value]) => value).join("/");
-    const landingPath = storedAttribution.landing_path || window.location.pathname;
-    const source = copy.source
-      ? [copy.source, attributionSource, `landing:${landingPath}`].filter(Boolean).join("/")
-      : [attributionSource || "contact-page", `landing:${landingPath}`].join("/");
-    const message = formData.message.trim() || copy.defaultMessage;
+      const storedAttribution = readStoredAttribution();
+      const attribution = ["utm_source", "utm_medium", "utm_campaign", "utm_content"]
+        .map((key) => [key, searchParams.get(key) || storedAttribution[key]] as const)
+        .filter((entry): entry is readonly [string, string] => Boolean(entry[1]));
+      const attributionSource = attribution.map(([, value]) => value).join("/");
+      const landingPath = storedAttribution.landing_path || window.location.pathname;
+      const source = copy.source
+        ? [copy.source, attributionSource, `landing:${landingPath}`].filter(Boolean).join("/")
+        : [attributionSource || "contact-page", `landing:${landingPath}`].join("/");
+      const message = formData.message.trim() || copy.defaultMessage;
 
-    const res = await submitLead({
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      message: `[${copy.messageTag}]\n${message}\n\nמקור: ${source}`,
-      clinicName: formData.clinicName,
-      source,
-      attribution: {
-        source: searchParams.get("utm_source") || storedAttribution.utm_source || undefined,
-        medium: searchParams.get("utm_medium") || storedAttribution.utm_medium || undefined,
-        campaign: searchParams.get("utm_campaign") || storedAttribution.utm_campaign || undefined,
-        content: searchParams.get("utm_content") || storedAttribution.utm_content || undefined,
-      },
-    });
+      const res = await submitLead({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: `[${copy.messageTag}]\n${message}\n\nמקור: ${source}`,
+        clinicName: formData.clinicName,
+        source,
+        attribution: {
+          source: searchParams.get("utm_source") || storedAttribution.utm_source || undefined,
+          medium: searchParams.get("utm_medium") || storedAttribution.utm_medium || undefined,
+          campaign: searchParams.get("utm_campaign") || storedAttribution.utm_campaign || undefined,
+          content: searchParams.get("utm_content") || storedAttribution.utm_content || undefined,
+        },
+      });
 
-    setLoading(false);
 
-    if (!res.ok) {
-      setError(res.error || "שגיאה בשליחה. נסה/י שוב מאוחר יותר.");
-      return;
+      if (!res.ok) {
+        setError(res.error || "שגיאה בשליחה. נסה/י שוב מאוחר יותר.");
+        return;
+      }
+
+      trackMarketingEvent('contact_submitted', 'contact_form');
+      setSuccess(true);
+      setFormData({ name: "", email: "", phone: "", clinicName: "", message: "" });
+    } catch {
+      setError("לא התקבל אישור שליחה. הפרטים נשארו בטופס ואפשר לנסות שוב.");
+    } finally {
+      sending.current = false;
+      setLoading(false);
     }
-
-    trackMarketingEvent('contact_submitted', 'contact_form');
-    setSuccess(true);
-    setFormData({ name: "", email: "", phone: "", clinicName: "", message: "" });
   };
 
   return (
@@ -211,7 +221,7 @@ export function ContactPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="contact-name" className="block text-[#1a2332] mb-2">שם מלא</label>
-                <input
+                <input disabled={loading}
                   id="contact-name"
                   type="text"
                   required
@@ -225,7 +235,7 @@ export function ContactPage() {
 
               <div>
                 <label htmlFor="contact-email" className="block text-[#1a2332] mb-2">אימייל</label>
-                <input
+                <input disabled={loading}
                   id="contact-email"
                   type="email"
                   required
@@ -243,7 +253,7 @@ export function ContactPage() {
 
               <div>
                 <label htmlFor="contact-phone" className="block text-[#1a2332] mb-2">טלפון <span className="text-[#9aa7b8] text-sm font-normal">(לא חובה)</span></label>
-                <input
+                <input disabled={loading}
                   id="contact-phone"
                   type="tel"
                   autoComplete="tel"
@@ -257,7 +267,7 @@ export function ContactPage() {
 
               <div>
                 <label htmlFor="contact-clinic" className="block text-[#1a2332] mb-2">{isPartnershipRequest ? "שם החברה" : "שם המרפאה"} <span className="text-[#9aa7b8] text-sm font-normal">(לא חובה)</span></label>
-                <input
+                <input disabled={loading}
                   id="contact-clinic"
                   type="text"
                   autoComplete="organization"
@@ -270,7 +280,7 @@ export function ContactPage() {
 
               <div>
                 <label htmlFor="contact-message" className="block text-[#1a2332] mb-2">הודעה <span className="text-[#9aa7b8] text-sm font-normal">(לא חובה)</span></label>
-                <textarea
+                <textarea disabled={loading}
                   id="contact-message"
                   value={formData.message}
                   onChange={(e) => updateField("message", e.target.value)}
