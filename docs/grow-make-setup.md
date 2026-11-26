@@ -15,9 +15,25 @@ Set these as server-side Supabase Edge Function secrets (never `VITE_` and never
 ## Make scenario 1 — create the payment link
 
 1. Add **Webhooks → Custom webhook** and copy its URL into `MAKE_PAYMENT_WEBHOOK_URL`.
-2. Add **Grow → Create Payment Link** with a manually-created Grow production connection. Use **sending mode `none`**, payment type **payments**, and the incoming `amount`, `packageName`, customer name, email, phone, and `orderId` values.
-3. Use one product: product name `packageName`, price `amount / 100`, quantity `1`, and the merchant’s configured VAT type. Set **Notify URL** to the incoming `notifyUrl`, **Success URL** to `successUrl`, and custom field 1 to `orderId`.
-4. Return the Grow output payment URL to the caller using Make’s webhook response module as `{ "paymentUrl": "<Grow payment URL>" }`.
+2. Add **Grow → Create Payment Link** with the merchant connection. Choose sending mode **none**, payment type **payments** and one product.
+3. Map the incoming webhook bundle as shown below. The server sends a numeric price in shekels and a separate amount in agorot. For a single lifetime license the values are `1499` and `149900` respectively.
+
+| Grow field | Value in Make |
+| --- | --- |
+| Product Name | `packageName` |
+| Price | `price` as a single numeric token |
+| Currency (if shown) | `currency` (`ILS`) |
+| Quantity | Fixed number `1` |
+| Full Name | `customer.fullName` |
+| Phone | `customer.phone` as text, preserving the leading zero |
+| Email | `customer.email` |
+| Notify URL | `notifyUrl` |
+| Success URL | `successUrl` |
+| Cancellation URL (if available) | `cancelUrl` |
+| Custom field 1 | `orderId` |
+
+4. Use the merchant’s configured VAT type. The expected checkout total is ₪1,499 for one license. If Make reports an invalid price, inspect the Price mapping for an extra currency token. If the name or phone is empty, inspect the nested `customer` object in that execution. Keep the scenario failed when required customer data is missing so support can investigate the order.
+5. Return the Grow output payment URL to the caller using Make’s webhook response module as `{ "paymentUrl": "<Grow payment URL>" }`.
 
 The Grow connection is created in Make via Grow (production) or Grow Sandbox. Grow’s own interface performs OTP verification. Do not put the business identifier or OTP in source control or send it to ClinicFlow.
 
