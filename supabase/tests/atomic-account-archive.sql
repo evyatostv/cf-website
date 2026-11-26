@@ -33,7 +33,7 @@ begin
   if exists(select 1 from public.email_log where payment_id='win-back:'||email or recipient=email) then raise exception 'lifecycle identity retained'; end if;
   insert into auth.users(id,email) values(new_account_id,email);
   if public.grow_paid_seat_count(new_account_id)<>0 then raise exception 'reused email granted access'; end if;
-  result:=public.fulfill_grow_order(pending_order,'late-capture','PAID',149900,'ILS','{}','no-key');
+  result:=public.fulfill_grow_order(pending_order,'late-capture','PAID',119900,'ILS','{}','no-key');
   if result<>'MANUAL_REVIEW' or exists(select 1 from public.purchases where payment_id='late-capture') then raise exception 'late capture'; end if;
   if public.support_reconcile_grow_reversal(paid_order,'archive-capture',149900,'ILS','full_refund','archive-case',true)->>'result'<>'RECORDED' then raise exception 'archived refund'; end if;
 end $$;

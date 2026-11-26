@@ -22,7 +22,7 @@ begin
   if public.resolve_paid_device('office',null,'claim',digest_b) <> 'bound_elsewhere' then raise exception 'legacy seat displaced'; end if;
   if public.resolve_paid_device('home','legacy-home','check',digest_a) <> 'active' then raise exception 'legacy migration'; end if;
   order_b := public.open_additional_grow_order(buyer,2);
-  perform public.fulfill_grow_order((order_b->>'id')::uuid, tx_b,'PAID',149900,'ILS','{}','unused');
+  perform public.fulfill_grow_order((order_b->>'id')::uuid, tx_b,'PAID',119900,'ILS','{}','unused');
   if public.resolve_paid_device('office',null,'claim',digest_b) <> 'active' then raise exception 'second purchase'; end if;
   if public.resolve_paid_device('office',null,'claim',digest_b) <> 'active' then raise exception 'repeat claim'; end if;
   if public.resolve_paid_device('third',null,'transfer',digest_b) <> 'capacity' then raise exception 'unselected transfer'; end if;

@@ -17,7 +17,7 @@ if (!order || !/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(order)
   || !capture || !identifier.test(capture) || !reference || reference.length<2 || !identifier.test(reference)
   || !amount || !/^[1-9][0-9]{0,8}$/.test(amount) || currency!=='ILS'
   || !['full_refund','lost_chargeback'].includes(kind)) {
-  throw new Error('Required: --order UUID --capture ORIGINAL_TX --amount-agorot 149900 --currency ILS --kind full_refund|lost_chargeback --reference PROVIDER_CASE_ID');
+  throw new Error('Required: --order UUID --capture ORIGINAL_TX --amount-agorot ORIGINAL_CHARGED_AGOROT --currency ILS --kind full_refund|lost_chargeback --reference PROVIDER_CASE_ID');
 }
 if (apply && values['confirm-order']!==order) throw new Error('To apply, repeat the order ID using --confirm-order.');
 const temp=mkdtempSync(join(tmpdir(),'clinicflow-reversal-'));

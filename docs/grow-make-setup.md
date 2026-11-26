@@ -16,7 +16,7 @@ Set these as server-side Supabase Edge Function secrets (never `VITE_` and never
 
 1. Add **Webhooks → Custom webhook** and copy its URL into `MAKE_PAYMENT_WEBHOOK_URL`.
 2. Add **Grow → Create Payment Link** with the merchant connection. Choose sending mode **none**, payment type **payments** and one product.
-3. Map the incoming webhook bundle as shown below. The server sends a numeric price in shekels and a separate amount in agorot. For a single lifetime license the values are `1499` and `149900` respectively.
+3. Map the incoming webhook bundle as shown below. The server sends a numeric price in shekels and a separate amount in agorot. For the first paid seat these are `1499` and `149900`; for each additional seat on the same eligible account they are `1199` and `119900`. Always use the stored order values. An additional-seat link issued earlier at the former price can still settle for its original amount. New checkout requests for that pending order go to support to reconcile the old link before issuing another.
 
 | Grow field | Value in Make |
 | --- | --- |
@@ -63,7 +63,7 @@ Apply the migration before enabling the scenario. Existing Allpay/Stripe flows r
 ```sh
 node scripts/reconcile-grow-reversal.mjs \
   --order '{CLINICFLOW_ORDER_UUID}' --capture '{ORIGINAL_GROW_TRANSACTION_ID}' \
-  --amount-agorot 149900 --currency ILS --kind full_refund \
+  --amount-agorot '{ORIGINAL_CHARGED_AGOROT}' --currency ILS --kind full_refund \
   --reference '{GROW_REFUND_REFERENCE}'
 ```
 

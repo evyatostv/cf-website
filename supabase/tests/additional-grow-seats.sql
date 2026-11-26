@@ -15,11 +15,11 @@ begin
   if public.grow_paid_seat_count(buyer) <> 1 then raise exception 'First seat'; end if;
   if public.open_additional_grow_order(buyer,3)->>'result' <> 'SEATS_CHANGED' then raise exception 'Out of sequence'; end if;
   extra := public.open_additional_grow_order(buyer,2);
-  if extra->>'result' <> 'NEW' or (extra->>'amount')::int <> 149900 then raise exception 'Wrong price'; end if;
+  if extra->>'result' <> 'NEW' or (extra->>'amount')::int <> 119900 then raise exception 'Wrong price'; end if;
   if public.open_additional_grow_order(buyer,2)->>'id' <> extra->>'id' then raise exception 'Duplicate checkout'; end if;
   if public.grow_paid_seat_count(buyer) <> 1 then raise exception 'Pending order granted seat'; end if;
-  perform public.fulfill_grow_order((extra->>'id')::uuid,second_tx,'PAID',149900,'ILS','{}','unused');
-  perform public.fulfill_grow_order((extra->>'id')::uuid,second_tx,'PAID',149900,'ILS','{}','unused');
+  perform public.fulfill_grow_order((extra->>'id')::uuid,second_tx,'PAID',119900,'ILS','{}','unused');
+  perform public.fulfill_grow_order((extra->>'id')::uuid,second_tx,'PAID',119900,'ILS','{}','unused');
   if public.grow_paid_seat_count(buyer) <> 2 then raise exception 'Second seat'; end if;
   if public.open_additional_grow_order(buyer,2)->>'result' <> 'SEATS_CHANGED' then raise exception 'Stale checkout'; end if;
   if public.open_additional_grow_order(buyer,3)->>'result' <> 'NEW' then raise exception 'Third seat'; end if;
@@ -32,7 +32,7 @@ begin
   end if;
   if public.open_additional_grow_order(buyer,2)->>'result' <> 'MANUAL_REVIEW' then raise exception 'Incompatible pending order'; end if;
   if not public.has_verified_desktop_purchase(buyer,'full') then raise exception 'Active seat lost download'; end if;
-  perform public.record_grow_refund((extra->>'id')::uuid,second_tx,149900,'ILS');
+  perform public.record_grow_refund((extra->>'id')::uuid,second_tx,119900,'ILS');
   if public.has_verified_desktop_purchase(buyer,'full') then raise exception 'All refunded retained download'; end if;
   if exists(select 1 from public.user_access where user_id=buyer and is_active) then raise exception 'Fully refunded active access'; end if;
 end;
@@ -53,9 +53,9 @@ begin
   if (select count(*) from public.account_paid_seat_receipts(buyer,'professional'))<>1 then raise exception 'Legacy seat missing'; end if;
   extra:=public.open_additional_grow_order(buyer,2);
   if extra->>'result' is distinct from 'NEW' then raise exception 'Legacy additional purchase'; end if;
-  perform public.fulfill_grow_order((extra->>'id')::uuid,grow_tx,'PAID',149900,'ILS','{}','CF-' || buyer::text);
+  perform public.fulfill_grow_order((extra->>'id')::uuid,grow_tx,'PAID',119900,'ILS','{}','CF-' || buyer::text);
   if (select count(*) from public.account_paid_seat_receipts(buyer,'full'))<>2 then raise exception 'Mixed seat count'; end if;
-  perform public.record_grow_refund((extra->>'id')::uuid,grow_tx,149900,'ILS');
+  perform public.record_grow_refund((extra->>'id')::uuid,grow_tx,119900,'ILS');
   if not exists(select 1 from public.user_access where user_id=buyer and is_active and plan='professional' and expires_at=original_expiry)
     then raise exception 'Original legacy license not restored'; end if;
 end;

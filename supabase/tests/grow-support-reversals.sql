@@ -20,7 +20,7 @@ begin
   perform public.fulfill_grow_order(first_order,capture_a,'PAID',149900,'ILS','{}',buyer::text);
   perform public.resolve_paid_device('home',null,'claim',encode(sha256(convert_to(token_a,'UTF8')),'hex'));
   second_order:=(public.open_additional_grow_order(buyer,2)->>'id')::uuid;
-  perform public.fulfill_grow_order(second_order,capture_b,'PAID',149900,'ILS','{}',buyer::text);
+  perform public.fulfill_grow_order(second_order,capture_b,'PAID',119900,'ILS','{}',buyer::text);
   perform public.resolve_paid_device('office',null,'claim',encode(sha256(convert_to(token_b,'UTF8')),'hex'));
 
   if public.support_reconcile_grow_reversal(first_order,capture_a,1,'ILS','full_refund',refund_ref,true)->>'result'<>'MISMATCH'
@@ -36,9 +36,9 @@ begin
     or (select status from public.orders where id=first_order)<>'CHARGED_BACK' then raise exception 'Wrong chargeback seat'; end if;
   if public.fulfill_grow_order(first_order,capture_a,'PAID',149900,'ILS','{}','unused')<>'CONFLICT'
     or public.support_reconcile_grow_reversal(first_order,capture_a,149900,'ILS','lost_chargeback',dispute_ref,true)->>'result'<>'ALREADY_RECORDED'
-    or public.support_reconcile_grow_reversal(second_order,capture_b,149900,'ILS','full_refund',dispute_ref,true)->>'result'<>'CONFLICT'
+    or public.support_reconcile_grow_reversal(second_order,capture_b,119900,'ILS','full_refund',dispute_ref,true)->>'result'<>'CONFLICT'
     then raise exception 'Duplicate or reused reference'; end if;
-  reconciled := public.support_reconcile_grow_reversal(second_order,capture_b,149900,'ILS','full_refund',refund_ref,true)->>'result';
+  reconciled := public.support_reconcile_grow_reversal(second_order,capture_b,119900,'ILS','full_refund',refund_ref,true)->>'result';
   if reconciled<>'RECORDED'
     or public.check_paid_device(token_b) or public.has_verified_desktop_purchase(buyer,'full') then raise exception 'Final refund'; end if;
   if has_function_privilege('anon','public.support_reconcile_grow_reversal(uuid,text,integer,text,text,text,boolean)','EXECUTE')
