@@ -1,0 +1,7 @@
+{
+  "name": "clinicflow-grow-sandbox-qa",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "dependencies": { "embedded-postgres": "17.12.0-beta.19" }
+}
