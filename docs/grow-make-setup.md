@@ -114,7 +114,7 @@ authenticated notification and paid delivery together.
 
 ### Merchant readback via Make
 
-For a merchant-managed Make connection, configure `MAKE_GROW_READBACK_URL` and a separate `MAKE_GROW_READBACK_KEY` on the ClinicFlow server. Use a dedicated **Custom Webhook** with Make API-key authentication enabled. Do not reuse the creation or notification URL, or the callback signing key. When either Make readback setting is present the server requires both; failed or partial configuration keeps checkout closed. The direct Grow merchant lookup remains available when both Make readback settings are absent.
+For a merchant-managed Make connection, configure `MAKE_GROW_READBACK_URL` and a separate `MAKE_GROW_READBACK_KEY` on the ClinicFlow server. Use a **Custom Webhook** with Make API-key authentication enabled. Keep the notification URL and callback signing key separate. The creation webhook may share this exact URL under the two-scenario configuration below. When either Make readback setting is present the server requires both; failed or partial configuration keeps checkout closed. The direct Grow merchant lookup remains available when both Make readback settings are absent.
 
 The signed notification to ClinicFlow must include the original `paymentLinkProcessId` and `paymentLinkProcessToken`. ClinicFlow checks their digest against the order before initiating its private POST with those two fields and `transactionId`, using the `x-make-apikey` header. The Make scenario must call **Grow → Get Payment Link Info** using the merchant connection, match exactly one transaction with the requested charge ID, and return the following fields mapped from Grow's response: `paymentLinkProcessId`, `paymentLinkProcessToken`, `transactionId`, `statusCode`, `status`, `sum`, and `currency` if supplied. Return an error for missing or ambiguous matches. Do not echo the webhook request into the response. Amount is the captured sum in shekels, such as `2698` for a new account's two licenses. Keep payment identity tokens and API keys out of logs and browser responses.
 
@@ -123,3 +123,13 @@ The signed notification to ClinicFlow must include the original `paymentLinkProc
 On 2026-11-26, the sandbox link-creation scenario generated a ₪2,698 checkout for two computer licenses. The official Grow test card completed the payment. A separate API-key-protected Make readback scenario queried the actual sandbox transaction through Grow Get Payment Link Info.
 
 The isolated runner delivered the same notification twice to the application handler. Each delivery made its own live Make readback. Both returned HTTP 200, the replay was marked duplicate, and local PostgreSQL recorded exactly two licensed seats, one purchase, and one queued receipt. The test used no real charge or customer email. The notifications were replayed by the test runner, so this verifies duplicate handling separately from Grow's automatic webhook scheduling. The readback scenario was deactivated after the run.
+
+### Two active scenarios
+
+Set the creation and readback URLs to the identical custom webhook URL. Enable native Make API-key authentication on that webhook with the dedicated readback key. In its router require exact equality on the server-supplied `action` before any Grow module:
+
+- `create` runs Create Payment Link using the stored order total, then returns the created link and its identifiers.
+- `readback` runs Get Payment Link Info and returns the independently verified transaction fields described above.
+- A fallback route returns HTTP 400 for missing or unknown actions, with no Grow module attached.
+
+Use the second scenario for Grow notifications and authenticated callback delivery. Verify the creation and readback filters with separate test requests before switching a merchant connection. Separate creation and readback URLs retain their existing payloads.

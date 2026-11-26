@@ -6,7 +6,7 @@ export async function linkDigest(id: unknown, token: unknown): Promise<string | 
   return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2,'0')).join('');
 }
 
-type Readback = {kind:'direct'; pageCode:string} | {kind:'make'; url:string; key:string};
+type Readback = {kind:'direct'; pageCode:string} | {kind:'make'; url:string; key:string; shared:boolean};
 
 export function growReadbackConfig(): Readback | null {
   const raw = Deno.env.get('MAKE_GROW_READBACK_URL')?.trim();
@@ -16,11 +16,17 @@ export function growReadbackConfig(): Readback | null {
     if (!key || key === Deno.env.get('MAKE_CALLBACK_SECRET')?.trim() || !url || url.protocol !== 'https:' ||
         !/^hook(?:\.[a-z0-9-]+)?\.make\.com$/.test(url.hostname) || url.port || url.username || url.password ||
         !/^\/[A-Za-z0-9_-]+$/.test(url.pathname) || url.hash || url.search) return null;
-    for (const name of ['MAKE_PAYMENT_WEBHOOK_URL','MAKE_GROW_NOTIFY_URL']) {
-      const other = URL.parse(Deno.env.get(name) || '');
-      if (other?.origin === url.origin && other.pathname.replace(/\/+$/,'') === url.pathname) return null;
-    }
-    return {kind:'make',url:url.href,key};
+    const creation = URL.parse(Deno.env.get('MAKE_PAYMENT_WEBHOOK_URL') || '');
+    const notification = URL.parse(Deno.env.get('MAKE_GROW_NOTIFY_URL') || '');
+    const sameHook = (other: URL | null) => other?.origin === url.origin &&
+      other.pathname.replace(/\/+$/, '') === url.pathname;
+    if (sameHook(notification)) return null;
+    const shared = sameHook(creation);
+    if (shared && (creation?.href !== url.href || !notification || notification.protocol !== 'https:' ||
+        !/^hook(?:\.[a-z0-9-]+)?\.make\.com$/.test(notification.hostname) ||
+        !/^\/[A-Za-z0-9_-]+$/.test(notification.pathname) || notification.username || notification.password ||
+        notification.port || notification.search || notification.hash)) return null;
+    return {kind:'make',url:url.href,key,shared};
   }
   const pageCode = Deno.env.get('GROW_READBACK_PAGE_CODE')?.trim();
   return pageCode ? {kind:'direct',pageCode} : null;
@@ -34,7 +40,7 @@ export async function verifyGrowPayment(binding: string, transactionId: string, 
     if (await linkDigest(linkId,linkToken) !== binding) return false;
     const response = await fetch(config.url,{method:'POST',redirect:'error',signal:AbortSignal.timeout(15000),
       headers:{'Content-Type':'application/json','x-make-apikey':config.key},
-      body:JSON.stringify({paymentLinkProcessId:linkId,paymentLinkProcessToken:linkToken,transactionId})});
+      body:JSON.stringify({...(config.shared ? {action:"readback"} : {}),paymentLinkProcessId:linkId,paymentLinkProcessToken:linkToken,transactionId})});
     if (!response.ok) throw Error('Grow lookup unavailable');
     tx = await response.json();
   } else {
