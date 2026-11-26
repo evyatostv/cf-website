@@ -1,3 +1,4 @@
+import { formatPurchaseAmount } from '@/lib/purchase-amount';
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router';
 import { BarChart3, CheckCircle2, Mail, MousePointerClick, RefreshCw, Reply, ShoppingCart, TriangleAlert } from 'lucide-react';
@@ -259,7 +260,7 @@ export function CampaignDashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[620px] text-right text-sm">
               <thead className="bg-slate-50 text-xs text-slate-500"><tr><th className="p-4">אימייל</th><th className="p-4">רישיון</th><th className="p-4">סכום</th><th className="p-4">תאריך</th></tr></thead>
-              <tbody>{purchases.slice(0, 50).map((purchase) => <tr key={purchase.id} className="border-t border-slate-100"><td className="p-4 text-slate-700">{purchase.email}</td><td className="p-4 text-slate-700">{purchase.plan || '—'}</td><td className="p-4 font-bold text-teal-700">{typeof purchase.amount === 'number' ? `₪${purchase.amount.toLocaleString('he-IL')}` : '—'}</td><td className="p-4 text-slate-500">{new Date(purchase.purchased_at).toLocaleString('he-IL')}</td></tr>)}</tbody>
+              <tbody>{purchases.slice(0, 50).map((purchase) => <tr key={purchase.id} className="border-t border-slate-100"><td className="p-4 text-slate-700">{purchase.email}</td><td className="p-4 text-slate-700">{purchase.plan || '—'}</td><td className="p-4 font-bold text-teal-700">{formatPurchaseAmount(purchase.amount)}</td><td className="p-4 text-slate-500">{new Date(purchase.purchased_at).toLocaleString('he-IL')}</td></tr>)}</tbody>
             </table>
           </div>
           {!busy && purchases.length === 0 && <div className="p-10 text-center text-sm text-slate-500">עדיין לא נמצאו רכישות.</div>}

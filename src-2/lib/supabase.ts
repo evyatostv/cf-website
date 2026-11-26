@@ -64,10 +64,7 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
     .eq('user_id', userId)
     .order('purchased_at', { ascending: false });
 
-  if (error) {
-    console.error('Failed to fetch purchases:', error);
-    return [];
-  }
+  if (error) throw error;
 
   return data || [];
 }
