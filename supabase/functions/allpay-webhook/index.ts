@@ -67,9 +67,9 @@ Deno.serve(async req => {
         status.order_id !== body.order_id || status.currency !== 'ILS' || body.currency !== 'ILS' ||
         (status.add_field_1 !== undefined && status.add_field_1 !== body.add_field_1) ||
         (status.add_field_2 !== undefined && status.add_field_2 !== body.add_field_2) ||
-        ![1,3,4].includes(Number(status.status))) return new Response(null,{status:409});
+        ![1,'1',3,'3',4,'4'].includes(status.status)) return new Response(null,{status:409});
     const charged = agorot(status.amount);
-    if (Number(status.status) === 1 && (Number(body.status) !== 1 || !charged || agorot(body.amount) !== charged))
+    if (Number(status.status) === 1 && (![1,'1'].includes(body.status) || !charged || agorot(body.amount) !== charged))
       return new Response(null,{status:409});
 
     const db = createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);

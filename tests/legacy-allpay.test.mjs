@@ -39,7 +39,7 @@ test('invalid signature, dispute, test transaction and substituted full identity
   }
 });
 test('paymentstatus order, decimal amount, currency, test and status are independently checked',async()=>{
-  for(const changes of [{order_id:'wrong'},{amount:1298.99},{amount:'1299.001'},{currency:'USD'},{test_mode:1},{status:0},{add_field_1:'other'}]){
+  for(const changes of [{order_id:'wrong'},{amount:1298.99},{amount:'1299.001'},{currency:'USD'},{test_mode:1},{status:0},{status:true},{add_field_1:'other'}]){
     const f=fixture({...unsigned,...changes});assert.notEqual((await f.send(signed)).status,200);
     assert.equal(f.grants.length,0);
   }
