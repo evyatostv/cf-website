@@ -26,3 +26,4 @@ for each row execute function public.sync_user_access_on_purchase();
 \ir ../../supabase/migrations/20261126074000_contact_delivery_review.sql
 \ir ../../supabase/migrations/20261126080000_delivery_retry_timer.sql
 \ir ../../supabase/migrations/20261126081000_verified_allpay_orders.sql
+\ir ../../supabase/migrations/20261126082000_verified_stripe_orders.sql
