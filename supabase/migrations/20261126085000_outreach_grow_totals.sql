@@ -11,7 +11,7 @@ begin
          coalesce(sum(o.amount) filter (where o.status='PAID'),0),
          count(*) filter (where o.status='PENDING'),
          count(*) filter (where o.status='MANUAL_REVIEW'),
-         count(*) filter (where o.status='REFUNDED')
+         count(*) filter (where o.status in ('REFUNDED','CHARGED_BACK'))
   from public.orders o where o.payment_provider='grow_make' and o.currency='ILS';
 end;
 $$;

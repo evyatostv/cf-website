@@ -213,7 +213,7 @@ export function CampaignDashboardPage() {
         </section>
 
         <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center justify-between gap-3"><div><h2 className="font-bold text-slate-900">השוואת ערוצי מקור</h2><p className="mt-1 text-xs text-slate-500">מבוסס על UTM שנשמרו בפניות מהאתר. ערוצים ללא נתונים לא מוצגים.</p></div><BarChart3 className="h-5 w-5 text-teal-700" /></div>
+          <div className="mb-5 flex items-center justify-between gap-3"><div><h2 className="font-bold text-slate-900">השוואת ערוצי מקור</h2><p className="mt-1 text-xs text-slate-500">לפי מקור ההגעה של עד 100 הפניות האחרונות מהאתר.</p></div><BarChart3 className="h-5 w-5 text-teal-700" /></div>
           {channels.length === 0 ? <div className="rounded-xl bg-slate-50 p-5 text-sm text-slate-500">עדיין אין פניות עם מקור מדיד. לאחר שהטפסים יקבלו תנועה, הערוצים יופיעו כאן.</div> : <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{channels.map(([channel, values]) => <div key={channel} className="rounded-xl border border-slate-100 bg-slate-50 p-4"><div className="font-semibold text-slate-900">{channel}</div><div className="mt-3 text-2xl font-bold text-blue-700">{values.leads}</div><div className="text-xs text-slate-500">פניות · {values.demos} דמו</div><div className="mt-2 space-y-1 text-xs font-semibold text-teal-700"><div>המרת דמו: {values.leads ? Math.round((values.demos / values.leads) * 100) : 0}%</div></div></div>)}</div>}
         </section>
 
@@ -253,7 +253,7 @@ export function CampaignDashboardPage() {
               <div className="mt-4 grid gap-4 sm:grid-cols-3">
                 <Metric title="הזמנות ששולמו" value={totals.settled} note={formatPurchaseAmount(totals.settled_agorot)} icon={ShoppingCart} />
                 <Metric title="ממתינות לתשלום" value={totals.pending} note={`${totals.in_review} הזמנות בבירור`} icon={RefreshCw} />
-                <Metric title="הזמנות שזוכו" value={totals.reversed} note="הוחרגו מסכום ההזמנות ששולמו" icon={Reply} />
+                <Metric title="זיכויים והכחשות עסקה" value={totals.reversed} note="הזמנות שזוכו או שהכחשת העסקה שלהן התקבלה" icon={Reply} />
               </div>
             )}
           </div>

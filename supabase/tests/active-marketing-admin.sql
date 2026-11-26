@@ -9,7 +9,7 @@ insert into public.contact_messages(name,email,message) values ('Synthetic','syn
 insert into public.orders(customer_id,package_id,amount,status,payment_provider)
 select '00000000-0000-4000-9000-000000000002','forever',amount,status,provider
 from (values (149900,'PAID','grow_make'),(75000,'PAID','grow_make'),
-             (149900,'REFUNDED','grow_make'),(149900,'PENDING','grow_make'),
+             (149900,'REFUNDED','grow_make'),(149900,'CHARGED_BACK','grow_make'),(149900,'PENDING','grow_make'),
              (149900,'MANUAL_REVIEW','grow_make'),(149900,'PAID','other')) f(amount,status,provider);
 set local role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-4000-9000-000000000001',true);
@@ -17,7 +17,7 @@ select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-9000-00000000
 do $$ begin
   if not exists(select 1 from public.contact_messages where email='synthetic-inquiry@example.invalid') then raise exception 'live admin cannot review fixture'; end if;
   if not exists(select 1 from public.outreach_grow_totals()
-                where settled=2 and settled_agorot=224900 and pending=1 and reversed=1 and in_review=1) then
+                where settled=2 and settled_agorot=224900 and pending=1 and reversed=2 and in_review=1) then
     raise exception 'Grow totals failed to reflect verified order states and stored amounts';
   end if;
   if not public.is_active_outreach_admin() then raise exception 'current admin rejected'; end if;
