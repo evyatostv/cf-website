@@ -37,13 +37,7 @@ type WebsiteLead = {
   created_at: string;
 };
 
-type Purchase = {
-  id: string;
-  email: string;
-  plan: string | null;
-  amount: number | null;
-  purchased_at: string;
-};
+type GrowTotals = { settled: number; settled_agorot: number; pending: number; in_review: number; reversed: number };
 
 function landingPathFromSource(source: string | null): string {
   const match = source?.match(/(?:^|\/)landing:(\/[^/]+(?:\/[^/]*)?)/);
@@ -89,7 +83,7 @@ export function CampaignDashboardPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [events, setEvents] = useState<CampaignEvent[]>([]);
   const [websiteLeads, setWebsiteLeads] = useState<WebsiteLead[]>([]);
-  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [totals, setTotals] = useState<GrowTotals | null>(null);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -100,7 +94,7 @@ export function CampaignDashboardPage() {
       supabase.from('email_campaign_contacts').select('id,name,email,specialty,variant,status,sent_at').order('sent_at', { ascending: false }),
       supabase.from('email_campaign_events').select('id,contact_id,event_type,is_proxy,occurred_at').order('occurred_at', { ascending: false }),
       supabase.from('contact_messages').select('id,name,email,phone,source,utm_source,utm_medium,utm_campaign,utm_content,created_at').order('created_at', { ascending: false }).limit(100),
-      supabase.from('purchases').select('id,email,plan,amount,purchased_at').order('purchased_at', { ascending: false }).limit(100),
+      supabase.rpc('outreach_grow_totals').single(),
     ]);
     if (contactsResult.error || eventsResult.error || websiteLeadsResult.error || purchasesResult.error) {
       setError(contactsResult.error?.message || eventsResult.error?.message || websiteLeadsResult.error?.message || purchasesResult.error?.message || 'טעינת הנתונים נכשלה');
@@ -108,7 +102,7 @@ export function CampaignDashboardPage() {
       setContacts((contactsResult.data || []) as Contact[]);
       setEvents((eventsResult.data || []) as CampaignEvent[]);
       setWebsiteLeads((websiteLeadsResult.data || []) as WebsiteLead[]);
-      setPurchases((purchasesResult.data || []) as Purchase[]);
+      setTotals(purchasesResult.data as GrowTotals);
     }
     setBusy(false);
   };
@@ -139,10 +133,9 @@ export function CampaignDashboardPage() {
       replies: realContacts.filter((c) => ['replied', 'positive', 'demo', 'won'].includes(c.status)).length,
       positive: realContacts.filter((c) => ['positive', 'demo', 'won'].includes(c.status)).length,
       demos: demoLeads.size,
-      sales: purchases.length,
       bounceRate: sent ? (realContacts.filter((c) => c.status === 'bounced').length / sent) * 100 : 0,
     };
-  }, [contacts, events, websiteLeads, purchases]);
+  }, [contacts, events, websiteLeads]);
 
   const variants = useMemo(() => ['A', 'B'].map((variant) => {
     const group = contacts.filter((c) => c.email !== 'pixel-test@clinic-flow.co.il' && c.variant === variant);
@@ -157,18 +150,16 @@ export function CampaignDashboardPage() {
   }), [contacts, events]);
 
   const channels = useMemo(() => {
-    const purchasedEmails = new Set(purchases.map((purchase) => purchase.email.toLowerCase()));
-    const grouped = new Map<string, { leads: number; demos: number; purchases: number }>();
+    const grouped = new Map<string, { leads: number; demos: number }>();
     websiteLeads.forEach((lead) => {
       const key = lead.utm_source || lead.source || 'direct';
-      const current = grouped.get(key) || { leads: 0, demos: 0, purchases: 0 };
+      const current = grouped.get(key) || { leads: 0, demos: 0 };
       current.leads += 1;
       if (lead.source?.includes('demo') || lead.utm_campaign?.startsWith('doctors_')) current.demos += 1;
-      if (lead.email && purchasedEmails.has(lead.email.toLowerCase())) current.purchases += 1;
       grouped.set(key, current);
     });
     return [...grouped.entries()].sort((a, b) => b[1].leads - a[1].leads);
-  }, [websiteLeads, purchases]);
+  }, [websiteLeads]);
 
   if (loading) return <div className="min-h-screen bg-slate-50 pt-32 text-center">טוען…</div>;
   if (!user) return <Navigate to="/login?redirect=/campaign-dashboard" replace />;
@@ -212,19 +203,18 @@ export function CampaignDashboardPage() {
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 className="mb-6 font-bold text-slate-900">משפך מכירה</h2>
-            {[['נמסרו', stats.delivered], ['תגובות חיוביות', stats.positive], ['הדגמות', stats.demos], ['מכירות', stats.sales]].map(([label, value], index) => (
+            {[['נמסרו', stats.delivered], ['תגובות חיוביות', stats.positive], ['הדגמות', stats.demos]].map(([label, value], index) => (
               <div key={String(label)} className="mb-5">
                 <div className="mb-2 flex justify-between text-sm"><span className="text-slate-600">{label}</span><strong className="text-slate-900">{value}</strong></div>
                 <div className="h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-gradient-to-l from-blue-700 to-teal-600" style={{ width: `${stats.delivered ? Math.max(3, (Number(value) / stats.delivered) * 100) : 0}%`, opacity: 1 - index * 0.12 }} /></div>
               </div>
             ))}
-            <div className="mt-8 flex items-center gap-3 rounded-xl bg-slate-50 p-4"><ShoppingCart className="h-5 w-5 text-teal-700" /><div><div className="text-xs text-slate-500">הכנסה</div><div className="font-bold text-slate-900">₪{(stats.sales * 1499).toLocaleString('he-IL')}</div></div></div>
           </div>
         </section>
 
         <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center justify-between gap-3"><div><h2 className="font-bold text-slate-900">השוואת ערוצי מקור</h2><p className="mt-1 text-xs text-slate-500">מבוסס על UTM שנשמרו בפניות מהאתר. ערוצים ללא נתונים לא מוצגים.</p></div><BarChart3 className="h-5 w-5 text-teal-700" /></div>
-          {channels.length === 0 ? <div className="rounded-xl bg-slate-50 p-5 text-sm text-slate-500">עדיין אין פניות עם מקור מדיד. לאחר שהטפסים יקבלו תנועה, הערוצים יופיעו כאן.</div> : <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{channels.map(([channel, values]) => <div key={channel} className="rounded-xl border border-slate-100 bg-slate-50 p-4"><div className="font-semibold text-slate-900">{channel}</div><div className="mt-3 text-2xl font-bold text-blue-700">{values.leads}</div><div className="text-xs text-slate-500">פניות · {values.demos} דמו · {values.purchases} רכישות</div><div className="mt-2 space-y-1 text-xs font-semibold text-teal-700"><div>המרת דמו: {values.leads ? Math.round((values.demos / values.leads) * 100) : 0}%</div><div>המרת רכישה: {values.leads ? Math.round((values.purchases / values.leads) * 100) : 0}%</div></div></div>)}</div>}
+          <div className="mb-5 flex items-center justify-between gap-3"><div><h2 className="font-bold text-slate-900">השוואת ערוצי מקור</h2><p className="mt-1 text-xs text-slate-500">לפי מקור ההגעה של עד 100 הפניות האחרונות מהאתר.</p></div><BarChart3 className="h-5 w-5 text-teal-700" /></div>
+          {channels.length === 0 ? <div className="rounded-xl bg-slate-50 p-5 text-sm text-slate-500">עדיין אין פניות עם מקור מדיד. לאחר שהטפסים יקבלו תנועה, הערוצים יופיעו כאן.</div> : <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{channels.map(([channel, values]) => <div key={channel} className="rounded-xl border border-slate-100 bg-slate-50 p-4"><div className="font-semibold text-slate-900">{channel}</div><div className="mt-3 text-2xl font-bold text-blue-700">{values.leads}</div><div className="text-xs text-slate-500">פניות · {values.demos} דמו</div><div className="mt-2 space-y-1 text-xs font-semibold text-teal-700"><div>המרת דמו: {values.leads ? Math.round((values.demos / values.leads) * 100) : 0}%</div></div></div>)}</div>}
         </section>
 
         <section className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -256,14 +246,17 @@ export function CampaignDashboardPage() {
         </section>
 
         <section className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-100 p-5"><h2 className="font-bold text-slate-900">רכישות אחרונות</h2><p className="mt-1 text-xs text-slate-500">נתונים מטבלת הרכישות בפועל, לא רק סטטוס ידני של ליד.</p></div>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[620px] text-right text-sm">
-              <thead className="bg-slate-50 text-xs text-slate-500"><tr><th className="p-4">אימייל</th><th className="p-4">רישיון</th><th className="p-4">סכום</th><th className="p-4">תאריך</th></tr></thead>
-              <tbody>{purchases.slice(0, 50).map((purchase) => <tr key={purchase.id} className="border-t border-slate-100"><td className="p-4 text-slate-700">{purchase.email}</td><td className="p-4 text-slate-700">{purchase.plan || '—'}</td><td className="p-4 font-bold text-teal-700">{formatPurchaseAmount(purchase.amount)}</td><td className="p-4 text-slate-500">{new Date(purchase.purchased_at).toLocaleString('he-IL')}</td></tr>)}</tbody>
-            </table>
+          <div className="p-5">
+            <h2 className="font-bold text-slate-900">הזמנות Grow באתר · כל התקופה</h2>
+            <p className="mt-1 text-sm text-slate-600">הסכום כולל הזמנות שאושרו ונשארו בתוקף מכל ערוצי האתר.</p>
+            {totals && !error && (
+              <div className="mt-4 grid gap-4 sm:grid-cols-3">
+                <Metric title="הזמנות ששולמו" value={totals.settled} note={formatPurchaseAmount(totals.settled_agorot)} icon={ShoppingCart} />
+                <Metric title="ממתינות לתשלום" value={totals.pending} note={`${totals.in_review} הזמנות בבירור`} icon={RefreshCw} />
+                <Metric title="זיכויים והכחשות עסקה" value={totals.reversed} note="הזמנות שזוכו או שהכחשת העסקה שלהן התקבלה" icon={Reply} />
+              </div>
+            )}
           </div>
-          {!busy && purchases.length === 0 && <div className="p-10 text-center text-sm text-slate-500">עדיין לא נמצאו רכישות.</div>}
         </section>
       </div>
     </main>
