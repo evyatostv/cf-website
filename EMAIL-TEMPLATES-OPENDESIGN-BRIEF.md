@@ -1,4 +1,4 @@
-> Historical design brief. The current Full license is ₪1,499 once per computer. Annual renewal examples below are archived and must be excluded from customer campaigns.
+> Historical design brief. The current Full license is ₪1,499 for the first computer and ₪1,199 for each additional computer on the same account. Annual renewal examples below are archived and must be excluded from customer campaigns.
 
 # Open Design Brief — ClinicFlow Transactional Email Templates (for Resend)
 

@@ -1,3 +1,4 @@
+import { formatSeatPrice, useSeatQuote } from '@/lib/use-seat-quote';
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import { usePageReturn } from '@/lib/use-page-return';
@@ -47,26 +48,7 @@ export function DashboardPage() {
   const navigate = useNavigate();
   const { user, loading, signOut } = useAuth();
   const pageReturn = usePageReturn();
-  const [seatSummary, setSeatSummary] = useState<{ userId: string; count: number | null } | null>(null);
-  const [seatAttempt, setSeatAttempt] = useState(0);
-  useEffect(() => {
-    if (!user?.id) return;
-    const userId = user.id;
-    let current = true;
-    setSeatSummary(null);
-    const loadSeats = async () => {
-      let count: number | null = null;
-      try {
-        const result = await supabase.rpc('my_paid_seat_count');
-        if (!result.error && Number.isSafeInteger(result.data) && result.data >= 0) count = result.data;
-      } catch {
-        // Keep the retry available when the network request itself fails.
-      }
-      if (current) setSeatSummary({ userId, count });
-    };
-    void loadSeats();
-    return () => { current = false; };
-  }, [user?.id, pageReturn, seatAttempt]);
+  const { quote: seatQuote, failed: seatFailed, retry: retrySeats } = useSeatQuote(user?.id, pageReturn);
   const [access, setAccess] = useState<UserAccess | null | undefined>(undefined);
   const [lookupFailed, setLookupFailed] = useState(false);
   const [lookupAttempt, setLookupAttempt] = useState(0);
@@ -112,7 +94,7 @@ export function DashboardPage() {
       const payload = await response.json().catch(() => ({}));
       if (response.status === 403 && ['NO_ACTIVE_LICENSE', 'PAYMENT_REQUIRED'].includes(payload.code)) {
         setAccess(null);
-        setSeatSummary(null);
+        retrySeats();
         return;
       }
       if (!response.ok || !payload.downloadUrl) {
@@ -245,17 +227,17 @@ export function DashboardPage() {
                       </div>
 
                       
-                      {seatSummary?.userId === user.id && seatSummary.count === null && (
+                      {seatFailed && (
                         <div className="mb-5" role="alert">
                           <p>לא הצלחנו לבדוק כמה רישיונות למחשבים יש בחשבון.</p>
-                          <button className="underline" onClick={() => setSeatAttempt(value => value + 1)}>בדיקה חוזרת של מספר הרישיונות</button>
+                          <button className="underline" onClick={retrySeats}>בדיקה חוזרת של מספר הרישיונות</button>
                         </div>
                       )}
-                      {seatSummary?.userId === user.id && seatSummary.count !== null && seatSummary.count > 0 && (
+                      {seatQuote && seatQuote.paidSeats > 0 && (
                         <div className="mb-5">
-                          <p>רישיונות למחשבים בחשבון שלך: {seatSummary.count}</p>
-                          <Link className="underline text-[#0d47a1]" to={`/payment?plan=forever&seat=${seatSummary.count + 1}`}>
-                            רכישת רישיון למחשב נוסף ב־1,499 ₪ בתשלום חד־פעמי
+                          <p>רישיונות למחשבים בחשבון שלך: {seatQuote.paidSeats}</p>
+                          <Link className="underline text-[#0d47a1]" to={`/payment?plan=forever&seat=${seatQuote.targetSeat}`}>
+                            רכישת רישיון למחשב נוסף ב־{formatSeatPrice(seatQuote.amount)} בתשלום חד־פעמי
                           </Link>
                         </div>
                       )}

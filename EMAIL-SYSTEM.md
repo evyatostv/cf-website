@@ -133,7 +133,7 @@ are rendered/tested but **not yet wired to any trigger** (Phase 2).
 | `process-email-lifecycle` | false (cron) | `sendOnce` | trial-ending, trial-ended, win-back — **guarded no-op** until `LIFECYCLE_EMAILS_ENABLED=true` + state columns populated |
 | `activate-license` | true | `sendTemplate` | device-reactivation — **reference stub** (desktop-app device/slot tracking is a prerequisite) |
 
-The trial worker defaults to disabled. Annual renewal templates are historical previews. ClinicFlow Full costs ₪1,499 once per computer.
+The trial worker defaults to disabled. Annual renewal templates are historical previews. ClinicFlow Full costs ₪1,499 for the first computer and ₪1,199 for each additional computer on the same account.
 
 ---
 

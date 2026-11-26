@@ -1,3 +1,5 @@
+import { usePageReturn } from '@/lib/use-page-return';
+import { formatSeatPrice, useSeatQuote } from '@/lib/use-seat-quote';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router';
 import { useAuth } from '@/lib/auth-context';
@@ -6,13 +8,11 @@ import { AlertCircle, Shield, ArrowLeft, Check, Lock, Loader2 } from 'lucide-rea
 import { supabase, logPolicyAcceptance, SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase';
 import { mapAuthError } from '@/lib/auth-errors';
 
-const PLAN_INFO: Record<string, { name: string; price: string; amount: number; features: string[] }> = {
+const PLAN_INFO: Record<string, { name: string; features: string[] }> = {
   forever: {
     name: 'ClinicFlow — רישיון לצמיתות',
-    price: '₪1,499',
-    amount: 149900,
     features: [
-      'ניהול יומן פגישות (לומי/שבועי/חודשי)', 
+      'ניהול יומן פגישות (יומי/שבועי/חודשי)',
       'ניהול תיק מטופל ורקע רפואי מלא', 
       'הפקת סיכומי ביקור מעוצבים ב-PDF', 
       'הנפקת חשבוניות, קבלות, וקבלות-חשבונית', 
@@ -57,6 +57,10 @@ function AccountCheckout() {
   const validSeat = targetSeat === undefined || (Number.isSafeInteger(targetSeat) && targetSeat >= 2 && targetSeat <= 2147483647);
   const isUpgrade = searchParams.get('upgrade') === 'true';
   const planInfo = PLAN_INFO[plan];
+  const revision = usePageReturn();
+  const { quote, failed: quoteFailed, retry: retryQuote } = useSeatQuote(user?.id, revision);
+  const matchesTarget = !!quote && quote.targetSeat === (targetSeat ?? 1);
+  const price = matchesTarget && quote ? formatSeatPrice(quote.amount) : '—';
 
   // The checkout URL to return to after (re)login. URL-encode it as a whole so
   // the nested ?plan=/&upgrade= query survives being a value of ?redirect=.
@@ -77,7 +81,7 @@ function AccountCheckout() {
   };
 
   const handlePayment = async () => {
-    if (!user || !targetOs || !planInfo || !termsAccepted || processing) return;
+    if (!user || !targetOs || !planInfo || !termsAccepted || !matchesTarget || !quote || processing || inFlight.current) return;
 
     const request = new AbortController();
     inFlight.current = request;
@@ -140,7 +144,7 @@ function AccountCheckout() {
 
       const raw = await res.text();
       if (request.signal.aborted) return;
-      let data: { orderId?: string; paymentUrl?: string; error?: string; code?: string } = {};
+      let data: { orderId?: string; paymentUrl?: string; amount?: number; currency?: string; error?: string; code?: string } = {};
       try {
         data = raw ? JSON.parse(raw) : {};
       } catch {
@@ -160,6 +164,15 @@ function AccountCheckout() {
         return;
       }
 
+      if (data.amount !== quote.amount || data.currency !== quote.currency) {
+        const storedPrice = data.currency === 'ILS' && typeof data.amount === 'number' && Number.isSafeInteger(data.amount) && data.amount > 0
+          ? ` סכום ההזמנה הקיימת הוא ${formatSeatPrice(data.amount)}.` : '';
+        setError(`סכום ההזמנה לא תואם למחיר שהוצג.${storedPrice} פנו לתמיכה לפני התשלום.`);
+        setNeedsSupport(true);
+        if (data.orderId) setPendingOrder(data.orderId);
+        setProcessing(false);
+        return;
+      }
       // Redirect to the provider checkout page.
       window.location.href = data.paymentUrl;
     } catch (err: any) {
@@ -167,6 +180,8 @@ function AccountCheckout() {
       setNeedsSupport(!authSessionFailed);
       setError(authSessionFailed ? 'פג תוקף ההתחברות — אנא התחבר/י מחדש' : (mapAuthError(err) || 'שגיאה ביצירת תשלום'));
       setProcessing(false);
+    } finally {
+      if (inFlight.current === request) inFlight.current = null;
     }
   };
 
@@ -205,7 +220,7 @@ function AccountCheckout() {
             <div className="flex-1">
               <p className="text-sm font-medium text-[#6b7c93] mb-1">הזמנה</p>
               <h2 className="text-2xl font-bold text-[#1a2332] mb-1">{planInfo.name}</h2>
-              <div className="text-4xl font-black text-[#0d47a1] mb-1">{planInfo.price}</div>
+              <div className="text-4xl font-black text-[#0d47a1] mb-1">{price}</div>
               <p className="text-sm text-[#6b7c93] mb-8">{targetSeat ? `רישיון נוסף למחשב מספר ${targetSeat} באותו החשבון. נתוני המטופלים נשמרים בנפרד בכל מחשב.` : 'תשלום חד-פעמי • רישיון לצמיתות'}</p>
 
               <ul className="space-y-3">
@@ -245,11 +260,11 @@ function AccountCheckout() {
               <div className="border border-[#e1e6ec] rounded-xl p-4 mb-5">
                 <div className="flex justify-between text-sm">
                   <span className="text-[#6b7c93]">{planInfo.name}</span>
-                  <span className="font-medium text-[#1a2332]">{planInfo.price}</span>
+                  <span className="font-medium text-[#1a2332]">{price}</span>
                 </div>
                 <div className="flex justify-between text-sm border-t border-[#e1e6ec] pt-2 mt-2">
                   <span className="font-bold text-[#1a2332]">סה"כ לתשלום</span>
-                  <span className="font-bold text-[#0d47a1]">{planInfo.price}</span>
+                  <span className="font-bold text-[#0d47a1]">{price}</span>
                 </div>
               </div>
 
@@ -351,10 +366,12 @@ function AccountCheckout() {
                 </span>
               </label>
 
+              {quoteFailed && <p role="alert" className="mb-4 text-center">לא הצלחנו לאמת את המחיר לחשבון. <button type="button" className="underline" onClick={retryQuote}>בדיקה חוזרת</button></p>}
+              {quote && !matchesTarget && <p role="alert" className="mb-4 text-center">מספר הרישיונות בחשבון השתנה. <Link to="/dashboard" className="underline">לבדיקת הרישיונות באזור האישי</Link></p>}
               <button
                 onClick={handlePayment}
                 disabled={
-                  processing || !targetOs || !termsAccepted || licenseAlreadyActive ||
+                  processing || !matchesTarget || !targetOs || !termsAccepted || licenseAlreadyActive ||
                   (needsCheckoutContact && (!checkoutName.trim() || !checkoutPhone.trim()))
                 }
                 aria-busy={processing}
@@ -368,7 +385,7 @@ function AccountCheckout() {
                 ) : (
                   <>
                     <Lock className="w-4 h-4" />
-                    {`שלם/י ${planInfo.price}`}
+                    {matchesTarget ? `שלם/י ${price}` : 'ממתינים למחיר מאומת'}
                   </>
                 )}
               </button>
