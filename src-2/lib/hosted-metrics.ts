@@ -1,12 +1,11 @@
 import { PUBLIC_MARKETING_PATHS } from './google-analytics';
-import { hasMarketingConsent, hasSafeMarketingReferrer } from './meta-pixel';
+import { isMarketingSite, hasMarketingConsent, hasSafeMarketingReferrer } from './meta-pixel';
 
 function publicPage(value: string) {
   try {
     const url = new URL(value);
-    return url.origin === window.location.origin && url.protocol === 'https:'
-      && ['www.clinic-flow.co.il', 'clinic-flow.co.il'].includes(url.host)
-      && !url.username && !url.password && PUBLIC_MARKETING_PATHS.has(url.pathname) && !url.search && !url.hash;
+    return url.origin === window.location.origin && isMarketingSite(url)
+      && PUBLIC_MARKETING_PATHS.has(url.pathname) && !url.search && !url.hash;
   } catch { return false; }
 }
 
