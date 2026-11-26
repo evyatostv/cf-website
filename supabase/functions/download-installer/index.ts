@@ -1,6 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { recordAuditEvent } from '../_shared/audit.ts';
 
+import { githubMacInstaller } from '../_shared/github-installer.ts';
 import { BUCKET, INSTALLER_PATHS } from '../_shared/installers.ts';
 
 const SIGNED_URL_TTL = 300;
@@ -120,12 +121,17 @@ Deno.serve(async (req) => {
         status: purchaseError ? 503 : 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    const { data: signed, error: signError } = await adminClient
-      .storage
-      .from(BUCKET)
-      .createSignedUrl(installerKey, SIGNED_URL_TTL);
-
-    if (signError || !signed?.signedUrl) {
+    let link: {downloadUrl: string; expiresAt: string} | null = null;
+    try {
+      link = await githubMacInstaller(os);
+      if (!link) {
+        const {data, error} = await adminClient.storage.from(BUCKET).createSignedUrl(installerKey, SIGNED_URL_TTL);
+        if (!error && data?.signedUrl) link = {downloadUrl: data.signedUrl, expiresAt: new Date(Date.now() + SIGNED_URL_TTL * 1000).toISOString()};
+      }
+    } catch {
+      // Provider responses can contain temporary credentials. Record only failure.
+    }
+    if (!link) {
       await recordAuditEvent(adminClient, {eventType: 'download_attempt', outcome: 'failure', userId: user.id,
         metadata: {reason: 'link_signing_failed', os}});
       return new Response(
@@ -152,8 +158,7 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        downloadUrl: signed.signedUrl,
-        expiresAt: new Date(Date.now() + SIGNED_URL_TTL * 1000).toISOString(),
+        ...link,
         plan: access.plan,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },

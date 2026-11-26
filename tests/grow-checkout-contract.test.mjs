@@ -18,7 +18,7 @@ function load(path, db, env, fetch, extra = {}) {
   const source = (path.startsWith('create-') ? read('_shared/installers.ts') : '') + read(path + '/index.ts');
   vm.runInNewContext(stripTypeScriptTypes(source), {
     Deno: { env: { get: key => env[key] }, serve: callback => { handler = callback; } },
-    createClient: () => db, inactivePaymentProvider: () => null, recordAuditEvent: async () => {},
+    githubMacInstaller: async () => null, createClient: () => db, inactivePaymentProvider: () => null, recordAuditEvent: async () => {},
     generateLicenseKey: () => 'synthetic-key', wakeGrowReceipts() {}, URL, Headers, Response, AbortSignal, console, fetch, ...extra,
   });
   return handler;
