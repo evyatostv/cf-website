@@ -25,6 +25,8 @@ jobs:
           deno test --frozen --allow-env --config supabase/functions/deno.json
           supabase/functions/_shared/send-email.test.ts
           supabase/functions/_shared/grow-receipt.test.ts
+      - name: Exercise paid desktop update access and revocation
+        run: deno test --no-config supabase/functions/desktop-update-feed/feed_test.ts
       - run: npm run typecheck
       - run: node --test tests/*.test.mjs
       - run: npm run build
