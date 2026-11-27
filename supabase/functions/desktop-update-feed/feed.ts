@@ -45,7 +45,7 @@ export function createUpdateFeed({ env, request, now }: Dependency) {
   let sealingKey: Promise<CryptoKey> | undefined;
   function key() {
     const secret = env('DESKTOP_UPDATE_SIGNING_KEY');
-    if (!secret || !/^[a-f0-9]{64}$/.test(secret)) throw new Error('Session key missing');
+    if (!secret || !/^[a-f0-9]{64}$/.test(secret)) throw new Error('SESSION_CONFIGURATION');
     sealingKey ??= crypto.subtle.importKey('raw', Uint8Array.from(secret.match(/../g)!, b => parseInt(b, 16)),
       'AES-GCM', false, ['encrypt', 'decrypt']);
     return sealingKey;
@@ -76,7 +76,7 @@ export function createUpdateFeed({ env, request, now }: Dependency) {
       method: 'POST', headers: { apikey: anon, Authorization: 'Bearer ' + anon, 'Content-Type': 'application/json' },
       body: JSON.stringify({ p_token: token }), redirect: 'error', signal: AbortSignal.timeout(8000),
     });
-    if (!result.ok) throw new Error('Device check unavailable');
+    if (!result.ok) throw new Error('DEVICE_CHECK');
     return (await result.json()) === true;
   }
 
@@ -108,16 +108,26 @@ export function createUpdateFeed({ env, request, now }: Dependency) {
       if (!await active(session.token)) return reply(403, { error: 'paid_device_required' });
 
       const token = env('DESKTOP_UPDATE_KEYGEN_TOKEN') || env('KEYGEN_TOKEN');
-      if (!token || !env('KEYGEN_ACCOUNT_ID')) throw new Error('Release service unavailable');
+      if (!token || !env('KEYGEN_ACCOUNT_ID')) throw new Error('RELEASE_CONFIGURATION');
       const artifact = new URL('https://api.keygen.sh/v1/accounts/' + encodeURIComponent(env('KEYGEN_ACCOUNT_ID')!) + '/artifacts/' + encodeURIComponent(name));
       artifact.searchParams.set('product', keygenProduct);
       artifact.searchParams.set('channel', 'stable');
       const result = await request(artifact, { headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.api+json' },
         redirect: 'manual', signal: AbortSignal.timeout(10000) });
+      if (result.status === 401 || result.status === 403) {
+        const details = await result.json().catch(() => null);
+        const providerCode = details?.errors?.[0]?.code;
+        console.error('desktop-update-feed: Keygen access denied', result.status,
+          typeof providerCode === 'string' && /^[A-Z_]{1,60}$/.test(providerCode) ? providerCode : 'NO_CODE');
+        return reply(503, { error: 'release_provider_access_denied' });
+      }
       await result.body?.cancel();
       if (result.status === 404 || result.status === 200) return reply(404, { error: 'release_unavailable' });
       const location = result.status === 303 && downloadLocation(result.headers.get('location'));
-      if (!location) throw new Error('Release download unavailable');
+      if (!location) {
+        console.error('desktop-update-feed: Keygen download unavailable', result.status);
+        return reply(503, { error: 'release_provider_unavailable' });
+      }
       // The signed storage URL allows range requests without transmitting a device or Keygen credential.
       return new Response(null, { status: 307, headers: { ...headers, Location: location } });
     } catch {
