@@ -58,3 +58,8 @@ verify_jwt = true
 # Accept only expiring single-use proofs issued by the database timer.
 [functions.retry-deliveries]
 verify_jwt = false
+
+# Desktop installations use the existing paid-device credential, independent of
+# the clinician's web login. Every manifest and artifact request rechecks the seat.
+[functions.desktop-update-feed]
+verify_jwt = false
