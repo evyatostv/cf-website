@@ -43,6 +43,9 @@ language sql stable security definer set search_path='' as $$
     select 1 from auth.users u join auth.sessions s on s.user_id=u.id
     where u.id=auth.uid() and s.id::text=auth.jwt()->>'session_id'
       and (s.not_after is null or s.not_after>now())
+      and (auth.jwt()->>'aal'='aal2' or not exists (
+        select 1 from auth.mfa_factors f where f.user_id=u.id and f.status='verified'
+      ))
       and u.email_confirmed_at is not null and (u.banned_until is null or u.banned_until<now())
   )
 $$;
@@ -106,7 +109,7 @@ declare
   removed text;
   reason text := nullif(trim(p_reason),'');
 begin
-  if customer<>auth.uid() and (reason is null or length(reason) not between 3 and 500) then
+  if p_customer_email is not null and (reason is null or length(reason) not between 3 and 500) then
     raise exception 'A support reason is required' using errcode='22023';
   end if;
   select * into access_row from public.user_access where user_id=customer for update;
@@ -121,7 +124,7 @@ begin
     update public.user_access set machine_fingerprint=null where user_id=customer;
   end if;
   insert into public.desktop_disconnect_events(customer_id,actor_id,assignment_id,support_reason)
-    values(customer,auth.uid(),p_device_id,case when customer<>auth.uid() then reason end);
+    values(customer,auth.uid(),p_device_id,case when p_customer_email is not null then reason end);
   return true;
 end $$;
 revoke all on function public.desktop_disconnect_device(uuid,text,text) from public, anon, authenticated;

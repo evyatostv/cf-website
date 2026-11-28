@@ -182,7 +182,7 @@ export const routes: RouteRecord[] = [
         path: "dashboard/support/devices",
         element: (
           <RequireAuth requireMfa>
-            <Suspense fallback={<SpaFallback />}><SupportDevicesPage /></Suspense>
+            <SupportDevicesLazy />
           </RequireAuth>
         ),
       },
@@ -291,6 +291,9 @@ const UnsubscribePage = lazy(() => import("@/app/pages/EmailDestinationPages").t
 
 function DashboardLazy() {
   return <Suspense fallback={<SpaFallback />}><DashboardPage /></Suspense>;
+}
+function SupportDevicesLazy() {
+  return <Suspense fallback={<SpaFallback />}><SupportDevicesPage /></Suspense>;
 }
 function CampaignDashboardLazy() {
   return <Suspense fallback={<SpaFallback />}><CampaignDashboardPage /></Suspense>;
