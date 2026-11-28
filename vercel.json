@@ -19,6 +19,7 @@
     { "source": "/login", "destination": "/app-shell.html" },
     { "source": "/signup", "destination": "/app-shell.html" },
     { "source": "/dashboard", "destination": "/app-shell.html" },
+    { "source": "/dashboard/support/devices", "destination": "/app-shell.html" },
     { "source": "/campaign-dashboard", "destination": "/app-shell.html" },
     { "source": "/payment", "destination": "/app-shell.html" },
     { "source": "/thank-you", "destination": "/app-shell.html" },

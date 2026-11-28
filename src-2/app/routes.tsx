@@ -179,6 +179,14 @@ export const routes: RouteRecord[] = [
         ),
       },
       {
+        path: "dashboard/support/devices",
+        element: (
+          <RequireAuth requireMfa>
+            <Suspense fallback={<SpaFallback />}><SupportDevicesPage /></Suspense>
+          </RequireAuth>
+        ),
+      },
+      {
         path: "campaign-dashboard",
         element: (
           <RequireAuth>
@@ -269,6 +277,7 @@ const SpaFallback = () => (
 );
 
 const DashboardPage = lazy(() => import("@/app/pages/DashboardPage").then((m) => ({ default: m.DashboardPage })));
+const SupportDevicesPage = lazy(() => import("@/app/pages/SupportDevicesPage").then((m) => ({ default: m.SupportDevicesPage })));
 const CampaignDashboardPage = lazy(() => import("@/app/pages/CampaignDashboardPage").then((m) => ({ default: m.CampaignDashboardPage })));
 const PaymentPage = lazy(() => import("@/app/pages/PaymentPage").then((m) => ({ default: m.PaymentPage })));
 const CheckoutSuccessPage = lazy(() => import("@/app/pages/CheckoutStatusPages").then((m) => ({ default: m.CheckoutSuccessPage })));

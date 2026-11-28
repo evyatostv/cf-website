@@ -31,3 +31,6 @@ for each row execute function public.sync_user_access_on_purchase();
 \ir ../../supabase/migrations/20261126091000_grow_link_binding.sql
 \ir ../../supabase/migrations/20261126092000_additional_seat_price.sql
 \ir ../../supabase/migrations/20261126095000_bulk_seat_checkout.sql
+\ir ../../supabase/migrations/20261126174000_desktop_test_grants.sql
+\ir ../../supabase/migrations/20261126174100_desktop_license_summary.sql
+\ir ../../supabase/migrations/20261128090000_remote_device_disconnect.sql
