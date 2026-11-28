@@ -12,6 +12,10 @@ create table auth.sessions (
   id uuid primary key, user_id uuid references auth.users on delete cascade,
   created_at timestamptz, updated_at timestamptz, not_after timestamptz
 );
+create table auth.mfa_factors (
+  id uuid primary key default gen_random_uuid(), user_id uuid references auth.users on delete cascade,
+  status text not null
+);
 create function auth.uid() returns uuid language sql stable as $$
   select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
 $$;

@@ -179,6 +179,14 @@ export const routes: RouteRecord[] = [
         ),
       },
       {
+        path: "dashboard/support/devices",
+        element: (
+          <RequireAuth requireMfa>
+            <SupportDevicesLazy />
+          </RequireAuth>
+        ),
+      },
+      {
         path: "campaign-dashboard",
         element: (
           <RequireAuth>
@@ -269,6 +277,7 @@ const SpaFallback = () => (
 );
 
 const DashboardPage = lazy(() => import("@/app/pages/DashboardPage").then((m) => ({ default: m.DashboardPage })));
+const SupportDevicesPage = lazy(() => import("@/app/pages/SupportDevicesPage").then((m) => ({ default: m.SupportDevicesPage })));
 const CampaignDashboardPage = lazy(() => import("@/app/pages/CampaignDashboardPage").then((m) => ({ default: m.CampaignDashboardPage })));
 const PaymentPage = lazy(() => import("@/app/pages/PaymentPage").then((m) => ({ default: m.PaymentPage })));
 const CheckoutSuccessPage = lazy(() => import("@/app/pages/CheckoutStatusPages").then((m) => ({ default: m.CheckoutSuccessPage })));
@@ -282,6 +291,9 @@ const UnsubscribePage = lazy(() => import("@/app/pages/EmailDestinationPages").t
 
 function DashboardLazy() {
   return <Suspense fallback={<SpaFallback />}><DashboardPage /></Suspense>;
+}
+function SupportDevicesLazy() {
+  return <Suspense fallback={<SpaFallback />}><SupportDevicesPage /></Suspense>;
 }
 function CampaignDashboardLazy() {
   return <Suspense fallback={<SpaFallback />}><CampaignDashboardPage /></Suspense>;

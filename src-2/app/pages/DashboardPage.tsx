@@ -5,6 +5,8 @@ import { useNavigate, Link } from 'react-router';
 import { usePageReturn } from '@/lib/use-page-return';
 import { useAuth } from '@/lib/auth-context';
 import { getPaidUserAccess, UserAccess, PLAN_LABELS, supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase';
+import { ActiveDevicesSection } from '@/app/components/ActiveDevicesSection';
+import { DesktopSupportLink } from '@/app/components/DesktopSupportLink';
 import { DeleteAccountSection } from '@/app/components/DeleteAccountSection';
 import { DataExportSection } from '@/app/components/DataExportSection';
 import { TwoFactorSection } from '@/app/components/TwoFactorSection';
@@ -54,6 +56,7 @@ export function DashboardPage() {
   const [licenseSummary, setLicenseSummary] = useState<{
     total: number; activated: number; test: number; testExpiresAt: string | null;
   } | null>();
+  const [summaryRevision, setSummaryRevision] = useState(0);
   const [lookupFailed, setLookupFailed] = useState(false);
   const [lookupAttempt, setLookupAttempt] = useState(0);
   const [downloading, setDownloading] = useState(false);
@@ -127,20 +130,26 @@ export function DashboardPage() {
     if (!user) { navigate('/login'); return; }
     let current = true;
     setAccess(undefined);
-    setLicenseSummary(undefined);
     setLookupFailed(false);
     getPaidUserAccess(user.id).then(result => {
       if (current) setAccess(result);
     }).catch(() => {
       if (current) setLookupFailed(true);
     });
+    return () => { current = false; };
+  }, [user, loading, navigate, lookupAttempt, pageReturn]);
+
+  useEffect(() => {
+    if (loading || !user) return;
+    let current = true;
+    setLicenseSummary(undefined);
     supabase.rpc('my_desktop_license_summary').then(({ data, error }) => {
       if (current) setLicenseSummary(error ? null : data);
     }, () => {
       if (current) setLicenseSummary(null);
     });
     return () => { current = false; };
-  }, [user, loading, navigate, lookupAttempt, pageReturn]);
+  }, [user, loading, lookupAttempt, pageReturn, summaryRevision]);
 
   const handleSignOut = async () => {
     try { await signOut(); navigate('/'); } catch (err) { console.error(err); }
@@ -189,6 +198,7 @@ export function DashboardPage() {
             </button>
           </div>
 
+          <DesktopSupportLink />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
             {/* Left column — status + download */}
@@ -257,6 +267,7 @@ export function DashboardPage() {
                             </>
                           )}
                         </div>
+                        <ActiveDevicesSection key={user.id} reloadKey={pageReturn} onDisconnected={() => setSummaryRevision(value => value + 1)} />
                       </section>
                       {seatFailed && (
                         <div className="mb-5" role="alert">
