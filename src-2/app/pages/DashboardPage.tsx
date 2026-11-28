@@ -501,7 +501,7 @@ export function DashboardPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.94, y: 20 }}
               transition={{ type: 'spring', duration: 0.35, bounce: 0.15 }}
-              className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-[#e1e6ec] overflow-hidden z-10 text-right my-8"
+              className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-[#e1e6ec] max-h-[90dvh] overflow-y-auto z-10 text-right my-8"
               dir="rtl"
             >
               {/* Header with Title and Close 'X' Button */}
@@ -515,7 +515,7 @@ export function DashboardPage() {
                       התקנה ב-Windows • מדריך קצר
                     </h3>
                     <p className="text-xs text-[#6b7c93] mt-0.5">
-                      Windows Defender מציג התראה? כך מפעילים ב-2 קליקים פשוטים
+                      הורדת המתקין ב־Chrome ופתיחתו ב־Windows
                     </p>
                   </div>
                 </div>
@@ -529,6 +529,15 @@ export function DashboardPage() {
                 >
                   <X className="w-5 h-5" />
                 </button>
+              </div>
+
+              <div className="mx-6 mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-800">
+                <h4 className="font-bold">Chrome מציג הודעה שהגלישה הבטוחה כבויה?</h4>
+                <p className="mt-1">
+                  בחלון ההורדות לחצו על <bdi lang="en">Turn on Safe Browsing</bdi> (הפעלת גלישה בטוחה).
+                  בחרו בהגנה רגילה או משופרת, חזרו לאזור האישי והורידו שוב את המתקין ל־Windows.
+                  אם Chrome מסמן את הקובץ כמסוכן, עצרו את ההתקנה ופנו לתמיכה.
+                </p>
               </div>
 
               {/* Video Player Container */}
