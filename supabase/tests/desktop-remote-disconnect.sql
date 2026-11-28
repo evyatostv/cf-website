@@ -37,7 +37,15 @@ begin
   if public.resolve_paid_device('new-pc',null,'claim',c)<>'capacity' then raise exception 'capacity not enforced'; end if;
   select device_id into strict home from public.desktop_active_devices() where seat_number=1 and device_code='0011…4455';
   select device_id into strict office from public.desktop_active_devices() where seat_number=2 and device_code='0022…6677';
+  if not public.desktop_set_device_name(home,'  בית  ') or not public.desktop_set_device_name(office,'מרפאה')
+     or not exists(select 1 from public.desktop_active_devices() where device_id=home and device_name='בית') then raise exception 'owner rename'; end if;
+  if not public.desktop_set_device_name(home,'  ') or exists(select 1 from public.desktop_active_devices() where device_id=home and device_name is not null)
+     or not public.desktop_set_device_name(home,'בית') then raise exception 'clear and rename'; end if;
+  begin
+    perform public.desktop_set_device_name(home,repeat('א',49)); raise exception 'oversized name saved';
+  exception when invalid_parameter_value then null; end;
   perform pg_temp.ident('12');
+  if public.desktop_set_device_name(home,'other') then raise exception 'cross-owner rename'; end if;
   if public.desktop_disconnect_device(home) then raise exception 'cross-tenant revoked'; end if;
   begin
     perform public.desktop_active_devices('desk-owner@example.invalid'); raise exception 'ordinary lookup allowed';
@@ -49,7 +57,7 @@ begin
   if not public.desktop_disconnect_device(legacy) or exists(select 1 from public.desktop_active_devices()) then raise exception 'legacy revived'; end if;
   perform pg_temp.ident('13');
   if not public.is_desktop_support() then raise exception 'registered support denied'; end if;
-  if not exists(select 1 from public.desktop_active_devices('  DESK-OWNER@example.invalid ') where device_id=home) then raise exception 'support lookup failed'; end if;
+  if not exists(select 1 from public.desktop_active_devices('  DESK-OWNER@example.invalid ') where device_id=home and device_name='בית') then raise exception 'support lookup failed'; end if;
   begin
     perform public.desktop_disconnect_device(home,'desk-owner@example.invalid',' '); raise exception 'missing reason allowed';
   exception when invalid_parameter_value then null; end;
@@ -58,8 +66,9 @@ begin
   if public.check_paid_device(repeat('a',64)) or not public.check_paid_device(repeat('b',64)) then raise exception 'incorrect device token revoked'; end if;
   if public.resolve_paid_device('new-pc',null,'claim',c)<>'active' then raise exception 'replacement denied'; end if;
   select device_id into strict replacement from public.desktop_active_devices() where seat_number=1;
+  if public.desktop_set_device_name(home,'stale') or not exists(select 1 from public.desktop_active_devices() where device_id=replacement and device_name is null) then raise exception 'replacement name'; end if;
   if public.desktop_disconnect_device(home) or replacement=home then raise exception 'stale UI released new device'; end if;
-  if not exists(select 1 from public.desktop_active_devices() where device_id=office and seat_number=2)
+  if not exists(select 1 from public.desktop_active_devices() where device_id=office and seat_number=2 and device_name='מרפאה')
      or not public.check_paid_device(repeat('b',64)) or not public.check_paid_device(repeat('c',64))
      or public.resolve_paid_device('fourth-pc',null,'claim',a)<>'capacity' then raise exception 'spare or missing device'; end if;
   if not public.desktop_disconnect_device(replacement) then raise exception 'owner release failed'; end if;
@@ -68,7 +77,9 @@ begin
   perform pg_temp.ident('12');
   if public.resolve_paid_device('pc-before',null,'claim',a)<>'active' then raise exception 'legacy replacement claim failed'; end if;
   select device_id into strict legacy from public.desktop_active_devices();
+  if not public.desktop_set_device_name(legacy,'old computer') then raise exception 'name before transfer'; end if;
   if public.resolve_paid_device('pc-after',null,'transfer',c)<>'active' or public.desktop_disconnect_device(legacy) then raise exception 'transfer stale confirmation'; end if;
+  if exists(select 1 from public.desktop_active_devices() where device_name is not null) then raise exception 'transfer inherited name'; end if;
 end $$;
 reset role;
 do $$ begin

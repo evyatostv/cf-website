@@ -34,3 +34,4 @@ for each row execute function public.sync_user_access_on_purchase();
 \ir ../../supabase/migrations/20261126174000_desktop_test_grants.sql
 \ir ../../supabase/migrations/20261126174100_desktop_license_summary.sql
 \ir ../../supabase/migrations/20261128090000_remote_device_disconnect.sql
+\ir ../../supabase/migrations/20261128100000_desktop_device_names.sql
